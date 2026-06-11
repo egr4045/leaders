@@ -113,3 +113,29 @@ export function createWorld(
 export function totalPopulation(s: CountryState): number {
   return Object.values(s.population).reduce((a, b) => a + b, 0);
 }
+
+/** JSON-представление мира для Redis/БД. */
+export interface WorldStateJson {
+  year: number;
+  countries: Record<string, CountryState>;
+  wondersTaken: Record<string, string>;
+  seed: number;
+}
+
+export function serializeWorld(w: WorldState): WorldStateJson {
+  return {
+    year: w.year,
+    countries: Object.fromEntries(w.countries),
+    wondersTaken: Object.fromEntries(w.wondersTaken),
+    seed: w.seed,
+  };
+}
+
+export function deserializeWorld(j: WorldStateJson): WorldState {
+  return {
+    year: j.year,
+    countries: new Map(Object.entries(j.countries)),
+    wondersTaken: new Map(Object.entries(j.wondersTaken)),
+    seed: j.seed,
+  };
+}

@@ -18,6 +18,8 @@ export const TunablesSchema = z
       .object({
         /** фаза Кабинета, секунд (≈10 минут = 1 год) */
         cabinetSeconds: z.number().default(600),
+        /** показ сводки новостей ООН, секунд */
+        unSummarySeconds: z.number().default(30),
         /** комментарий каждого игрока в ООН, секунд */
         unCommentSecondsPerPlayer: z.number().default(30),
         /** свободные дебаты в ООН, секунд */
@@ -125,6 +127,8 @@ export const TunablesSchema = z
         perLevelDelta: z.number().default(0.08),
         /** во сколько защита цели весит СМИ относительно Разведки */
         defenseSmiWeight: z.number().default(0.5),
+        /** лимит шпионских операций за год */
+        ordersPerYear: z.number().int().default(2),
       })
       .default({}),
   })
