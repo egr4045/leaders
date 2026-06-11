@@ -84,10 +84,41 @@ export interface RoomSnapshot {
   others: PublicCountryView[];
   /** кто сейчас говорит в круге комментариев ООН */
   currentSpeakerId: string | null;
+  /** сделки с участием вашей страны (ящик предложений) */
+  offers: TradeOfferView[];
   /** финальная таблица (только в фазе final) */
   finalForbes:
     | { playerId: string; playerName: string; countryName: string; declared: number | null; real: number; questName: string | null; questDone: boolean }[]
     | null;
+}
+
+/** Сторона сделки: что участник отдаёт (раздел 9). */
+export interface TradeSidePayload {
+  resources?: Partial<Record<ResourceKey, number>>;
+  /** «обмен опытом» — передача людей навсегда */
+  population?: Partial<Record<PopulationKey, number>>;
+  /** передаваемые технологии (копируются — знания не отнимешь) */
+  statuses?: string[];
+  /** обещание: не enforced, нарушение — фича */
+  promise?: string;
+}
+
+export type TradeOfferStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' | 'failed';
+
+export interface TradeOfferView {
+  id: string;
+  year: number;
+  fromCountryId: string;
+  fromName: string;
+  toCountryId: string;
+  toName: string;
+  /** что отдаёт from */
+  give: TradeSidePayload;
+  /** что from хочет взамен */
+  take: TradeSidePayload;
+  status: TradeOfferStatus;
+  /** причина, если сделка сорвалась при принятии */
+  failReason?: string;
 }
 
 /** ack-ответы лобби */

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { SocketEvents } from '@leaders/shared';
+import { SocketEvents, type TradeSidePayload } from '@leaders/shared';
 import type { SpyActionKind } from '@leaders/engine';
 import { RoomsService } from './game/rooms.service.js';
 import { ContentService } from './content.service.js';
@@ -128,6 +128,36 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ) {
     return this.withSession(socket, (s) =>
       this.rooms.spyOrder(s.roomCode, s.playerId, body?.kind, body?.targetCountryId ?? '', body?.payload),
+    );
+  }
+
+  // ---------- дипломатия ----------
+
+  @SubscribeMessage(SocketEvents.TradeOffer)
+  tradeOffer(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody()
+    body: { toCountryId: string; give: TradeSidePayload; take: TradeSidePayload },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.tradeOffer(s.roomCode, s.playerId, body?.toCountryId ?? '', body?.give ?? {}, body?.take ?? {}),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.TradeRespond)
+  tradeRespond(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { offerId: string; accept: boolean },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.tradeRespond(s.roomCode, s.playerId, body?.offerId ?? '', Boolean(body?.accept)),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.TradeCancel)
+  tradeCancel(@ConnectedSocket() socket: Socket, @MessageBody() body: { offerId: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.tradeCancel(s.roomCode, s.playerId, body?.offerId ?? ''),
     );
   }
 

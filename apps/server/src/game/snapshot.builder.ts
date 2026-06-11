@@ -138,6 +138,11 @@ export function buildSnapshot(
     you,
     others,
     currentSpeakerId: room.speakerOrder[room.speakerIdx] ?? null,
+    offers: me?.countryId
+      ? room.tradeOffers.filter(
+          (o) => o.fromCountryId === me.countryId || o.toCountryId === me.countryId,
+        )
+      : [],
     finalForbes,
   };
 }

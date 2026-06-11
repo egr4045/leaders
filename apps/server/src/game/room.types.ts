@@ -1,4 +1,4 @@
-import type { AdvisorCard, GamePhase } from '@leaders/shared';
+import type { AdvisorCard, GamePhase, TradeOfferView } from '@leaders/shared';
 import type { SpyActionKind, SpyOutcome, WorldState } from '@leaders/engine';
 
 export interface RoomPlayer {
@@ -53,6 +53,8 @@ export interface RoomState {
   spyOrders: SpyOrderRec[];
   /** разведдонесения по playerId */
   intel: Record<string, IntelReport[]>;
+  /** ящик предложений: все сделки партии */
+  tradeOffers: TradeOfferView[];
   /** порядок выступающих в ООН (playerId) и текущий индекс */
   speakerOrder: string[];
   speakerIdx: number;

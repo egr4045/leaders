@@ -3,6 +3,7 @@ import { Timer } from '../ui/Timer';
 import { SwipeCard } from './cabinet/SwipeCard';
 import { ResourcePanel } from './cabinet/ResourcePanel';
 import { SpyPanel } from './cabinet/SpyPanel';
+import { TradePanel } from './cabinet/TradePanel';
 
 export function CabinetScreen() {
   const { snapshot, chooseCard } = useGame();
@@ -38,6 +39,7 @@ export function CabinetScreen() {
       )}
 
       <div className="mt-auto flex w-full max-w-sm flex-col gap-2 pb-4">
+        <TradePanel you={you} others={snapshot.others} />
         <SpyPanel others={snapshot.others} myCountryId={you.countryId} />
       </div>
     </div>

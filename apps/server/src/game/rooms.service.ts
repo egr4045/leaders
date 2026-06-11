@@ -4,6 +4,7 @@ import type { Server } from 'socket.io';
 import { SocketEvents, type GamePhase } from '@leaders/shared';
 import {
   applyChoice,
+  applyTrade,
   createWorld,
   drawCard,
   makeRng,
@@ -12,8 +13,10 @@ import {
   deserializeWorld,
   tick,
   computeForbes,
+  TradeError,
   type SpyActionKind,
 } from '@leaders/engine';
+import type { TradeSidePayload } from '@leaders/shared';
 import { ContentService } from '../content.service.js';
 import { RedisService } from '../redis.service.js';
 import { buildSnapshot } from './snapshot.builder.js';
@@ -60,6 +63,7 @@ export class RoomsService {
       spyOrdersLeft: {},
       spyOrders: [],
       intel: {},
+      tradeOffers: [],
       speakerOrder: [],
       speakerIdx: 0,
       rngNonce: 0,
@@ -359,6 +363,111 @@ export class RoomsService {
     return outcome;
   }
 
+  // ---------- дипломатия: ящик предложений (раздел 9) ----------
+
+  tradeOffer(code: string, playerId: string, toCountryId: string, give: TradeSidePayload, take: TradeSidePayload) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    if (toCountryId === player.countryId) throw new Error('Сделка с собой — это просто бюджет');
+    if (!room.world.countries.has(toCountryId)) throw new Error('Нет такой страны');
+
+    const cleanGive = this.cleanSide(give);
+    const cleanTake = this.cleanSide(take);
+    if (this.sideEmpty(cleanGive) && this.sideEmpty(cleanTake)) {
+      throw new Error('Пустая сделка');
+    }
+
+    const offer = {
+      id: randomUUID(),
+      year: room.world.year,
+      fromCountryId: player.countryId,
+      fromName: this.content.countries.get(player.countryId)!.name,
+      toCountryId,
+      toName: this.content.countries.get(toCountryId)!.name,
+      give: cleanGive,
+      take: cleanTake,
+      status: 'pending' as const,
+    };
+    room.tradeOffers.push(offer);
+    this.persist(room);
+    this.broadcast(room);
+    return { offerId: offer.id };
+  }
+
+  tradeRespond(code: string, playerId: string, offerId: string, accept: boolean) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    const offer = room.tradeOffers.find((o) => o.id === offerId);
+    if (!offer || offer.status !== 'pending') throw new Error('Предложение уже не актуально');
+    if (offer.toCountryId !== player.countryId) throw new Error('Это предложение не вам');
+
+    if (!accept) {
+      offer.status = 'declined';
+    } else {
+      const from = room.world.countries.get(offer.fromCountryId)!;
+      const to = room.world.countries.get(offer.toCountryId)!;
+      try {
+        // сервер валидирует и применяет атомарно; обещания не enforced
+        applyTrade(from, to, { from: from.id, to: to.id, give: offer.give, take: offer.take }, this.content);
+        offer.status = 'accepted';
+      } catch (e) {
+        if (e instanceof TradeError) {
+          offer.status = 'failed';
+          offer.failReason = e.message;
+        } else {
+          throw e;
+        }
+      }
+    }
+    this.persist(room);
+    this.broadcast(room);
+    return { status: offer.status, failReason: offer.failReason };
+  }
+
+  tradeCancel(code: string, playerId: string, offerId: string) {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    const offer = room.tradeOffers.find((o) => o.id === offerId);
+    if (!offer || offer.status !== 'pending') throw new Error('Предложение уже не актуально');
+    if (offer.fromCountryId !== player.countryId) throw new Error('Отменить можно только своё');
+    offer.status = 'cancelled';
+    this.persist(room);
+    this.broadcast(room);
+  }
+
+  /** Санитизация стороны сделки: только известные ключи, положительные целые. */
+  private cleanSide(side: TradeSidePayload | undefined): TradeSidePayload {
+    const out: TradeSidePayload = {};
+    const clean = (rec: Record<string, unknown> | undefined, keys: readonly string[]) => {
+      if (!rec) return undefined;
+      const r: Record<string, number> = {};
+      for (const k of keys) {
+        const v = Number(rec[k]);
+        if (Number.isFinite(v) && v > 0) r[k] = Math.floor(v);
+      }
+      return Object.keys(r).length ? r : undefined;
+    };
+    const res = clean(side?.resources as Record<string, unknown>, ['money', 'gold', 'food', 'influence']);
+    const pop = clean(side?.population as Record<string, unknown>, ['rabotyagi', 'umniki', 'siloviki', 'mediyshchiki', 'ministry']);
+    if (res) out.resources = res;
+    if (pop) out.population = pop;
+    if (Array.isArray(side?.statuses) && side.statuses.length) {
+      out.statuses = side.statuses.filter((s): s is string => typeof s === 'string').slice(0, 10);
+    }
+    if (typeof side?.promise === 'string' && side.promise.trim()) {
+      out.promise = side.promise.trim().slice(0, 200);
+    }
+    return out;
+  }
+
+  private sideEmpty(side: TradeSidePayload): boolean {
+    return !side.resources && !side.population && !side.statuses && !side.promise;
+  }
+
   declareForbes(code: string, playerId: string, value: number) {
     const room = this.mustRoom(code);
     const player = this.mustPlayer(room, playerId);
@@ -471,7 +580,11 @@ export class RoomsService {
         const raw = await this.redis.client.get(key);
         if (!raw) continue;
         const data = JSON.parse(raw);
-        const room: RoomState = { ...data, world: data.world ? deserializeWorld(data.world) : null };
+        const room: RoomState = {
+          ...data,
+          tradeOffers: data.tradeOffers ?? [],
+          world: data.world ? deserializeWorld(data.world) : null,
+        };
         // все соединения мертвы после рестарта
         for (const p of room.players) {
           p.connected = false;
