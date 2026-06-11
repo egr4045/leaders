@@ -11,6 +11,7 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { SocketEvents, type TradeSidePayload } from '@leaders/shared';
+import { AccessToken } from 'livekit-server-sdk';
 import type { SpyActionKind } from '@leaders/engine';
 import { RoomsService } from './game/rooms.service.js';
 import { ContentService } from './content.service.js';
@@ -180,6 +181,71 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (room.speakerOrder[room.speakerIdx] !== s.playerId) throw new Error('Сейчас говорит не вы');
       this.rooms.nextSpeaker(room);
     });
+  }
+
+  // ---------- видео (Э7) ----------
+
+  @SubscribeMessage(SocketEvents.VideoToken)
+  async videoToken(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { kind: 'un' | 'call'; callId?: string },
+  ) {
+    const session = this.sessions.get(socket.id);
+    if (!session) return { ok: false, error: 'Сначала войдите в комнату' };
+    try {
+      const roomName = this.rooms.videoRoomFor(
+        session.roomCode,
+        session.playerId,
+        body?.kind === 'call' ? 'call' : 'un',
+        body?.callId,
+      );
+      const found = this.rooms.getRoomBySocket(socket.id);
+      const playerName =
+        found?.room.players.find((p) => p.playerId === session.playerId)?.name ?? 'Игрок';
+
+      const key = process.env.LIVEKIT_KEY;
+      const secret = process.env.LIVEKIT_SECRET;
+      const url = process.env.LIVEKIT_URL;
+      if (!key || !secret || !url) throw new Error('LiveKit не настроен на сервере');
+
+      const at = new AccessToken(key, secret, {
+        identity: session.playerId,
+        name: playerName,
+        ttl: '2h',
+      });
+      at.addGrant({ roomJoin: true, room: roomName, canPublish: true, canSubscribe: true });
+      return { ok: true, data: { url, token: await at.toJwt(), room: roomName } };
+    } catch (e) {
+      return { ok: false, error: (e as Error).message };
+    }
+  }
+
+  @SubscribeMessage(SocketEvents.CallInvite)
+  callInvite(@ConnectedSocket() socket: Socket, @MessageBody() body: { toCountryId: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.callInvite(s.roomCode, s.playerId, body?.toCountryId ?? ''),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.CallAccept)
+  callAccept(@ConnectedSocket() socket: Socket, @MessageBody() body: { callId: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.callRespond(s.roomCode, s.playerId, body?.callId ?? '', true),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.CallDecline)
+  callDecline(@ConnectedSocket() socket: Socket, @MessageBody() body: { callId: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.callRespond(s.roomCode, s.playerId, body?.callId ?? '', false),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.CallEnd)
+  callEnd(@ConnectedSocket() socket: Socket, @MessageBody() body: { callId: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.callEnd(s.roomCode, s.playerId, body?.callId ?? ''),
+    );
   }
 
   @SubscribeMessage(SocketEvents.UnVote)

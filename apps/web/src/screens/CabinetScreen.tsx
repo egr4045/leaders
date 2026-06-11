@@ -4,6 +4,7 @@ import { SwipeCard } from './cabinet/SwipeCard';
 import { ResourcePanel } from './cabinet/ResourcePanel';
 import { SpyPanel } from './cabinet/SpyPanel';
 import { TradePanel } from './cabinet/TradePanel';
+import { CallPanel } from '../video/CallPanel';
 
 export function CabinetScreen() {
   const { snapshot, chooseCard } = useGame();
@@ -39,6 +40,7 @@ export function CabinetScreen() {
       )}
 
       <div className="mt-auto flex w-full max-w-sm flex-col gap-2 pb-4">
+        <CallPanel you={you} others={snapshot.others} />
         <TradePanel you={you} others={snapshot.others} />
         <SpyPanel others={snapshot.others} myCountryId={you.countryId} />
       </div>

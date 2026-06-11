@@ -1,0 +1,28 @@
+# HTTPS обязателен: доступ к камере работает только в защищённом контексте.
+# Let's Encrypt получается автоматически для mygame-quiz.ru.
+
+mygame-quiz.ru, www.mygame-quiz.ru {
+	encode gzip
+
+	# realtime-сокеты игры → Node-сервер на хосте
+	handle /socket.io/* {
+		reverse_proxy host.docker.internal:3000
+	}
+
+	# REST API игры (health и будущие ручки)
+	handle_path /api/* {
+		reverse_proxy host.docker.internal:3000
+	}
+
+	# LiveKit signal/WebSocket
+	handle_path /livekit/* {
+		reverse_proxy livekit:7880
+	}
+
+	# статика клиента (vite build)
+	handle {
+		root * /srv/www
+		try_files {path} /index.html
+		file_server
+	}
+}

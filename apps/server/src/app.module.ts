@@ -7,7 +7,7 @@ import { RedisService } from './redis.service';
 import { RoomsService } from './game/rooms.service';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true })],
+  imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '../../.env'] })],
   controllers: [HealthController],
   providers: [ContentService, RedisService, RoomsService, GameGateway],
 })

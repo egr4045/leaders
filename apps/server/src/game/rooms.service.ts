@@ -67,6 +67,7 @@ export class RoomsService {
       choicesThisYear: {},
       votes: [],
       news: null,
+      calls: [],
       lastTickEvents: null,
       speakerOrder: [],
       speakerIdx: 0,
@@ -574,6 +575,96 @@ export class RoomsService {
     this.broadcast(room);
   }
 
+  // ---------- видео: токены LiveKit и звонки 1-на-1 (Э7) ----------
+
+  /** Кому игрок может писать/звонить: вернёт socketId игрока страны. */
+  private socketOfCountry(room: RoomState, countryId: string): string | null {
+    return room.players.find((p) => p.countryId === countryId)?.socketId ?? null;
+  }
+
+  callInvite(code: string, playerId: string, toCountryId: string) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    if (toCountryId === player.countryId) throw new Error('Сам себе вы и так можете позвонить');
+    if (!room.world.countries.has(toCountryId)) throw new Error('Нет такой страны');
+    const left = room.callsLeft[player.countryId] ?? 0;
+    if (left <= 0) throw new Error('Лимит звонков на этот год исчерпан');
+    if (room.calls.some((c) => c.status !== 'ended' && (c.fromCountryId === player.countryId || c.toCountryId === player.countryId))) {
+      throw new Error('У вас уже есть активный звонок');
+    }
+
+    room.callsLeft[player.countryId] = left - 1;
+    const call = { id: randomUUID(), fromCountryId: player.countryId, toCountryId, status: 'ringing' as const };
+    room.calls.push(call);
+
+    const targetSocket = this.socketOfCountry(room, toCountryId);
+    if (targetSocket && this.server) {
+      this.server.to(targetSocket).emit(SocketEvents.CallIncoming, {
+        callId: call.id,
+        fromCountryId: player.countryId,
+        fromName: player.name,
+        fromCountryName: this.content.countries.get(player.countryId)!.name,
+      });
+    }
+    this.persist(room);
+    this.broadcast(room);
+    return { callId: call.id };
+  }
+
+  callRespond(code: string, playerId: string, callId: string, accept: boolean) {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    const call = room.calls.find((c) => c.id === callId);
+    if (!call || call.status !== 'ringing') throw new Error('Звонок уже не актуален');
+    if (call.toCountryId !== player.countryId) throw new Error('Это не ваш звонок');
+
+    call.status = accept ? 'active' : 'ended';
+    const fromSocket = this.socketOfCountry(room, call.fromCountryId);
+    if (fromSocket && this.server) {
+      this.server
+        .to(fromSocket)
+        .emit(accept ? SocketEvents.CallStarted : SocketEvents.CallEnded, { callId });
+    }
+    this.persist(room);
+    return { callId, accepted: accept };
+  }
+
+  callEnd(code: string, playerId: string, callId: string) {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    const call = room.calls.find((c) => c.id === callId);
+    if (!call || call.status === 'ended') return;
+    if (call.fromCountryId !== player.countryId && call.toCountryId !== player.countryId) {
+      throw new Error('Это не ваш звонок');
+    }
+    call.status = 'ended';
+    for (const cid of [call.fromCountryId, call.toCountryId]) {
+      const sid = this.socketOfCountry(room, cid);
+      if (sid && this.server) this.server.to(sid).emit(SocketEvents.CallEnded, { callId });
+    }
+    this.persist(room);
+  }
+
+  /** Проверка прав на видеокомнату: ООН — все в фазах ООН; звонок — только участники. */
+  videoRoomFor(code: string, playerId: string, kind: 'un' | 'call', callId?: string): string {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    if (kind === 'un') {
+      if (!room.phase.startsWith('un_') && room.phase !== 'results' && room.phase !== 'final') {
+        throw new Error('Видеокомната ООН доступна только в фазе ООН');
+      }
+      return `un-${room.code}`;
+    }
+    const call = room.calls.find((c) => c.id === callId);
+    if (!call || call.status !== 'active') throw new Error('Звонок не активен');
+    if (call.fromCountryId !== player.countryId && call.toCountryId !== player.countryId) {
+      throw new Error('Вы не участник звонка');
+    }
+    return `call-${room.code}-${call.id}`;
+  }
+
   // ---------- реконнект и пауза (раздел 13) ----------
 
   attachSocket(code: string, playerId: string, socketId: string) {
@@ -682,6 +773,7 @@ export class RoomsService {
           choicesThisYear: data.choicesThisYear ?? {},
           votes: data.votes ?? [],
           news: data.news ?? null,
+          calls: data.calls ?? [],
           lastTickEvents: data.lastTickEvents ?? null,
           world: data.world ? deserializeWorld(data.world) : null,
         };

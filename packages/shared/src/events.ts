@@ -31,6 +31,19 @@ export const SocketEvents = {
   UnCommentDone: 'un:comment_done',
   UnVote: 'un:vote',
   ForbesDeclare: 'forbes:declare',
+
+  // видео (Э7): токены LiveKit и приватные звонки
+  VideoToken: 'video:token',
+  CallInvite: 'call:invite',
+  CallAccept: 'call:accept',
+  CallDecline: 'call:decline',
+  CallEnd: 'call:end',
+  /** s2c: входящий звонок */
+  CallIncoming: 'call:incoming',
+  /** s2c: звонок принят/начался */
+  CallStarted: 'call:started',
+  /** s2c: звонок завершён/отклонён */
+  CallEnded: 'call:ended',
 } as const;
 
 export type SocketEventName = (typeof SocketEvents)[keyof typeof SocketEvents];

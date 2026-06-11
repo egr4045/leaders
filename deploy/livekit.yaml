@@ -1,0 +1,13 @@
+# LiveKit self-hosted (раздел 3 спеки): весь медиатрафик — на этом VPS.
+port: 7880
+bind_addresses:
+  - 0.0.0.0
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+  port_range_end: 50200
+  # сервер с публичным IP — клиенты подключаются напрямую (SFU)
+  use_external_ip: true
+# ключи приходят через env LIVEKIT_KEYS (см. docker-compose)
+logging:
+  level: info

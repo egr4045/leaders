@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../lib/useGame';
 import { Timer } from '../ui/Timer';
+import { VideoGrid } from '../video/VideoGrid';
 
 const PHASE_TITLES: Record<string, string> = {
   un_summary: '📺 Новости ООН',
@@ -127,6 +128,8 @@ export function UnScreen() {
       </header>
 
       <h1 className="text-3xl font-black">{PHASE_TITLES[snapshot.phase] ?? snapshot.phase}</h1>
+
+      <VideoGrid kind="un" />
 
       {snapshot.you && <DeclareForbes />}
 

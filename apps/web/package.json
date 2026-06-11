@@ -13,6 +13,7 @@
   "dependencies": {
     "@leaders/shared": "workspace:*",
     "framer-motion": "^11.15.0",
+    "livekit-client": "^2.19.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "socket.io-client": "^4.8.1"
