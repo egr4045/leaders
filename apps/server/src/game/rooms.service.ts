@@ -19,6 +19,7 @@ import {
 import type { TradeSidePayload } from '@leaders/shared';
 import { ContentService } from '../content.service.js';
 import { RedisService } from '../redis.service.js';
+import { MlService } from '../ml/ml.service.js';
 import { buildSnapshot } from './snapshot.builder.js';
 import type { RoomState, RoomTimers, RoomPlayer } from './room.types.js';
 
@@ -34,7 +35,19 @@ export class RoomsService {
   constructor(
     private readonly contentService: ContentService,
     private readonly redis: RedisService,
-  ) {}
+    private readonly ml: MlService,
+  ) {
+    // готовые ассеты диктора прилетают асинхронно — раскладываем по комнатам
+    this.ml.onDone(({ job, assetUrl }) => {
+      const room = this.rooms.get(job.roomCode);
+      if (!room || !room.world || room.world.year !== job.year) return;
+      const slot = (room.newsAssets[job.countryId] ??= {});
+      if (job.type === 'tts') slot.audioUrl = assetUrl;
+      else slot.imageUrl = assetUrl;
+      this.persist(room);
+      this.broadcast(room);
+    });
+  }
 
   setServer(server: Server) {
     this.server = server;
@@ -67,6 +80,7 @@ export class RoomsService {
       choicesThisYear: {},
       votes: [],
       news: null,
+      newsAssets: {},
       calls: [],
       lastTickEvents: null,
       speakerOrder: [],
@@ -313,6 +327,32 @@ export class RoomsService {
     }
 
     room.news = news;
+
+    // Э8: в момент конца Кабинета сервер знает все решения → сразу ставим задания
+    // на TTS и картинки; пока идёт переход и заставка, ассеты успевают сгенериться.
+    room.newsAssets = {};
+    for (const [countryId, lines] of Object.entries(news)) {
+      const countryName = this.content.countries.get(countryId)?.name ?? countryId;
+      void this.ml.enqueue({
+        type: 'tts',
+        priority: 'high',
+        payload: {
+          text: `Новости страны ${countryName}, год ${year}. ${lines.join('. ')}.`,
+          style: 'новостной диктор, ироничный',
+        },
+        roomCode: room.code,
+        year,
+        countryId,
+      });
+      void this.ml.enqueue({
+        type: 'image',
+        priority: 'normal',
+        payload: { prompt: `новостная иллюстрация, сатира: ${lines[0] ?? countryName}` },
+        roomCode: room.code,
+        year,
+        countryId,
+      });
+    }
   }
 
   // ---------- голосование ООН ----------
@@ -773,6 +813,7 @@ export class RoomsService {
           choicesThisYear: data.choicesThisYear ?? {},
           votes: data.votes ?? [],
           news: data.news ?? null,
+          newsAssets: data.newsAssets ?? {},
           calls: data.calls ?? [],
           lastTickEvents: data.lastTickEvents ?? null,
           world: data.world ? deserializeWorld(data.world) : null,

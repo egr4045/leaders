@@ -61,6 +61,8 @@ export interface RoomState {
   votes: { voterCountryId: string; targetCountryId: string; kind: 'sanction' | 'support' }[];
   /** сводка новостей текущего года (с искажениями), по странам */
   news: Record<string, string[]> | null;
+  /** сгенерированные ассеты сводки: countryId → URL */
+  newsAssets: Record<string, { audioUrl?: string; imageUrl?: string }>;
   /** приватные звонки 1-на-1 (фаза Кабинета) */
   calls: { id: string; fromCountryId: string; toCountryId: string; status: 'ringing' | 'active' | 'ended' }[];
   /** публичные события последнего tick — для фазы Итогов */

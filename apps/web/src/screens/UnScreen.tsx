@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../lib/useGame';
 import { Timer } from '../ui/Timer';
 import { VideoGrid } from '../video/VideoGrid';
+import { NewsPlayer } from '../news/NewsPlayer';
 
 const PHASE_TITLES: Record<string, string> = {
   un_summary: '📺 Новости ООН',
@@ -133,7 +134,8 @@ export function UnScreen() {
 
       {snapshot.you && <DeclareForbes />}
 
-      {snapshot.phase === 'un_summary' && <NewsFeed />}
+      {snapshot.phase === 'un_summary' &&
+        (snapshot.news ? <NewsPlayer news={snapshot.news} /> : <NewsFeed />)}
 
       {snapshot.phase === 'un_comments' && (
         <div className="flex w-full flex-col items-center gap-4">

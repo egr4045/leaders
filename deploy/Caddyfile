@@ -14,6 +14,11 @@ mygame-quiz.ru, www.mygame-quiz.ru {
 		reverse_proxy host.docker.internal:3000
 	}
 
+	# сгенерированные ассеты (озвучка диктора, картинки)
+	handle /assets/* {
+		reverse_proxy host.docker.internal:3000
+	}
+
 	# LiveKit signal/WebSocket
 	handle_path /livekit/* {
 		reverse_proxy livekit:7880

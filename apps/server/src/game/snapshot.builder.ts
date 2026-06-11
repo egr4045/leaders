@@ -149,6 +149,8 @@ export function buildSnapshot(
             countryId,
             countryName: content.countries.get(countryId)?.name ?? countryId,
             lines,
+            audioUrl: room.newsAssets[countryId]?.audioUrl ?? null,
+            imageUrl: room.newsAssets[countryId]?.imageUrl ?? null,
           }))
         : null,
     voteTally: (() => {

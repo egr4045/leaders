@@ -87,7 +87,17 @@ export interface RoomSnapshot {
   /** сделки с участием вашей страны (ящик предложений) */
   offers: TradeOfferView[];
   /** сводка новостей этого года по странам (уже с искажениями шпионажа) */
-  news: { countryId: string; countryName: string; lines: string[] }[] | null;
+  news:
+    | {
+        countryId: string;
+        countryName: string;
+        lines: string[];
+        /** озвучка диктора (когда сгенерирована) */
+        audioUrl: string | null;
+        /** картинка-вставка (когда сгенерирована) */
+        imageUrl: string | null;
+      }[]
+    | null;
   /** публичный счёт голосов ООН в этом году */
   voteTally: Record<string, { sanction: number; support: number }>;
   /** публичные события последнего пересчёта (фаза Итогов) */
