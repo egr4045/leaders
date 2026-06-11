@@ -1,0 +1,16 @@
+{
+  "name": "leaders",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.5.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --stream dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "content:validate": "pnpm -F @leaders/shared content:validate"
+  }
+}
