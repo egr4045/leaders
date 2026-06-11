@@ -64,6 +64,10 @@ export class RoomsService {
       spyOrders: [],
       intel: {},
       tradeOffers: [],
+      choicesThisYear: {},
+      votes: [],
+      news: null,
+      lastTickEvents: null,
       speakerOrder: [],
       speakerIdx: 0,
       rngNonce: 0,
@@ -271,15 +275,103 @@ export class RoomsService {
     }
   }
 
-  /** Конец Кабинета: повисшие шпионские заказы уже разрешены, тут — хук под Э6/Э8. */
-  private resolveCabinetEnd(_room: RoomState) {
-    // Э6: генерация сводок с искажениями; Э8: постановка заданий на TTS/картинки
+  /**
+   * Конец Кабинета: собираем сводку новостей по каждой стране
+   * (решения года + события прошлого пересчёта) и применяем искажения шпионажа.
+   * Хук Э8: здесь же ставятся задания на TTS/картинки.
+   */
+  private resolveCabinetEnd(room: RoomState) {
+    if (!room.world) return;
+    const news: Record<string, string[]> = {};
+    const year = room.world.year;
+
+    for (const [countryId] of room.world.countries) {
+      const lines: string[] = [];
+      for (const ev of room.lastTickEvents?.[countryId] ?? []) lines.push(ev);
+      for (const ch of room.choicesThisYear[countryId] ?? []) {
+        lines.push(`${ch.speaker} предложил — лидер решил: «${ch.label}»`);
+      }
+      if (lines.length === 0) lines.push('Год прошёл тихо. Подозрительно тихо.');
+      news[countryId] = lines;
+    }
+
+    // искажения: сначала умолчания, потом ложь (успешные заказы этого года)
+    for (const order of room.spyOrders.filter((o) => o.year === year && o.outcome?.success)) {
+      if (order.kind === 'conceal') {
+        const target = news[order.attackerCountryId] ?? [];
+        // прячем самую неприятную строку (или указанную в payload по подстроке)
+        const idx = order.payload
+          ? target.findIndex((l) => l.toLowerCase().includes(order.payload!.toLowerCase()))
+          : target.findIndex((l) => /голод|перевор|гиперинф|убыло/i.test(l));
+        if (idx >= 0) target.splice(idx, 1);
+        else if (target.length > 1) target.pop();
+      }
+      if (order.kind === 'insert_lie' && order.payload) {
+        (news[order.targetCountryId] ??= []).push(order.payload);
+      }
+    }
+
+    room.news = news;
   }
 
-  /** Итоги года: голосование ООН (Э6) + tick движка. */
+  // ---------- голосование ООН ----------
+
+  unVote(code: string, playerId: string, targetCountryId: string, kind: 'sanction' | 'support') {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'un_vote');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    if (targetCountryId === player.countryId) throw new Error('За себя голосовать нельзя');
+    if (!room.world.countries.has(targetCountryId)) throw new Error('Нет такой страны');
+    if (kind !== 'sanction' && kind !== 'support') throw new Error('Голос: sanction или support');
+
+    const voter = room.world.countries.get(player.countryId)!;
+    const cost = this.content.tunables.un.voteCostInfluence;
+    if (voter.resources.influence < cost) throw new Error(`Нужно ${cost} влияния за голос`);
+    voter.resources.influence -= cost;
+    room.votes.push({ voterCountryId: player.countryId, targetCountryId, kind });
+    this.persist(room);
+    this.broadcast(room);
+  }
+
+  /** Итоги года: применяем голосование ООН, затем tick движка. */
   private applyYearResults(room: RoomState) {
     if (!room.world) return;
-    tick(room.world, this.content);
+    const t = this.content.tunables;
+
+    // подсчёт: чистые санкции по каждой цели
+    const tally = new Map<string, number>();
+    for (const v of room.votes) {
+      tally.set(v.targetCountryId, (tally.get(v.targetCountryId) ?? 0) + (v.kind === 'sanction' ? 1 : -1));
+    }
+    for (const [countryId, net] of tally) {
+      const s = room.world.countries.get(countryId);
+      if (!s) continue;
+      if (net > 0) {
+        s.sanctions += 1;
+        s.sanctionsReceivedTotal += 1;
+      } else if (net < 0) {
+        if (s.sanctions > 0) s.sanctions -= 1;
+        else s.resources.influence += t.un.supportInfluenceBonus;
+      }
+    }
+
+    const report = tick(room.world, this.content);
+
+    // публичные события пересчёта — в фазу Итогов и в сводку следующего года
+    const publicEvents: Record<string, string[]> = {};
+    for (const ev of report.events.filter((e) => !e.hidden)) {
+      (publicEvents[ev.countryId] ??= []).push(ev.text);
+    }
+    for (const [countryId, net] of tally) {
+      if (net > 0) (publicEvents[countryId] ??= []).push('ООН ввела санкции');
+      else if (net < 0) (publicEvents[countryId] ??= []).push('ООН выразила поддержку');
+    }
+    room.lastTickEvents = publicEvents;
+
+    // сброс годовых записей
+    room.choicesThisYear = {};
+    room.votes = [];
   }
 
   // ---------- Кабинет: карты и шпионаж ----------
@@ -302,6 +394,10 @@ export class RoomsService {
 
     const s = room.world.countries.get(player.countryId)!;
     applyChoice(s, card, choiceIndex, room.world.year, this.content);
+    (room.choicesThisYear[player.countryId] ??= []).push({
+      speaker: card.speaker,
+      label: card.choices[choiceIndex]!.label,
+    });
     this.dealCard(room, player.countryId);
     this.persist(room);
     this.broadcast(room);
@@ -583,6 +679,10 @@ export class RoomsService {
         const room: RoomState = {
           ...data,
           tradeOffers: data.tradeOffers ?? [],
+          choicesThisYear: data.choicesThisYear ?? {},
+          votes: data.votes ?? [],
+          news: data.news ?? null,
+          lastTickEvents: data.lastTickEvents ?? null,
           world: data.world ? deserializeWorld(data.world) : null,
         };
         // все соединения мертвы после рестарта

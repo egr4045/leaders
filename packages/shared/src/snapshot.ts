@@ -86,6 +86,12 @@ export interface RoomSnapshot {
   currentSpeakerId: string | null;
   /** сделки с участием вашей страны (ящик предложений) */
   offers: TradeOfferView[];
+  /** сводка новостей этого года по странам (уже с искажениями шпионажа) */
+  news: { countryId: string; countryName: string; lines: string[] }[] | null;
+  /** публичный счёт голосов ООН в этом году */
+  voteTally: Record<string, { sanction: number; support: number }>;
+  /** публичные события последнего пересчёта (фаза Итогов) */
+  lastResults: { countryId: string; countryName: string; lines: string[] }[] | null;
   /** финальная таблица (только в фазе final) */
   finalForbes:
     | { playerId: string; playerName: string; countryName: string; declared: number | null; real: number; questName: string | null; questDone: boolean }[]

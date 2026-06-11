@@ -143,6 +143,29 @@ export function buildSnapshot(
           (o) => o.fromCountryId === me.countryId || o.toCountryId === me.countryId,
         )
       : [],
+    news:
+      room.news && room.phase.startsWith('un_')
+        ? Object.entries(room.news).map(([countryId, lines]) => ({
+            countryId,
+            countryName: content.countries.get(countryId)?.name ?? countryId,
+            lines,
+          }))
+        : null,
+    voteTally: (() => {
+      const tally: Record<string, { sanction: number; support: number }> = {};
+      for (const v of room.votes) {
+        (tally[v.targetCountryId] ??= { sanction: 0, support: 0 })[v.kind] += 1;
+      }
+      return tally;
+    })(),
+    lastResults:
+      room.lastTickEvents && (room.phase === 'results' || room.phase === 'final')
+        ? Object.entries(room.lastTickEvents).map(([countryId, lines]) => ({
+            countryId,
+            countryName: content.countries.get(countryId)?.name ?? countryId,
+            lines,
+          }))
+        : null,
     finalForbes,
   };
 }

@@ -111,6 +111,14 @@ export const TunablesSchema = z
         umnikiFlightPerRepression: z.number().default(0.05),
       })
       .default({}),
+    un: z
+      .object({
+        /** цена одного голоса в ООН, влияния */
+        voteCostInfluence: z.number().default(10),
+        /** поддержка снимает санкцию; если санкций нет — даёт влияние */
+        supportInfluenceBonus: z.number().default(10),
+      })
+      .default({}),
     forbes: z
       .object({
         /** вес золота против денег (золото стабильно) */

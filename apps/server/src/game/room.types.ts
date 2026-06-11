@@ -55,6 +55,14 @@ export interface RoomState {
   intel: Record<string, IntelReport[]>;
   /** ящик предложений: все сделки партии */
   tradeOffers: TradeOfferView[];
+  /** решения карт за текущий год (для сводки новостей) */
+  choicesThisYear: Record<string, { speaker: string; label: string }[]>;
+  /** голоса ООН текущего года */
+  votes: { voterCountryId: string; targetCountryId: string; kind: 'sanction' | 'support' }[];
+  /** сводка новостей текущего года (с искажениями), по странам */
+  news: Record<string, string[]> | null;
+  /** публичные события последнего tick — для фазы Итогов */
+  lastTickEvents: Record<string, string[]> | null;
   /** порядок выступающих в ООН (playerId) и текущий индекс */
   speakerOrder: string[];
   speakerIdx: number;

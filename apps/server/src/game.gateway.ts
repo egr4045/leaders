@@ -182,6 +182,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
   }
 
+  @SubscribeMessage(SocketEvents.UnVote)
+  unVote(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { targetCountryId: string; kind: 'sanction' | 'support' },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.unVote(s.roomCode, s.playerId, body?.targetCountryId ?? '', body?.kind),
+    );
+  }
+
   // ---------- утилиты ----------
 
   /** Запросить актуальный снапшот (например, после reconnect до подписки). */
