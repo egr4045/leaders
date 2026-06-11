@@ -49,7 +49,7 @@ export const TunablesSchema = z
         /** снижение инфляции за каждый уровень Экономики */
         inflationEconomyRelief: z.number().default(0.004),
         /** содержание одного министра в год, денег */
-        ministerUpkeep: z.number().default(10),
+        ministerUpkeep: z.number().default(3),
         /** науч. множитель за уровень Науки (доля к выработке) */
         scienceMultPerLevel: z.number().default(0.06),
       })
@@ -64,6 +64,12 @@ export const TunablesSchema = z
         sciencePerUmnik: z.number().default(1),
         /** влияние с одного медийщика в год */
         influencePerMediyshchik: z.number().default(0.5),
+        /** очков науки на +1 уровень сектора Наука */
+        sciencePerSectorLevel: z.number().default(100),
+        /** множитель дохода за уровень Экономики: ×(1 + level·coef) */
+        economyIncomePerLevel: z.number().default(0.08),
+        /** множитель влияния за уровень СМИ: ×(1 + level·coef) */
+        smiInfluencePerLevel: z.number().default(0.1),
       })
       .default({}),
     dovolstvo: z
@@ -89,6 +95,8 @@ export const TunablesSchema = z
         dovolstvoThreshold: z.number().default(15),
         /** минимальная доля силовиков в населении, страхующая режим */
         silovikiMinShare: z.number().default(0.05),
+        /** какая доля казны пропадает при перевороте */
+        moneyPenalty: z.number().default(0.5),
       })
       .default({}),
     population: z
