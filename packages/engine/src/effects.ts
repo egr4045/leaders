@@ -47,6 +47,8 @@ export function applyEffectsOnce(s: CountryState, effects: Effects): void {
           s.printedThisYear += v;
         } else if (k === 'repression' && typeof v === 'number') {
           s.repressionsThisYear += v;
+        } else if (k === 'buildWonder') {
+          // событие мира, обрабатывает сервер (см. RoomsService.chooseCard) — не модификатор
         } else {
           keptSpecial[k] = v;
         }

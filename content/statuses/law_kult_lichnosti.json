@@ -1,0 +1,10 @@
+{
+  "id": "law_kult_lichnosti",
+  "name": "Культ личности",
+  "type": "law",
+  "description": "Лидер на каждом столбе. Столбам нравится — у них нет выбора.",
+  "cost": { "money": 50 },
+  "minMinistry": 10,
+  "revocable": true,
+  "effects": { "modifiers": { "dovolstvoDrift": 1, "emigration": { "umniki": 0.03 }, "forbesLegacy": 10 } }
+}

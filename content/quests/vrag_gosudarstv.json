@@ -1,0 +1,7 @@
+{
+  "id": "vrag_gosudarstv",
+  "name": "Враг государств",
+  "description": "Собрать 2+ санкции ООН и всё равно остаться при деньгах: скандал — тоже капитал.",
+  "check": { "sanctions_received": ">=2", "money_real": ">=1500" },
+  "forbesBonus": 4500
+}

@@ -1,0 +1,61 @@
+{
+  "country": null,
+  "cards": [
+    {
+      "id": "stroim_youtube",
+      "speaker": "Молодой министр цифры",
+      "situation": "Весь мир сидит без видеохостинга. Кто первый построит — у того вся реклама планеты!",
+      "requires": { "minSectors": { "science": 6, "smi": 5 } },
+      "choices": [
+        {
+          "label": "Строим Первый YouTube",
+          "effects": { "resources": { "money": -400 }, "modifiers": { "special": { "buildWonder": "wonder_first_youtube" } } }
+        },
+        { "label": "Интернет — это мода", "effects": {} }
+      ],
+      "weight": 2
+    },
+    {
+      "id": "stroim_aes",
+      "speaker": "Седой академик",
+      "situation": "Мирный атом, товарищ лидер. Дешёвая энергия. Ну, почти наверняка мирный.",
+      "requires": { "minSectors": { "science": 6 } },
+      "choices": [
+        {
+          "label": "Строим Первую АЭС",
+          "effects": { "resources": { "money": -400 }, "modifiers": { "special": { "buildWonder": "wonder_first_aes" } } }
+        },
+        { "label": "Уголёк надёжнее", "effects": {} }
+      ],
+      "weight": 2
+    },
+    {
+      "id": "letim_na_lunu",
+      "speaker": "Главный конструктор",
+      "situation": "Соседи смотрят в небо. Если на Луне будет наш флаг — народ простит вам всё. Почти.",
+      "requires": { "minSectors": { "science": 8 } },
+      "choices": [
+        {
+          "label": "Летим на Луну!",
+          "effects": { "resources": { "money": -600 }, "modifiers": { "special": { "buildWonder": "wonder_lunar_flight" } } }
+        },
+        { "label": "На Земле дел хватает", "effects": { "dovolstvo": -1 } }
+      ],
+      "weight": 2
+    },
+    {
+      "id": "stroim_ii",
+      "speaker": "Стартапер в худи",
+      "situation": "Дайте денег на Первый ИИ. Он заменит министров. Министры против, но они и должны быть против.",
+      "requires": { "minSectors": { "science": 9 } },
+      "choices": [
+        {
+          "label": "Строим Первый ИИ",
+          "effects": { "resources": { "money": -700 }, "modifiers": { "special": { "buildWonder": "wonder_first_ai" } } }
+        },
+        { "label": "Министры дешевле", "effects": {} }
+      ],
+      "weight": 2
+    }
+  ]
+}

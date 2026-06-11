@@ -149,12 +149,14 @@ export function loadContent(contentDir: string): GameContent {
       const w = statuses.get(id);
       if (w && w.type !== 'wonder') problems.push(`${where}: "${id}" в exclusiveWonders — не чудо (type=${w.type})`);
     }
-    if (!advisorDecks.has(c.advisorsRef)) {
-      problems.push(`${where}: advisorsRef "${c.advisorsRef}" не найден`);
-    } else {
-      const deck = advisorDecks.get(c.advisorsRef)!;
-      if (deck.country && deck.country !== c.id) {
-        problems.push(`${where}: колода ${c.advisorsRef} принадлежит стране "${deck.country}"`);
+    if (c.advisorsRef) {
+      if (!advisorDecks.has(c.advisorsRef)) {
+        problems.push(`${where}: advisorsRef "${c.advisorsRef}" не найден`);
+      } else {
+        const deck = advisorDecks.get(c.advisorsRef)!;
+        if (deck.country && deck.country !== c.id) {
+          problems.push(`${where}: колода ${c.advisorsRef} принадлежит стране "${deck.country}"`);
+        }
       }
     }
   }

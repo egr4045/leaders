@@ -13,6 +13,7 @@ import {
   deserializeWorld,
   tick,
   computeForbes,
+  buildWonder,
   TradeError,
   type SpyActionKind,
 } from '@leaders/engine';
@@ -434,6 +435,13 @@ export class RoomsService {
     if (!card || card.id !== cardId) throw new Error('Эта карта уже не актуальна');
 
     const s = room.world.countries.get(player.countryId)!;
+
+    // выбор может строить чудо — мировой ресурс, проверяем ДО применения эффектов
+    const wonderId = card.choices[choiceIndex]?.effects?.modifiers?.special?.buildWonder;
+    if (typeof wonderId === 'string') {
+      buildWonder(room.world, s, wonderId, this.content); // бросит, если занято/чужой эксклюзив
+    }
+
     applyChoice(s, card, choiceIndex, room.world.year, this.content);
     (room.choicesThisYear[player.countryId] ??= []).push({
       speaker: card.speaker,

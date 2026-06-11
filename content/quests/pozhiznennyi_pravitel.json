@@ -1,0 +1,7 @@
+{
+  "id": "pozhiznennyi_pravitel",
+  "name": "Пожизненный правитель",
+  "description": "Досидеть до конца партии без единого переворота.",
+  "check": { "years_in_power": ">=5", "coups": "==0" },
+  "forbesBonus": 4000
+}

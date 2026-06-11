@@ -121,7 +121,8 @@ export function tick(world: WorldState, content: GameContent): TickReport {
       wealthPerCapita * t.dovolstvo.wealthCoef -
       (golod ? t.dovolstvo.hungerPenalty : 0) -
       (s.inflation * 100 / 10) * t.dovolstvo.inflationPenalty -
-      s.repressionsThisYear * t.dovolstvo.repressionPenalty +
+      s.repressionsThisYear * t.dovolstvo.repressionPenalty -
+      t.dovolstvo.baselineDecay +
       eff.dovolstvoDrift;
     s.dovolstvo = clamp01_100(s.dovolstvo + delta);
     ev('dovolstvo', `Довольство: ${Math.round(s.dovolstvo)}/100`, true);

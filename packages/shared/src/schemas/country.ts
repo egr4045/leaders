@@ -42,8 +42,11 @@ export const CountrySchema = z
     uniqueWeaknesses: z.array(zId).default([]),
     /** чудеса, доступные только этой стране */
     exclusiveWonders: z.array(zId).default([]),
-    /** путь к колоде советников относительно content/, например "advisors/amerika.json" */
-    advisorsRef: z.string().min(1),
+    /**
+     * Уникальная колода страны, например "advisors/amerika.json" (опционально).
+     * Колоды с country: null — общие, раздаются всем странам автоматически.
+     */
+    advisorsRef: z.string().min(1).optional(),
     notes: z.string().optional(),
   })
   .strict();

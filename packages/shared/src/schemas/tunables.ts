@@ -89,6 +89,8 @@ export const TunablesSchema = z
         inflationPenalty: z.number().default(3),
         /** − за каждое репрессивное действие за год */
         repressionPenalty: z.number().default(5),
+        /** ежегодное «привыкание»: народ принимает хорошее как должное */
+        baselineDecay: z.number().default(4),
       })
       .default({}),
     coup: z

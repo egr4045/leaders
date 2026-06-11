@@ -1,0 +1,137 @@
+{
+  "country": null,
+  "cards": [
+    {
+      "id": "lagerya_obmena_opytom",
+      "speaker": "Глава тайной канцелярии",
+      "situation": "Несогласных всё больше. Предлагаю «лагеря обмена опытом»: и еду экономим, и опыт... обменивается.",
+      "choices": [
+        {
+          "label": "Посадить несогласных",
+          "effects": { "population": { "rabotyagi": -20 }, "resources": { "food": 60 }, "dovolstvo": -6, "modifiers": { "special": { "repression": 1 } } }
+        },
+        {
+          "label": "Принудработы за еду",
+          "effects": { "resources": { "money": 80, "food": 40 }, "dovolstvo": -4, "modifiers": { "special": { "repression": 1 } } }
+        },
+        { "label": "Пусть болтают", "effects": { "resources": { "influence": -5 } } }
+      ]
+    },
+    {
+      "id": "kult_lichnosti",
+      "speaker": "Придворный скульптор",
+      "situation": "Народу нужен ориентир. Например, ваша статуя. Высотой с инфляцию.",
+      "choices": [
+        {
+          "label": "Золотая статуя",
+          "effects": { "resources": { "money": -150, "gold": -10 }, "dovolstvo": 4 },
+          "addStatuses": ["law_kult_lichnosti"]
+        },
+        {
+          "label": "Скромный бюст в каждый двор",
+          "effects": { "resources": { "money": -60 }, "dovolstvo": 2 }
+        },
+        { "label": "Я и так в каждом телевизоре", "effects": { "sectors": { "smi": 0 } } }
+      ]
+    },
+    {
+      "id": "deficit_byudzheta",
+      "speaker": "Министр финансов",
+      "situation": "Денег нет. Варианты: напечатать, занять у соседей или признаться народу.",
+      "choices": [
+        {
+          "label": "Печатаем",
+          "effects": { "resources": { "money": 200 }, "modifiers": { "special": { "printedMoney": 200 } } }
+        },
+        {
+          "label": "Продать золотой запас",
+          "effects": { "resources": { "money": 150, "gold": -40 } }
+        },
+        { "label": "Признаться (вы держитесь)", "effects": { "dovolstvo": -5, "resources": { "influence": 5 } } }
+      ]
+    },
+    {
+      "id": "umniki_chemodan",
+      "speaker": "Ректор университета",
+      "situation": "Лучшие выпускники сидят на чемоданах: за границей зовут зарплатой, а у нас — повесткой в министерство.",
+      "choices": [
+        {
+          "label": "Гранты и лаборатории",
+          "effects": { "resources": { "money": -120 }, "sectors": { "science": 1 } }
+        },
+        {
+          "label": "Запретить выезд",
+          "effects": { "dovolstvo": -5, "modifiers": { "special": { "repression": 1 } } }
+        },
+        { "label": "Скатертью дорога", "effects": { "population": { "umniki": -15 } } }
+      ]
+    },
+    {
+      "id": "voennyy_byudzhet",
+      "speaker": "Генерал с картой",
+      "situation": "Сосед купил три танка. ТРИ. Если мы не купим пять — нас не будут уважать.",
+      "choices": [
+        {
+          "label": "Пять танков!",
+          "effects": { "resources": { "money": -180 }, "sectors": { "army": 1 } }
+        },
+        {
+          "label": "Нарисовать танки на парадах",
+          "effects": { "resources": { "money": -30 }, "sectors": { "smi": 1 } },
+          "delayed": { "years": 1, "effects": { "resources": { "influence": -10 } }, "description": "Иностранная разведка посчитала танки. Настоящие." }
+        },
+        { "label": "Дипломатия дешевле", "effects": { "resources": { "influence": -5 } } }
+      ]
+    },
+    {
+      "id": "urozhay_propal",
+      "speaker": "Министр сельского хозяйства",
+      "situation": "Засуха. Урожай сгорел. Зато отчёт о рекордном урожае уже готов.",
+      "choices": [
+        {
+          "label": "Закупить еду за рубежом",
+          "effects": { "resources": { "money": -150, "food": 200 } }
+        },
+        {
+          "label": "Показать отчёт по ТВ",
+          "effects": { "sectors": { "smi": 0 }, "dovolstvo": 2 },
+          "delayed": { "years": 1, "effects": { "dovolstvo": -8 }, "description": "Народ заметил, что рекордный урожай несъедобен." }
+        },
+        { "label": "Затянуть пояса", "effects": { "dovolstvo": -4, "resources": { "food": -50 } } }
+      ]
+    },
+    {
+      "id": "mediamagnat",
+      "speaker": "Жена",
+      "situation": "Дорогой, телеканал «Голос Правды» опять тебя критикует. Может, купим его? Мне идёт роль медиамагната.",
+      "choices": [
+        {
+          "label": "Купить канал жене",
+          "effects": { "resources": { "money": -200 }, "sectors": { "smi": 1 } }
+        },
+        {
+          "label": "Отключить им электричество",
+          "effects": { "dovolstvo": -3, "sectors": { "smi": 1 }, "modifiers": { "special": { "repression": 1 } } }
+        },
+        { "label": "Критика закаляет", "effects": { "resources": { "influence": 5 } } }
+      ]
+    },
+    {
+      "id": "tsifrovoy_rubezh",
+      "speaker": "Общественное мнение",
+      "situation": "Молодёжь смотрит заграничные мемы. Старцы требуют свой, суверенный интернет.",
+      "choices": [
+        {
+          "label": "Суверенный интернет",
+          "effects": { "resources": { "money": -100 } },
+          "addStatuses": ["law_tsifrovoy_suverenitet"]
+        },
+        {
+          "label": "Свой мемозавод",
+          "effects": { "resources": { "money": -50 }, "sectors": { "smi": 1 }, "dovolstvo": 2 }
+        },
+        { "label": "Мемы безвредны", "effects": {} }
+      ]
+    }
+  ]
+}

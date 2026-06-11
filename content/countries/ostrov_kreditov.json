@@ -4,6 +4,5 @@
   "startResources": { "money": 700, "gold": 300, "food": 150, "influence": 50 },
   "startPopulation": { "rabotyagi": 60, "umniki": 80, "siloviki": 30, "mediyshchiki": 50, "ministry": 15 },
   "startSectors": { "economy": 8, "science": 5, "army": 1, "smi": 5, "intel": 6 },
-  "advisorsRef": "advisors/default.json",
   "notes": "Офшорная гавань: золота много, армии нет, населения кот наплакал. Заглушка."
 }

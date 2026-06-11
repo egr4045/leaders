@@ -4,6 +4,5 @@
   "startResources": { "money": 850, "gold": 110, "food": 500, "influence": 65 },
   "startPopulation": { "rabotyagi": 320, "umniki": 120, "siloviki": 60, "mediyshchiki": 90, "ministry": 30 },
   "startSectors": { "economy": 7, "science": 5, "army": 3, "smi": 5, "intel": 6 },
-  "advisorsRef": "advisors/default.json",
   "notes": "Торговый перекрёсток: всё продаётся, всё покупается. Заглушка."
 }

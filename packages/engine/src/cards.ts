@@ -12,8 +12,15 @@ export function availableCards(
   country: Country,
   content: GameContent,
 ): AdvisorCard[] {
-  const deck = content.advisorDecks.get(country.advisorsRef);
-  if (!deck) return [];
+  // общие колоды (country: null) + уникальная колода страны
+  const pool: AdvisorCard[] = [];
+  for (const deck of content.advisorDecks.values()) {
+    if (deck.country == null) pool.push(...deck.cards);
+  }
+  if (country.advisorsRef) {
+    const own = content.advisorDecks.get(country.advisorsRef);
+    if (own) pool.push(...own.cards);
+  }
   const eff = aggregateModifiers(s, content);
 
   const lockedCards = new Set<string>();
@@ -23,7 +30,7 @@ export function availableCards(
     }
   }
 
-  return deck.cards.filter((card) => {
+  return pool.filter((card) => {
     if (lockedCards.has(card.id)) return false;
     if (card.once && s.usedCards.includes(card.id)) return false;
     for (const reqStatus of card.requires?.statuses ?? []) {

@@ -1,5 +1,13 @@
 {
   "game": { "years": 5, "playersMin": 6, "playersMax": 9 },
   "timers": { "cabinetSeconds": 600 },
-  "diplomacy": { "callsPerYear": 2 }
+  "diplomacy": { "callsPerYear": 2 },
+  "production": { "sciencePerSectorLevel": 200 },
+  "dovolstvo": {
+    "smiCoef": 0.6,
+    "wealthCoef": 0.15,
+    "foodSurplusCoef": 0.8,
+    "inflationPenalty": 4
+  },
+  "economy": { "ministerUpkeep": 3 }
 }

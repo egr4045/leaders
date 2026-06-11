@@ -4,6 +4,5 @@
   "startResources": { "money": 400, "gold": 250, "food": 400, "influence": 40 },
   "startPopulation": { "rabotyagi": 200, "umniki": 90, "siloviki": 110, "mediyshchiki": 50, "ministry": 25 },
   "startSectors": { "economy": 4, "science": 5, "army": 6, "smi": 4, "intel": 5 },
-  "advisorsRef": "advisors/default.json",
   "notes": "Сидит на золотых жилах в неприступных горах. Заглушка."
 }
