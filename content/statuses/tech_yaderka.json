@@ -1,0 +1,9 @@
+{
+  "id": "tech_yaderka",
+  "name": "Ядерка",
+  "type": "tech",
+  "description": "Аргумент последней инстанции на любых переговорах.",
+  "revocable": false,
+  "effects": { "sectors": { "army": 2 }, "modifiers": { "special": { "deterrence": true } } },
+  "triggers": ["news_yaderka"]
+}

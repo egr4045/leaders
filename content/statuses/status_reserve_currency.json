@@ -1,0 +1,7 @@
+{
+  "id": "status_reserve_currency",
+  "name": "Мировая резервная валюта",
+  "type": "state",
+  "description": "Госдолг как чит: весь мир хранит сбережения в нашей валюте.",
+  "effects": { "modifiers": { "special": { "reserveCurrency": true }, "forbesLegacy": 50 } }
+}

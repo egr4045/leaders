@@ -1,0 +1,126 @@
+import { z } from 'zod';
+
+/**
+ * Все настраиваемые коэффициенты игры. Любое поле можно опустить в
+ * content/tunables.json — подставится дефолт.
+ */
+export const TunablesSchema = z
+  .object({
+    game: z
+      .object({
+        /** количество лет (раундов) в партии */
+        years: z.number().int().min(1).default(5),
+        playersMin: z.number().int().default(6),
+        playersMax: z.number().int().default(9),
+      })
+      .default({}),
+    timers: z
+      .object({
+        /** фаза Кабинета, секунд (≈10 минут = 1 год) */
+        cabinetSeconds: z.number().default(600),
+        /** комментарий каждого игрока в ООН, секунд */
+        unCommentSecondsPerPlayer: z.number().default(30),
+        /** свободные дебаты в ООН, секунд */
+        unDebateSeconds: z.number().default(120),
+        /** голосование ООН, секунд */
+        unVoteSeconds: z.number().default(60),
+        /** показ итогов года, секунд */
+        resultsSeconds: z.number().default(45),
+        /** максимальная пауза на реконнект, секунд */
+        reconnectPauseSecondsMax: z.number().default(120),
+      })
+      .default({}),
+    diplomacy: z
+      .object({
+        /** лимит инициированных звонков за год */
+        callsPerYear: z.number().int().default(2),
+      })
+      .default({}),
+    economy: z
+      .object({
+        /** потребление еды на душу населения в год */
+        foodPerCapita: z.number().default(1),
+        /** базовая инфляция в год (доля) */
+        inflationBase: z.number().default(0.03),
+        /** прирост инфляции на каждые 100 напечатанных денег */
+        inflationPerPrinted100: z.number().default(0.01),
+        /** прирост инфляции от санкций ООН (за каждую активную) */
+        inflationPerSanction: z.number().default(0.02),
+        /** снижение инфляции за каждый уровень Экономики */
+        inflationEconomyRelief: z.number().default(0.004),
+        /** содержание одного министра в год, денег */
+        ministerUpkeep: z.number().default(10),
+        /** науч. множитель за уровень Науки (доля к выработке) */
+        scienceMultPerLevel: z.number().default(0.06),
+      })
+      .default({}),
+    production: z
+      .object({
+        /** базовая выработка денег одним работягой в год */
+        moneyPerRabotyaga: z.number().default(1),
+        /** базовая добыча еды одним работягой в год */
+        foodPerRabotyaga: z.number().default(1.2),
+        /** очки науки с одного умника в год */
+        sciencePerUmnik: z.number().default(1),
+        /** влияние с одного медийщика в год */
+        influencePerMediyshchik: z.number().default(0.5),
+      })
+      .default({}),
+    dovolstvo: z
+      .object({
+        start: z.number().default(60),
+        /** + за избыток еды (на каждые 10% избытка) */
+        foodSurplusCoef: z.number().default(1),
+        /** + за уровень СМИ */
+        smiCoef: z.number().default(1.5),
+        /** + за богатство (на каждые 100 денег на душу) */
+        wealthCoef: z.number().default(0.5),
+        /** − при голоде */
+        hungerPenalty: z.number().default(15),
+        /** − на каждые 10% годовой инфляции */
+        inflationPenalty: z.number().default(3),
+        /** − за каждое репрессивное действие за год */
+        repressionPenalty: z.number().default(5),
+      })
+      .default({}),
+    coup: z
+      .object({
+        /** порог довольства, ниже которого возможен переворот */
+        dovolstvoThreshold: z.number().default(15),
+        /** минимальная доля силовиков в населении, страхующая режим */
+        silovikiMinShare: z.number().default(0.05),
+      })
+      .default({}),
+    population: z
+      .object({
+        /** базовый прирост населения в год (доля) */
+        baseGrowth: z.number().default(0.03),
+        /** убыль при голоде (доля) */
+        hungerDecline: z.number().default(0.08),
+        /** эмиграция умников при репрессиях (доля за каждое репрессивное действие) */
+        umnikiFlightPerRepression: z.number().default(0.05),
+      })
+      .default({}),
+    forbes: z
+      .object({
+        /** вес золота против денег (золото стабильно) */
+        goldWeight: z.number().default(3),
+        /** общий вес «легаси»-вкладов статусов */
+        legacyWeight: z.number().default(1),
+      })
+      .default({}),
+    spy: z
+      .object({
+        /** базовый шанс успеха операции при равной разведке */
+        baseSuccess: z.number().default(0.5),
+        /** ± к шансу за каждый уровень разницы Разведка атакующего vs защита цели */
+        perLevelDelta: z.number().default(0.08),
+        /** во сколько защита цели весит СМИ относительно Разведки */
+        defenseSmiWeight: z.number().default(0.5),
+      })
+      .default({}),
+  })
+  .strict()
+  .default({});
+
+export type Tunables = z.infer<typeof TunablesSchema>;

@@ -1,0 +1,13 @@
+{
+  "id": "imperiya",
+  "name": "Империя",
+  "startResources": { "money": 600, "gold": 120, "food": 600, "influence": 80 },
+  "startPopulation": { "rabotyagi": 350, "umniki": 100, "siloviki": 220, "mediyshchiki": 150, "ministry": 60 },
+  "startSectors": { "economy": 5, "science": 6, "army": 8, "smi": 8, "intel": 9 },
+  "startStatuses": [],
+  "uniquePerks": [],
+  "uniqueWeaknesses": ["high_minister_upkeep"],
+  "exclusiveWonders": [],
+  "advisorsRef": "advisors/imperiya.json",
+  "notes": "Сильные силовики и разведка, дорогой аппарат, утечка умников."
+}

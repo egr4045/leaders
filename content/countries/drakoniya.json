@@ -1,0 +1,9 @@
+{
+  "id": "drakoniya",
+  "name": "Дракония",
+  "startResources": { "money": 800, "gold": 80, "food": 700, "influence": 70 },
+  "startPopulation": { "rabotyagi": 500, "umniki": 150, "siloviki": 130, "mediyshchiki": 100, "ministry": 50 },
+  "startSectors": { "economy": 8, "science": 7, "army": 7, "smi": 7, "intel": 7 },
+  "advisorsRef": "advisors/default.json",
+  "notes": "Фабрика мира: много работяг, мощная экономика. Заглушка."
+}

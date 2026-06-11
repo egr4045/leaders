@@ -1,0 +1,13 @@
+{
+  "id": "law_voennoe_polozhenie",
+  "name": "Военное положение",
+  "type": "law",
+  "description": "Временно. Лет на двадцать.",
+  "cost": { "influence": 20 },
+  "minMinistry": 10,
+  "revocable": true,
+  "effects": {
+    "sectors": { "army": 1 },
+    "modifiers": { "dovolstvoDrift": -2, "emigration": { "umniki": 0.07 } }
+  }
+}

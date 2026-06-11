@@ -1,0 +1,13 @@
+{
+  "id": "law_privatizatsiya",
+  "name": "Залоговая приватизация",
+  "type": "law",
+  "description": "Заводы — эффективным собственникам. Список собственников — у гаранта.",
+  "cost": { "money": 30 },
+  "minMinistry": 10,
+  "revocable": true,
+  "effects": {
+    "resources": { "money": 200 },
+    "modifiers": { "dovolstvoDrift": -1, "special": { "oligarchy": 1 } }
+  }
+}

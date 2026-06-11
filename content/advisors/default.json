@@ -1,0 +1,74 @@
+{
+  "country": null,
+  "cards": [
+    {
+      "id": "rekordny_urozhay",
+      "speaker": "Министр сельского хозяйства",
+      "situation": "Урожай рекордный! Правда, хранить негде — элеваторы ещё дед строил.",
+      "choices": [
+        {
+          "label": "Построить элеваторы",
+          "effects": { "resources": { "money": -50, "food": 100 } }
+        },
+        {
+          "label": "Продать за рубеж",
+          "effects": { "resources": { "money": 120 } }
+        },
+        {
+          "label": "Раздать народу",
+          "effects": { "resources": { "food": 50 }, "dovolstvo": 5 }
+        }
+      ]
+    },
+    {
+      "id": "reforma_obrazovaniya",
+      "speaker": "Общественное мнение",
+      "situation": "Учителя бегут торговать на базар: там платят. Школы держатся на энтузиазме и скотче.",
+      "choices": [
+        {
+          "label": "Поднять зарплаты",
+          "effects": { "resources": { "money": -80 }, "sectors": { "science": 1 } }
+        },
+        {
+          "label": "Оптимизировать (сократить)",
+          "effects": { "resources": { "money": 40 }, "modifiers": { "emigration": { "umniki": 0.05 } } }
+        },
+        { "label": "Скотч пока держит", "effects": { "dovolstvo": -2 } }
+      ]
+    },
+    {
+      "id": "card_pyatiletka",
+      "speaker": "Председатель Госплана",
+      "situation": "Товарищ лидер! Предлагаю пятилетку за три года. Цифры уже нарисованы.",
+      "requires": { "statuses": ["regime_kommunizm"] },
+      "choices": [
+        {
+          "label": "Гнать план",
+          "effects": { "resources": { "money": 150, "food": 80 }, "dovolstvo": -5 }
+        },
+        {
+          "label": "Приписки и рапорты",
+          "effects": { "resources": { "influence": 10 } },
+          "delayed": { "years": 2, "effects": { "dovolstvo": -10 }, "description": "Приписки вскрылись: склады пустые, рапорты красивые." }
+        },
+        { "label": "План по силам", "effects": { "dovolstvo": 1 } }
+      ]
+    },
+    {
+      "id": "strannyy_sovetnik",
+      "speaker": "Случайное воспоминание",
+      "situation": "Во сне приснилось: золото надёжнее бумаги. К чему бы это?",
+      "choices": [
+        {
+          "label": "Скупить золото",
+          "effects": { "resources": { "money": -100, "gold": 30 } }
+        },
+        {
+          "label": "Продать золото — деньги нужнее",
+          "effects": { "resources": { "money": 90, "gold": -30 } }
+        },
+        { "label": "Сны — к дождю", "effects": {} }
+      ]
+    }
+  ]
+}

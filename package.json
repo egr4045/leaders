@@ -11,6 +11,6 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "content:validate": "pnpm -F @leaders/shared content:validate"
+    "content:validate": "pnpm -F @leaders/shared build && pnpm -F @leaders/engine content:validate"
   }
 }

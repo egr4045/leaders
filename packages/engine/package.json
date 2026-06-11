@@ -15,12 +15,15 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "content:validate": "tsc -p tsconfig.json && node dist/content/validate-cli.js ../../content"
   },
   "dependencies": {
-    "@leaders/shared": "workspace:*"
+    "@leaders/shared": "workspace:*",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/node": "^22.19.20",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }

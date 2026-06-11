@@ -1,0 +1,8 @@
+{
+  "id": "eda_v_dostatke",
+  "name": "Еда в достатке",
+  "type": "state",
+  "description": "Запасы еды покрывают потребление с избытком.",
+  "auto": "food_surplus",
+  "effects": { "modifiers": { "dovolstvoDrift": 2 } }
+}

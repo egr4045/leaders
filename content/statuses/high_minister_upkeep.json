@@ -1,0 +1,7 @@
+{
+  "id": "high_minister_upkeep",
+  "name": "Дорогие министры",
+  "type": "state",
+  "description": "Аппарат привык к лоббистам, джетам и командировкам на саммиты.",
+  "effects": { "modifiers": { "special": { "ministerUpkeepMult": 2 } } }
+}

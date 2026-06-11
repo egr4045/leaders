@@ -1,0 +1,9 @@
+{
+  "id": "bananovaya_respublika",
+  "name": "Банановая Республика",
+  "startResources": { "money": 200, "gold": 10, "food": 900, "influence": 20 },
+  "startPopulation": { "rabotyagi": 400, "umniki": 30, "siloviki": 90, "mediyshchiki": 30, "ministry": 25 },
+  "startSectors": { "economy": 3, "science": 2, "army": 4, "smi": 3, "intel": 4 },
+  "advisorsRef": "advisors/default.json",
+  "notes": "Еды навалом, денег нет, перевороты — национальный спорт. Заглушка."
+}

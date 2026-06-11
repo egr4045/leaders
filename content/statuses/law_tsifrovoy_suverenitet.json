@@ -1,0 +1,13 @@
+{
+  "id": "law_tsifrovoy_suverenitet",
+  "name": "Цифровой суверенитет",
+  "type": "law",
+  "description": "Свой интернет, с блэкджеком и замедлением. Враньё прикрывать проще.",
+  "cost": { "money": 60, "influence": 10 },
+  "minMinistry": 20,
+  "revocable": true,
+  "effects": {
+    "sectors": { "intel": 1 },
+    "modifiers": { "scienceMult": -0.1, "emigration": { "umniki": 0.05 } }
+  }
+}

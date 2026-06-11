@@ -1,0 +1,7 @@
+{
+  "id": "skromny_milliarder",
+  "name": "Скромный миллиардер",
+  "description": "Накопить 3000 денег (в мировых ценах) и ни разу не попасть под санкции.",
+  "check": { "money_real": ">=3000", "sanctions_received": "==0" },
+  "forbesBonus": 4500
+}

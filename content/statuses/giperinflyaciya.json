@@ -1,0 +1,9 @@
+{
+  "id": "giperinflyaciya",
+  "name": "Гиперинфляция",
+  "type": "state",
+  "description": "Деньги превращаются в фантики на глазах.",
+  "auto": "giperinflyaciya",
+  "effects": { "modifiers": { "dovolstvoDrift": -4 } },
+  "triggers": ["news_giperinflyaciya"]
+}

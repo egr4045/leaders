@@ -1,0 +1,9 @@
+{
+  "id": "golod",
+  "name": "Голод",
+  "type": "state",
+  "description": "Еды не хватает: население убывает, недовольство растёт.",
+  "auto": "golod",
+  "effects": { "modifiers": { "emigration": { "rabotyagi": 0.03, "umniki": 0.05 } } },
+  "triggers": ["news_golod"]
+}

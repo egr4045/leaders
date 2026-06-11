@@ -1,0 +1,9 @@
+{
+  "id": "evrosad",
+  "name": "Евросад",
+  "startResources": { "money": 900, "gold": 90, "food": 650, "influence": 90 },
+  "startPopulation": { "rabotyagi": 250, "umniki": 180, "siloviki": 70, "mediyshchiki": 110, "ministry": 80 },
+  "startSectors": { "economy": 7, "science": 7, "army": 4, "smi": 7, "intel": 6 },
+  "advisorsRef": "advisors/default.json",
+  "notes": "Цветущий сад с гигантской бюрократией: министров больше, чем силовиков. Заглушка."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "wonder_first_youtube",
+  "name": "Первый YouTube",
+  "type": "wonder",
+  "description": "Весь мир смотрит ваши ролики. И вашу рекламу.",
+  "effects": { "sectors": { "smi": 2 }, "modifiers": { "forbesLegacy": 30 } },
+  "triggers": ["news_wonder"]
+}

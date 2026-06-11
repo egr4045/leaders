@@ -1,0 +1,13 @@
+{
+  "id": "amerika",
+  "name": "Америка",
+  "startResources": { "money": 1000, "gold": 50, "food": 800, "influence": 100 },
+  "startPopulation": { "rabotyagi": 300, "umniki": 200, "siloviki": 150, "mediyshchiki": 120, "ministry": 40 },
+  "startSectors": { "economy": 7, "science": 8, "army": 9, "smi": 9, "intel": 8 },
+  "startStatuses": ["status_reserve_currency"],
+  "uniquePerks": ["inflation_immunity"],
+  "uniqueWeaknesses": ["high_minister_upkeep"],
+  "exclusiveWonders": ["wonder_first_ai"],
+  "advisorsRef": "advisors/amerika.json",
+  "notes": "Иммунитет к инфляции из-за статуса мировой валюты (госдолг как чит)."
+}

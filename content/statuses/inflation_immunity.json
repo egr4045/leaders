@@ -1,0 +1,7 @@
+{
+  "id": "inflation_immunity",
+  "name": "Иммунитет к инфляции",
+  "type": "state",
+  "description": "Печатает мировую валюту — инфляцию экспортирует соседям.",
+  "effects": { "modifiers": { "special": { "inflationImmunity": true } } }
+}

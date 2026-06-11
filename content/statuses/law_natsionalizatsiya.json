@@ -1,0 +1,13 @@
+{
+  "id": "law_natsionalizatsiya",
+  "name": "Национализация",
+  "type": "law",
+  "description": "Заводы — государству. Олигархи — в аэропорт.",
+  "cost": { "money": 50, "influence": 15 },
+  "minMinistry": 20,
+  "revocable": true,
+  "effects": {
+    "resources": { "money": 150 },
+    "modifiers": { "emigration": { "umniki": 0.05 }, "special": { "noRichTrend": 1 } }
+  }
+}

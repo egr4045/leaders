@@ -1,0 +1,7 @@
+{
+  "id": "dva_chuda",
+  "name": "Войти в историю",
+  "description": "Построить два чуда света — пусть помнят.",
+  "check": { "wonders_built": ">=2" },
+  "forbesBonus": 4000
+}

@@ -1,0 +1,10 @@
+{
+  "id": "law_obyazatelnoe_blagochestie",
+  "name": "Обязательное благочестие",
+  "type": "law",
+  "description": "Духовность по расписанию: вместо ремонта труб — молебен о трубах.",
+  "cost": { "money": 25, "influence": 10 },
+  "minMinistry": 15,
+  "revocable": true,
+  "effects": { "modifiers": { "dovolstvoDrift": 1, "scienceMult": -0.05 } }
+}

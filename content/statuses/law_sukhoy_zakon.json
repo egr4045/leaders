@@ -1,0 +1,10 @@
+{
+  "id": "law_sukhoy_zakon",
+  "name": "Сухой закон",
+  "type": "law",
+  "description": "Народ трезвеет и злеет; подпольный рынок расцветает.",
+  "cost": { "money": 30 },
+  "minMinistry": 15,
+  "revocable": true,
+  "effects": { "modifiers": { "dovolstvoDrift": -2, "outputMult": { "rabotyagi": 1.1 } } }
+}

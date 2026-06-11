@@ -1,0 +1,11 @@
+{
+  "id": "law_zapret_tufel",
+  "name": "Запрет туфель",
+  "type": "law",
+  "description": "Абсурдный культур-войновый закон: отвлекает от дефолта, бесит граждан.",
+  "cost": { "money": 20 },
+  "minMinistry": 10,
+  "revocable": true,
+  "effects": { "modifiers": { "dovolstvoDrift": -1, "special": { "absurdLaw": 1 } } },
+  "triggers": ["news_absurd_law"]
+}

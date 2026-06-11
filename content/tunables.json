@@ -1,0 +1,5 @@
+{
+  "game": { "years": 5, "playersMin": 6, "playersMax": 9 },
+  "timers": { "cabinetSeconds": 600 },
+  "diplomacy": { "callsPerYear": 2 }
+}
