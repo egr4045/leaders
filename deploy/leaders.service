@@ -1,0 +1,17 @@
+[Unit]
+Description=Leaders game server (NestJS)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/leaders/apps/server
+ExecStart=/usr/bin/node dist/main.js
+Restart=always
+RestartSec=3
+Environment=NODE_ENV=production
+# минимум игроков для старта; убери, когда играете полной компанией 6-9
+Environment=PLAYERS_MIN=2
+
+[Install]
+WantedBy=multi-user.target
