@@ -141,6 +141,18 @@ export const TunablesSchema = z
         ordersPerYear: z.number().int().default(2),
       })
       .default({}),
+    cabinet: z
+      .object({
+        /** максимум карточек советника за один раунд */
+        cardsPerTurn: z.number().int().default(5),
+      })
+      .default({}),
+    budget: z
+      .object({
+        /** накопленных ден. инвестиций для роста сектора на 1 уровень */
+        investPerLevel: z.number().default(1000),
+      })
+      .default({}),
   })
   .strict()
   .default({});

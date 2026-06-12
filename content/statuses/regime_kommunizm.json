@@ -5,18 +5,38 @@
   "description": "Деньги — общие. В основном — общие у государства.",
   "exclusiveGroup": "regime",
   "requires": {
-    "statuses": ["law_natsionalizatsiya", "law_gosplan"],
-    "conditions": ["no_rich"]
+    "statuses": [
+      "law_natsionalizatsiya",
+      "law_gosplan"
+    ],
+    "conditions": [
+      "no_rich"
+    ]
   },
   "effects": {
     "modifiers": {
       "inflationDelta": -0.05,
       "scienceMult": -0.15,
-      "emigration": { "umniki": 0.2 },
-      "special": { "moneyMode": "shared" }
+      "emigration": {
+        "umniki": 0.2
+      },
+      "special": {
+        "moneyMode": "shared"
+      }
     }
   },
-  "unlocks": { "advisorCards": ["card_pyatiletka"] },
-  "locks": { "statuses": ["regime_dikiy_kapitalizm"] },
-  "triggers": ["news_regime_change"]
+  "unlocks": {
+    "advisorCards": [
+      "card_pyatiletka"
+    ]
+  },
+  "locks": {
+    "statuses": [
+      "regime_dikiy_kapitalizm"
+    ]
+  },
+  "triggers": [
+    "news_regime_change"
+  ],
+  "mediaIsLiberal": false
 }

@@ -52,6 +52,8 @@ export interface CountryState {
   questId: string | null;
   /** публично заявленный Форбс (блеф); null = ещё не заявлял */
   declaredForbes: number | null;
+  /** накопленные инвестиции по секторам (бюджетный механик) */
+  sectorInvestment: Partial<Record<SectorKey, number>>;
 }
 
 export interface WorldState {
@@ -90,6 +92,7 @@ export function createCountryState(country: Country, questId: string | null = nu
     lastFoodConsumption: 0,
     questId,
     declaredForbes: null,
+    sectorInvestment: {},
   };
 }
 

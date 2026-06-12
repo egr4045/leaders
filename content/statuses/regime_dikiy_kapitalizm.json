@@ -4,14 +4,30 @@
   "type": "regime",
   "description": "Невидимая рука рынка. Очень невидимая и очень в чьём-то кармане.",
   "exclusiveGroup": "regime",
-  "requires": { "statuses": ["law_privatizatsiya"], "conditions": ["rich_exist"] },
+  "requires": {
+    "statuses": [
+      "law_privatizatsiya"
+    ],
+    "conditions": [
+      "rich_exist"
+    ]
+  },
   "effects": {
     "modifiers": {
-      "outputMult": { "rabotyagi": 1.25 },
+      "outputMult": {
+        "rabotyagi": 1.25
+      },
       "dovolstvoDrift": -2,
       "inflationDelta": 0.02
     }
   },
-  "locks": { "statuses": ["regime_kommunizm"] },
-  "triggers": ["news_regime_change"]
+  "locks": {
+    "statuses": [
+      "regime_kommunizm"
+    ]
+  },
+  "triggers": [
+    "news_regime_change"
+  ],
+  "mediaIsLiberal": true
 }

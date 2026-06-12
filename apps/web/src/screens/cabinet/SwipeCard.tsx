@@ -4,10 +4,6 @@ import type { AdvisorCard } from '@leaders/shared';
 
 const SWIPE_PX = 110;
 
-/**
- * Свайп-карточка как в Reigns: влево = вариант 0, вправо = вариант 1,
- * вверх = вариант 2 (если есть). Кнопки-альтернативы — для десктопа и доступности.
- */
 export function SwipeCard({
   card,
   onChoose,
@@ -38,7 +34,7 @@ export function SwipeCard({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex w-full flex-col items-center gap-4">
       <motion.div
         key={card.id}
         drag={!busy}
@@ -66,7 +62,7 @@ export function SwipeCard({
         </div>
         <p className="min-h-28 text-lg leading-snug">{card.situation}</p>
         <div className="mt-3 text-center text-xs text-slate-500">
-          свайп ← → {card.choices[2] ? '↑' : ''} или кнопки
+          свайп ← → {card.choices[2] ? '↑' : ''} или кнопки ниже
         </div>
       </motion.div>
 
@@ -76,7 +72,7 @@ export function SwipeCard({
             key={i}
             disabled={busy}
             onClick={() => choose(i)}
-            className="rounded-xl border border-slate-700 px-4 py-2.5 text-left text-sm hover:border-amber-400 disabled:opacity-40"
+            className="rounded-xl border border-slate-700 px-4 py-2.5 text-left text-sm transition-colors hover:border-amber-400 disabled:opacity-40"
           >
             <span className="mr-2 text-slate-500">{i === 0 ? '←' : i === 1 ? '→' : '↑'}</span>
             {c.label}

@@ -1,20 +1,33 @@
 {
-  "game": { "years": 5, "playersMin": 6, "playersMax": 9 },
-  "timers": {
-    "cabinetSeconds": 120,
-    "unSummarySeconds": 25,
-    "unCommentSecondsPerPlayer": 10,
-    "unDebateSeconds": 30,
-    "unVoteSeconds": 30,
-    "resultsSeconds": 20
+  "game": {
+    "years": 5,
+    "playersMin": 6,
+    "playersMax": 9
   },
-  "diplomacy": { "callsPerYear": 2 },
-  "production": { "sciencePerSectorLevel": 200 },
+  "timers": {
+    "cabinetSeconds": 480,
+    "unSummarySeconds": 60,
+    "unCommentSecondsPerPlayer": 30,
+    "unDebateSeconds": 120,
+    "unVoteSeconds": 60,
+    "resultsSeconds": 45
+  },
+  "diplomacy": {
+    "callsPerYear": 99
+  },
+  "production": {
+    "sciencePerSectorLevel": 200
+  },
   "dovolstvo": {
     "smiCoef": 0.6,
     "wealthCoef": 0.15,
     "foodSurplusCoef": 0.8,
     "inflationPenalty": 4
   },
-  "economy": { "ministerUpkeep": 3 }
+  "economy": {
+    "ministerUpkeep": 3
+  },
+  "cabinet": {
+    "cardsPerTurn": 5
+  }
 }

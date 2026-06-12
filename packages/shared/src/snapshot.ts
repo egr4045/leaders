@@ -21,6 +21,7 @@ export interface PlayerInfo {
   countryName: string | null;
   connected: boolean;
   isHost: boolean;
+  isBot?: boolean;
 }
 
 /** Что страна показывает всем (раздел 3: скрытое НИКОГДА не уходит чужим клиентам). */
@@ -58,6 +59,21 @@ export interface PrivateCountryView {
   currentCard: AdvisorCard | null;
   /** сколько звонков-инициаций осталось в этом году */
   callsLeft: number;
+  /** сколько карточек осталось взять в этом раунде */
+  cardsLeft: number;
+  /** true = активный режим имеет независимые (частные) СМИ */
+  smiIsLiberal: boolean;
+  /** прогноз на следующий тик (без ООН-эффектов) */
+  projection: YearProjection;
+}
+
+export interface YearProjection {
+  moneyIncome: number;
+  foodBalance: number;
+  inflationPct: number;
+  dovolstvoDelta: number;
+  scienceGain: number;
+  coupRisk: boolean;
 }
 
 export interface PauseInfo {
@@ -66,7 +82,12 @@ export interface PauseInfo {
   waitingFor: string[];
   /** unix ms, когда пауза закончится принудительно */
   resumeDeadline: number | null;
+  /** true = перерыв объявлен председателем (не блокирует экран, нет дедлайна) */
+  manual: boolean;
 }
+
+/** Раскладка видео на экране ООН: auto = по фазе, иначе принудительно председателем. */
+export type UnLayout = 'auto' | 'spotlight' | 'grid';
 
 /** Снапшот комнаты, персональный для каждого игрока. */
 export interface RoomSnapshot {
@@ -75,15 +96,23 @@ export interface RoomSnapshot {
   /** unix ms конца фазы (для таймера на клиенте); null в лобби/финале */
   phaseEndsAt: number | null;
   pause: PauseInfo;
+  /** таймер истёк, ждём нажатия хоста «Продолжить» */
+  waitingContinue: boolean;
+  /** сколько игроков нажали «Готов» в кабинете */
+  readyCount: number;
+  /** сколько игроков всего (без ботов) */
+  readyTotal: number;
   year: number;
   totalYears: number;
   players: PlayerInfo[];
   /** свободные страны (в лобби) */
-  availableCountries: { id: string; name: string }[];
+  availableCountries: { id: string; name: string; description?: string }[];
   you: PrivateCountryView | null;
   others: PublicCountryView[];
   /** кто сейчас говорит в круге комментариев ООН */
   currentSpeakerId: string | null;
+  /** раскладка видео ООН, выбранная председателем ('auto' = по фазе) */
+  unLayout: UnLayout;
   /** сделки с участием вашей страны (ящик предложений) */
   offers: TradeOfferView[];
   /** сводка новостей этого года по странам (уже с искажениями шпионажа) */

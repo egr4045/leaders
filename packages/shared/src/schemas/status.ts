@@ -65,6 +65,8 @@ export const StatusSchema = z
     minMinistry: z.number().int().nonnegative().optional(),
     /** можно ли отменить (законы — да по умолчанию, технологии — нет) */
     revocable: z.boolean().optional(),
+    /** для режимов: true = независимые (либеральные) СМИ, false = провластные */
+    mediaIsLiberal: z.boolean().optional(),
   })
   .strict();
 

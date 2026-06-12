@@ -2,11 +2,11 @@ import { useState } from 'react';
 import type { PrivateCountryView, PublicCountryView, TradeOfferView, TradeSidePayload } from '@leaders/shared';
 import { useGame } from '../../lib/useGame';
 
-const RES: { key: string; label: string }[] = [
-  { key: 'money', label: '💰 Деньги' },
-  { key: 'gold', label: '🥇 Золото' },
-  { key: 'food', label: '🌾 Еда' },
-  { key: 'influence', label: '🗳 Влияние' },
+const RES: { key: string; label: string; short: string }[] = [
+  { key: 'money', label: '💰 Деньги', short: 'ден.' },
+  { key: 'gold', label: '🥇 Золото', short: 'зол.' },
+  { key: 'food', label: '🌾 Еда', short: 'ед.' },
+  { key: 'influence', label: '🗳 Влияние', short: 'влин.' },
 ];
 const POPS: { key: string; label: string }[] = [
   { key: 'rabotyagi', label: 'Работяги' },
@@ -84,13 +84,13 @@ function sideText(s: TradeSidePayload): string {
   const parts: string[] = [];
   for (const r of RES) {
     const v = (s.resources as Record<string, number> | undefined)?.[r.key];
-    if (v) parts.push(`${r.label.split(' ')[0]}${v}`);
+    if (v) parts.push(`${v} ${r.short}`);
   }
   for (const p of POPS) {
     const v = (s.population as Record<string, number> | undefined)?.[p.key];
-    if (v) parts.push(`${p.label}×${v}`);
+    if (v) parts.push(`${p.label} ×${v}`);
   }
-  if (s.statuses?.length) parts.push(`техи: ${s.statuses.join(',')}`);
+  if (s.statuses?.length) parts.push(`техи: ${s.statuses.join(', ')}`);
   if (s.promise) parts.push(`«${s.promise}»`);
   return parts.length ? parts.join(', ') : 'ничего';
 }
@@ -158,9 +158,9 @@ export function TradePanel({
               <div className="mb-1 text-xs font-semibold uppercase text-amber-400">Вам предлагают</div>
               {incoming.map((o) => (
                 <div key={o.id} className="mb-2 rounded-lg border border-amber-700/40 p-2 text-xs">
-                  <b>{o.fromName}</b> отдаёт: {sideText(o.give)}
-                  <br />
-                  взамен хочет: {sideText(o.take)}
+                  <div className="mb-1 font-semibold text-amber-300">{o.fromName}</div>
+                  <div>Предлагает: <span className="text-emerald-300">{sideText(o.give)}</span></div>
+                  <div>Хочет взамен: <span className="text-red-300">{sideText(o.take)}</span></div>
                   <div className="mt-1 flex gap-2">
                     <button onClick={() => void respond(o.id, true)} className="rounded bg-emerald-600 px-3 py-1 font-semibold">
                       Принять

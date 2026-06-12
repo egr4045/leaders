@@ -5,6 +5,8 @@ import { SocketEvents, type GamePhase } from '@leaders/shared';
 import {
   applyChoice,
   applyTrade,
+  aggregateModifiers,
+  effectiveSector,
   createWorld,
   drawCard,
   makeRng,
@@ -14,6 +16,7 @@ import {
   tick,
   computeForbes,
   buildWonder,
+  WonderError,
   TradeError,
   type SpyActionKind,
 } from '@leaders/engine';
@@ -88,6 +91,12 @@ export class RoomsService {
       speakerIdx: 0,
       rngNonce: 0,
       createdAt: Date.now(),
+      waitingContinue: false,
+      cardsChosenThisYear: {},
+      readyPlayerIds: [],
+      sectorBudget: {},
+      manualPause: false,
+      unLayout: 'auto',
     };
     this.rooms.set(code, room);
     this.timers.set(code, { botTimers: [] });
@@ -200,15 +209,27 @@ export class RoomsService {
 
   enterPhase(room: RoomState, phase: GamePhase) {
     room.phase = phase;
+    room.waitingContinue = false;
     this.logger.log(`[${room.code}] фаза → ${phase} (год ${room.world?.year ?? '-'})`);
 
     if (phase === 'cabinet') {
+      room.cardsChosenThisYear = {};
+      room.readyPlayerIds = [];
       // новый год: лимиты, первая карта каждому
       for (const p of room.players) {
         if (!p.countryId || !room.world) continue;
         room.callsLeft[p.countryId] = this.content.tunables.diplomacy.callsPerYear;
         room.spyOrdersLeft[p.countryId] = this.content.tunables.spy.ordersPerYear;
         this.dealCard(room, p.countryId);
+      }
+      // туториал в первый год
+      if (room.world?.year === 1) {
+        setTimeout(() => {
+          this.server?.to(room.code).emit('game:announcement', {
+            title: '🏛 Добро пожаловать в кабинет',
+            text: 'Выслушайте советников и принимайте решения. Занимайтесь дипломатией, шпионажем и торговлей. Когда будете готовы — нажмите «Готов».',
+          });
+        }, 1500);
       }
     }
     if (phase === 'un_comments') {
@@ -247,7 +268,158 @@ export class RoomsService {
       this.nextSpeaker(room);
       return;
     }
+    // кабинет и голосование — автоматический переход
+    if (room.phase === 'cabinet' || room.phase === 'un_vote') {
+      this.advancePhase(room);
+      return;
+    }
+    // un_summary, un_debate, results — ждём хоста
+    room.waitingContinue = true;
+    room.phaseEndsAt = null;
+    this.persist(room);
+    this.broadcast(room);
+  }
+
+  hostContinue(code: string, playerId: string) {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    if (!player.isHost) throw new Error('Только хост может продолжить');
+    if (!room.waitingContinue) throw new Error('Нет ожидания подтверждения');
     this.advancePhase(room);
+  }
+
+  hostExtendPhase(code: string, playerId: string, extraSeconds: number) {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    if (!player.isHost) throw new Error('Только хост');
+    if (room.phase !== 'un_debate' && room.phase !== 'un_comments') {
+      throw new Error('Продлять можно только дебаты или выступление');
+    }
+    if (extraSeconds === 0) {
+      // досрочное завершение: телескопируем таймер
+      this.onPhaseTimeout(room.code);
+      return;
+    }
+    const ms = Math.max(10, Math.min(600, extraSeconds)) * 1000;
+    if (room.phaseEndsAt) {
+      room.phaseEndsAt += ms;
+      this.armPhaseTimer(room, room.phaseEndsAt - Date.now());
+    }
+    this.persist(room);
+    this.broadcast(room);
+  }
+
+  // ---------- председатель ООН ----------
+
+  private mustChairman(code: string, playerId: string): RoomState {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    if (!player.isHost) throw new Error('Только председатель (хост)');
+    return room;
+  }
+
+  /** Ручная пауза председателя: таймер замораживается, дедлайна авто-возобновления нет. */
+  hostPause(code: string, playerId: string, paused: boolean) {
+    const room = this.mustChairman(code, playerId);
+    if (room.phase === 'lobby' || room.phase === 'final') throw new Error('Здесь нет таймера');
+    if (paused) {
+      if (room.paused) throw new Error('Уже на паузе');
+      const timers = this.timers.get(room.code)!;
+      room.paused = true;
+      room.manualPause = true;
+      room.remainingMs = room.phaseEndsAt ? Math.max(0, room.phaseEndsAt - Date.now()) : null;
+      if (timers.phaseTimer) clearTimeout(timers.phaseTimer);
+      room.phaseEndsAt = null;
+      room.resumeDeadline = null;
+      this.persist(room);
+      this.broadcast(room);
+    } else {
+      if (!room.manualPause) throw new Error('Перерыв не объявлен');
+      this.resume(room);
+      this.broadcast(room);
+    }
+  }
+
+  /** Председатель меняет порядок сегментов ООН: прыжок к любому сегменту внутри блока ООН. */
+  hostSetPhase(code: string, playerId: string, phase: GamePhase) {
+    const room = this.mustChairman(code, playerId);
+    const allowed: GamePhase[] = ['un_summary', 'un_comments', 'un_debate', 'un_vote'];
+    if (!allowed.includes(phase)) throw new Error('Недоступный сегмент');
+    if (!allowed.includes(room.phase)) throw new Error('Сегменты можно менять только во время заседания ООН');
+    if (phase === room.phase) throw new Error('Этот сегмент уже идёт');
+    if (room.manualPause) this.resume(room);
+    this.enterPhase(room, phase);
+  }
+
+  /** Председатель даёт слово конкретному игроку (фаза un_comments). */
+  hostSetSpeaker(code: string, playerId: string, targetPlayerId: string) {
+    const room = this.mustChairman(code, playerId);
+    if (room.phase !== 'un_comments') throw new Error('Слово даётся в круге выступлений');
+    const target = this.mustPlayer(room, targetPlayerId);
+    if (room.speakerOrder[room.speakerIdx] === targetPlayerId) throw new Error('Он уже говорит');
+    // переносим цель на текущую позицию, сохраняя остальную очередь
+    const rest = room.speakerOrder.filter((id) => id !== targetPlayerId);
+    rest.splice(room.speakerIdx, 0, targetPlayerId);
+    room.speakerOrder = rest;
+    this.armPhaseTimer(room);
+    this.persist(room);
+    this.broadcast(room);
+    this.botMaybeSpeak(room);
+    this.botLog(room, `Председатель дал слово: ${target.name}`);
+  }
+
+  /** Председатель пропускает текущего спикера. */
+  hostSkipSpeaker(code: string, playerId: string) {
+    const room = this.mustChairman(code, playerId);
+    if (room.phase !== 'un_comments') throw new Error('Сейчас не круг выступлений');
+    this.nextSpeaker(room);
+  }
+
+  /** Председатель принудительно задаёт раскладку видео ('auto' = вернуть автоматику). */
+  hostSetLayout(code: string, playerId: string, layout: string) {
+    const room = this.mustChairman(code, playerId);
+    if (layout !== 'auto' && layout !== 'spotlight' && layout !== 'grid') {
+      throw new Error('Неизвестная раскладка');
+    }
+    room.unLayout = layout;
+    this.persist(room);
+    this.broadcast(room);
+  }
+
+  /** Председатель просит игрока замьютиться: шлём сигнал его клиенту (тот может включить обратно). */
+  hostMute(code: string, playerId: string, targetPlayerId: string) {
+    const room = this.mustChairman(code, playerId);
+    const target = this.mustPlayer(room, targetPlayerId);
+    if (target.isBot || !target.socketId) throw new Error('Игрок недоступен');
+    this.server?.to(target.socketId).emit(SocketEvents.VideoForceMute, {
+      by: this.mustPlayer(room, playerId).name,
+    });
+  }
+
+  setBudget(code: string, playerId: string, budget: Record<string, number>) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId) throw new Error('Нет страны');
+    // бюджет хранится per countryId
+    room.sectorBudget[player.countryId] = budget;
+    this.persist(room);
+    return { ok: true };
+  }
+
+  markReady(code: string, playerId: string) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    if (!room.readyPlayerIds.includes(playerId)) {
+      room.readyPlayerIds.push(playerId);
+    }
+    const realPlayers = room.players.filter((p) => !p.isBot);
+    if (room.readyPlayerIds.length >= realPlayers.length) {
+      this.advancePhase(room);
+    } else {
+      this.persist(room);
+      this.broadcast(room);
+    }
   }
 
   /** Переход к следующей фазе цикла. */
@@ -301,35 +473,64 @@ export class RoomsService {
    * (решения года + события прошлого пересчёта) и применяем искажения шпионажа.
    * Хук Э8: здесь же ставятся задания на TTS/картинки.
    */
+  /** Определить режим СМИ страны: true = независимые/частные, false = провластные. */
+  private isSmiLiberal(country: import('@leaders/engine').CountryState): boolean {
+    for (const id of country.activeStatuses) {
+      const st = this.content.statuses.get(id);
+      if (st?.exclusiveGroup === 'regime') {
+        return Boolean((st as Record<string, unknown>).mediaIsLiberal);
+      }
+    }
+    return false;
+  }
+
   private resolveCabinetEnd(room: RoomState) {
     if (!room.world) return;
+
+    // применяем бюджетные инвестиции до тика
+    const investPerLevel = this.content.tunables.budget?.investPerLevel ?? 1000;
+    for (const [countryId, budget] of Object.entries(room.sectorBudget)) {
+      const s = room.world.countries.get(countryId);
+      if (!s) continue;
+      // считаем доход (без мутаций) для распределения
+      const eff = aggregateModifiers(s, this.content);
+      const t = this.content.tunables;
+      const scienceMult = effectiveSector(s, eff, 'science') * t.economy.scienceMultPerLevel + eff.scienceMult;
+      const economyFactor = 1 + effectiveSector(s, eff, 'economy') * t.production.economyIncomePerLevel;
+      const moneyIncome = s.population.rabotyagi * t.production.moneyPerRabotyaga * eff.outputMult.rabotyagi * (1 + scienceMult) * economyFactor;
+      const total = Object.values(budget as Record<string, number>).reduce((a, b) => a + b, 0);
+      if (total <= 0 || moneyIncome <= 0) continue;
+      for (const [sector, pct] of Object.entries(budget as Record<string, number>)) {
+        if (pct <= 0) continue;
+        const invest = moneyIncome * (pct / 100);
+        s.sectorInvestment[sector as import('@leaders/shared').SectorKey] =
+          (s.sectorInvestment[sector as import('@leaders/shared').SectorKey] ?? 0) + invest;
+        // порог достигнут → сектор +1
+        const acc = s.sectorInvestment[sector as import('@leaders/shared').SectorKey] ?? 0;
+        if (acc >= investPerLevel && s.sectors[sector as import('@leaders/shared').SectorKey] < 10) {
+          s.sectors[sector as import('@leaders/shared').SectorKey] += 1;
+          s.sectorInvestment[sector as import('@leaders/shared').SectorKey] = acc - investPerLevel;
+        }
+      }
+    }
+
     const news: Record<string, string[]> = {};
     const year = room.world.year;
 
     for (const [countryId] of room.world.countries) {
+      const s = room.world.countries.get(countryId)!;
+      const liberal = this.isSmiLiberal(s);
       const lines: string[] = [];
       for (const ev of room.lastTickEvents?.[countryId] ?? []) lines.push(ev);
       for (const ch of room.choicesThisYear[countryId] ?? []) {
-        lines.push(`${ch.speaker} предложил — лидер решил: «${ch.label}»`);
+        if (ch.newsLines) {
+          lines.push(liberal ? ch.newsLines.liberal : ch.newsLines.state);
+        } else {
+          lines.push(`${ch.speaker} предложил — лидер решил: «${ch.label}»`);
+        }
       }
       if (lines.length === 0) lines.push('Год прошёл тихо. Подозрительно тихо.');
       news[countryId] = lines;
-    }
-
-    // искажения: сначала умолчания, потом ложь (успешные заказы этого года)
-    for (const order of room.spyOrders.filter((o) => o.year === year && o.outcome?.success)) {
-      if (order.kind === 'conceal') {
-        const target = news[order.attackerCountryId] ?? [];
-        // прячем самую неприятную строку (или указанную в payload по подстроке)
-        const idx = order.payload
-          ? target.findIndex((l) => l.toLowerCase().includes(order.payload!.toLowerCase()))
-          : target.findIndex((l) => /голод|перевор|гиперинф|убыло/i.test(l));
-        if (idx >= 0) target.splice(idx, 1);
-        else if (target.length > 1) target.pop();
-      }
-      if (order.kind === 'insert_lie' && order.payload) {
-        (news[order.targetCountryId] ??= []).push(order.payload);
-      }
     }
 
     room.news = news;
@@ -405,6 +606,17 @@ export class RoomsService {
 
     const report = tick(room.world, this.content);
 
+    // объявление о переворотах
+    for (const ev of report.events) {
+      if (ev.kind === 'coup') {
+        const countryName = this.content.countries.get(ev.countryId)?.name ?? ev.countryId;
+        this.server?.to(room.code).emit('game:announcement', {
+          title: '⚡ ГОСУДАРСТВЕННЫЙ ПЕРЕВОРОТ',
+          text: `В ${countryName} случился военный переворот! Казна разграблена, власть сменилась.`,
+        });
+      }
+    }
+
     // публичные события пересчёта — в фазу Итогов и в сводку следующего года
     const publicEvents: Record<string, string[]> = {};
     for (const ev of report.events.filter((e) => !e.hidden)) {
@@ -443,18 +655,42 @@ export class RoomsService {
 
     // выбор может строить чудо — мировой ресурс, проверяем ДО применения эффектов
     const wonderId = card.choices[choiceIndex]?.effects?.modifiers?.special?.buildWonder;
+    let wonderFallback: string | null = null;
     if (typeof wonderId === 'string') {
-      buildWonder(room.world, s, wonderId, this.content); // бросит, если занято/чужой эксклюзив
+      try {
+        buildWonder(room.world, s, wonderId, this.content);
+      } catch (e) {
+        if (e instanceof WonderError) {
+          const wonderName = this.content.statuses.get(wonderId)?.name ?? wonderId;
+          const fallbackName = (card.choices[choiceIndex] as Record<string, unknown>).wonderFallbackName as string | undefined;
+          wonderFallback = fallbackName ?? `аналог «${wonderName}»`;
+          if (this.server) {
+            this.server.to(room.code).emit(SocketEvents.GameAnnouncement, {
+              title: `${wonderName} уже занято!`,
+              text: `У вашей страны получился ${wonderFallback}. Сочувствуем 🤝`,
+            });
+          }
+        } else throw e;
+      }
     }
 
     applyChoice(s, card, choiceIndex, room.world.year, this.content);
+    const choiceData = card.choices[choiceIndex]!;
     (room.choicesThisYear[player.countryId] ??= []).push({
       speaker: card.speaker,
-      label: card.choices[choiceIndex]!.label,
+      label: choiceData.label,
+      newsLines: (choiceData as Record<string, unknown>).newsLines as { liberal: string; state: string } | undefined,
     });
-    this.dealCard(room, player.countryId);
+    room.cardsChosenThisYear[player.countryId] = (room.cardsChosenThisYear[player.countryId] ?? 0) + 1;
+    const cardsPerTurn = this.content.tunables.cabinet?.cardsPerTurn ?? 5;
+    if ((room.cardsChosenThisYear[player.countryId] ?? 0) < cardsPerTurn) {
+      this.dealCard(room, player.countryId);
+    } else {
+      room.currentCards[player.countryId] = null;
+    }
     this.persist(room);
     this.broadcast(room);
+    return { wonderFallback };
   }
 
   spyOrder(
@@ -462,7 +698,6 @@ export class RoomsService {
     playerId: string,
     kind: SpyActionKind,
     targetCountryId: string,
-    payload?: string,
   ) {
     const room = this.mustRoom(code);
     this.assertPhase(room, 'cabinet');
@@ -474,11 +709,8 @@ export class RoomsService {
     const attacker = room.world.countries.get(player.countryId)!;
     const target = room.world.countries.get(targetCountryId);
     if (!target) throw new Error('Нет такой страны-цели');
-    if (kind !== 'conceal' && targetCountryId === player.countryId) {
+    if (targetCountryId === player.countryId) {
       throw new Error('Эта операция — только против чужих');
-    }
-    if (kind === 'conceal' && targetCountryId !== player.countryId) {
-      throw new Error('Умолчать можно только о своём факте');
     }
 
     const rng = makeRng(room.world.seed + room.rngNonce++);
@@ -489,7 +721,6 @@ export class RoomsService {
       attackerCountryId: player.countryId,
       targetCountryId,
       kind,
-      payload,
       outcome,
     });
 
@@ -695,6 +926,25 @@ export class RoomsService {
         };
         this.botSchedule(room, rnd(1000, 4000), act);
       }
+      // с вероятностью 40% один бот позвонит живому игроку через 8-20с
+      const humanPlayers = room.players.filter((p) => !p.isBot && p.connected && p.countryId);
+      const bots = this.bots(room);
+      if (bots.length > 0 && humanPlayers.length > 0 && Math.random() < 0.4) {
+        const bot = bots[Math.floor(Math.random() * bots.length)]!;
+        const human = humanPlayers[Math.floor(Math.random() * humanPlayers.length)]!;
+        this.botSchedule(room, rnd(8000, 20000), () => {
+          if (room.phase !== 'cabinet' || !bot.countryId || !human.countryId) return;
+          // проверяем: нет ли уже активного звонка у бота
+          const busy = room.calls.some(
+            (c) => c.status !== 'ended' && (c.fromCountryId === bot.countryId || c.toCountryId === bot.countryId),
+          );
+          if (busy) return;
+          try {
+            this.callInvite(room.code, bot.playerId, human.countryId);
+            this.botLog(room, `${bot.name} звонит игроку ${human.name}`);
+          } catch { /* не хватило лимита */ }
+        });
+      }
     }
 
     if (room.phase === 'un_summary') {
@@ -775,10 +1025,9 @@ export class RoomsService {
     // 3) шпионаж
     if (roll < 0.87 && others.length > 0) {
       const target = others[Math.floor(Math.random() * others.length)]!;
-      const kinds = ['reveal', 'steal_science', 'insert_lie'] as const;
+      const kinds = ['reveal', 'steal_science', 'steal_money', 'provoke_riot'] as const;
       const kind = kinds[Math.floor(Math.random() * kinds.length)]!;
-      const payload = kind === 'insert_lie' ? `${this.content.countries.get(target.countryId!)!.name} тайно скупает носки с дырками` : undefined;
-      const out = this.spyOrder(room.code, bot.playerId, kind, target.countryId!, payload);
+      const out = this.spyOrder(room.code, bot.playerId, kind, target.countryId!);
       this.botLog(room, `${bot.name} шпионит (${kind}) против ${this.content.countries.get(target.countryId!)!.name}: ${out.success ? 'успех' : 'провал'}`);
       return;
     }
@@ -818,12 +1067,22 @@ export class RoomsService {
     const call = { id: randomUUID(), fromCountryId: player.countryId, toCountryId, status: 'ringing' as const };
     room.calls.push(call);
 
-    // бот всегда занят государственными делами
+    // бот принимает с вероятностью ~80%, заканчивает через 15-30с
     const targetPlayer = room.players.find((p) => p.countryId === toCountryId);
     if (targetPlayer?.isBot) {
-      this.botSchedule(room, 2000, () => {
-        this.callRespond(room.code, targetPlayer.playerId, call.id, false);
-        this.botLog(room, `${targetPlayer.name} отклонил звонок: «занят государственными делами»`);
+      const accept = Math.random() < 0.8;
+      const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+      this.botSchedule(room, rnd(1500, 3000), () => {
+        try { this.callRespond(room.code, targetPlayer.playerId, call.id, accept); } catch { return; }
+        if (accept) {
+          this.botLog(room, `${targetPlayer.name} принял звонок`);
+          this.botSchedule(room, rnd(15000, 30000), () => {
+            try { this.callEnd(room.code, targetPlayer.playerId, call.id); } catch { /* already ended */ }
+            this.botLog(room, `${targetPlayer.name} завершил звонок`);
+          });
+        } else {
+          this.botLog(room, `${targetPlayer.name} отклонил звонок: «занят государственными делами»`);
+        }
       });
     }
 
@@ -875,10 +1134,13 @@ export class RoomsService {
     this.persist(room);
   }
 
-  /** Проверка прав на видеокомнату: ООН — все в фазах ООН; звонок — только участники. */
-  videoRoomFor(code: string, playerId: string, kind: 'un' | 'call', callId?: string): string {
+  /** Проверка прав на видеокомнату: лобби/ООН — все; звонок — только участники. */
+  videoRoomFor(code: string, playerId: string, kind: 'lobby' | 'un' | 'call', callId?: string): string {
     const room = this.mustRoom(code);
     const player = this.mustPlayer(room, playerId);
+    if (kind === 'lobby') {
+      return `lobby-${room.code}`;
+    }
     if (kind === 'un') {
       if (!room.phase.startsWith('un_') && room.phase !== 'results' && room.phase !== 'final') {
         throw new Error('Видеокомната ООН доступна только в фазе ООН');
@@ -901,7 +1163,7 @@ export class RoomsService {
     player.socketId = socketId;
     player.connected = true;
 
-    if (room.paused && room.players.every((p) => p.connected)) {
+    if (room.paused && !room.manualPause && room.players.every((p) => p.connected)) {
       this.resume(room);
     }
     this.persist(room);
@@ -949,6 +1211,7 @@ export class RoomsService {
     const timers = this.timers.get(room.code)!;
     if (timers.pauseTimer) clearTimeout(timers.pauseTimer);
     room.paused = false;
+    room.manualPause = false;
     room.resumeDeadline = null;
     if (room.remainingMs !== null) {
       this.armPhaseTimer(room, room.remainingMs);
@@ -999,11 +1262,17 @@ export class RoomsService {
           ...data,
           tradeOffers: data.tradeOffers ?? [],
           choicesThisYear: data.choicesThisYear ?? {},
+          cardsChosenThisYear: data.cardsChosenThisYear ?? {},
+          readyPlayerIds: data.readyPlayerIds ?? [],
+          sectorBudget: data.sectorBudget ?? {},
+          waitingContinue: data.waitingContinue ?? false,
           votes: data.votes ?? [],
           news: data.news ?? null,
           newsAssets: data.newsAssets ?? {},
           calls: data.calls ?? [],
           lastTickEvents: data.lastTickEvents ?? null,
+          manualPause: data.manualPause ?? false,
+          unLayout: data.unLayout ?? 'auto',
           world: data.world ? deserializeWorld(data.world) : null,
         };
         // все соединения мертвы после рестарта (боты живут на сервере — остаются connected)

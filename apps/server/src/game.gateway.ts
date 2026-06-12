@@ -129,13 +129,43 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     );
   }
 
+  @SubscribeMessage(SocketEvents.CabinetReady)
+  cabinetReady(@ConnectedSocket() socket: Socket) {
+    return this.withSession(socket, (s) => this.rooms.markReady(s.roomCode, s.playerId));
+  }
+
+  @SubscribeMessage(SocketEvents.CabinetSetBudget)
+  cabinetSetBudget(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { budget: Record<string, number> },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.setBudget(s.roomCode, s.playerId, body?.budget ?? {}),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.RoomHostContinue)
+  hostContinue(@ConnectedSocket() socket: Socket) {
+    return this.withSession(socket, (s) => this.rooms.hostContinue(s.roomCode, s.playerId));
+  }
+
+  @SubscribeMessage(SocketEvents.RoomHostExtend)
+  hostExtendPhase(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { extraSeconds: number },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.hostExtendPhase(s.roomCode, s.playerId, body?.extraSeconds ?? 120),
+    );
+  }
+
   @SubscribeMessage(SocketEvents.SpyOrder)
   spyOrder(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { kind: SpyActionKind; targetCountryId: string; payload?: string },
+    @MessageBody() body: { kind: SpyActionKind; targetCountryId: string },
   ) {
     return this.withSession(socket, (s) =>
-      this.rooms.spyOrder(s.roomCode, s.playerId, body?.kind, body?.targetCountryId ?? '', body?.payload),
+      this.rooms.spyOrder(s.roomCode, s.playerId, body?.kind, body?.targetCountryId ?? ''),
     );
   }
 
@@ -195,15 +225,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage(SocketEvents.VideoToken)
   async videoToken(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { kind: 'un' | 'call'; callId?: string },
+    @MessageBody() body: { kind: 'lobby' | 'un' | 'call'; callId?: string },
   ) {
     const session = this.sessions.get(socket.id);
     if (!session) return { ok: false, error: 'Сначала войдите в комнату' };
     try {
+      const kind = body?.kind === 'call' ? 'call' : body?.kind === 'lobby' ? 'lobby' : 'un';
       const roomName = this.rooms.videoRoomFor(
         session.roomCode,
         session.playerId,
-        body?.kind === 'call' ? 'call' : 'un',
+        kind,
         body?.callId,
       );
       const found = this.rooms.getRoomBySocket(socket.id);

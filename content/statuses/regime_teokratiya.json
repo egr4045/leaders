@@ -4,9 +4,25 @@
   "type": "regime",
   "description": "Вертикаль власти дотянулась до небес и отчитывается только туда.",
   "exclusiveGroup": "regime",
-  "requires": { "statuses": ["law_obyazatelnoe_blagochestie"], "conditions": ["smi_strong"] },
-  "effects": {
-    "modifiers": { "dovolstvoDrift": 2, "scienceMult": -0.2, "emigration": { "umniki": 0.1 } }
+  "requires": {
+    "statuses": [
+      "law_obyazatelnoe_blagochestie"
+    ],
+    "conditions": [
+      "smi_strong"
+    ]
   },
-  "triggers": ["news_regime_change"]
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": 2,
+      "scienceMult": -0.2,
+      "emigration": {
+        "umniki": 0.1
+      }
+    }
+  },
+  "triggers": [
+    "news_regime_change"
+  ],
+  "mediaIsLiberal": false
 }

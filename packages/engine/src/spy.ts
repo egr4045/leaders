@@ -3,22 +3,21 @@ import type { CountryState, WorldState } from './state.js';
 import { aggregateModifiers, effectiveSector } from './modifiers.js';
 import type { Rng } from './rng.js';
 
-/**
- * Шпионаж (раздел 9). Действия заказываются в Кабинете, влияют на ООН/чужие статы.
- * conceal — умолчать о своём факте в сводке;
- * insert_lie — вставить ложь от имени другой страны;
- * reveal — вскрыть скрытые статы/реальный Форбс соседа;
- * steal_science / wreck_wonder — саботаж.
- */
-export type SpyActionKind = 'conceal' | 'insert_lie' | 'reveal' | 'steal_science' | 'wreck_wonder';
+export type SpyActionKind =
+  | 'reveal'
+  | 'steal_science'
+  | 'wreck_wonder'
+  | 'steal_money'
+  | 'steal_food'
+  | 'steal_gold'
+  | 'provoke_riot'
+  | 'assassinate_minister';
 
 export interface SpyOutcome {
   success: boolean;
-  /** шанс, с которым кидали кубик (для дебага/баланса) */
   chance: number;
 }
 
-/** Шанс успеха: Разведка атакующего vs защита цели (Разведка + взвешенные СМИ). */
 export function spySuccessChance(
   attacker: CountryState,
   target: CountryState,
@@ -43,9 +42,6 @@ export function resolveSpyAction(
   content: GameContent,
   rng: Rng,
 ): SpyOutcome {
-  // conceal — действие над собственной сводкой, всегда успешно (своё СМИ молчит само)
-  if (kind === 'conceal' && attacker.id === target.id) return { success: true, chance: 1 };
-
   const chance = spySuccessChance(attacker, target, content);
   const success = rng() < chance;
   if (!success) return { success, chance };
@@ -58,7 +54,6 @@ export function resolveSpyAction(
       break;
     }
     case 'wreck_wonder': {
-      // срываем последнее построенное чудо цели: чудо «освобождается» в мир
       const wonderId = target.wondersBuilt.pop();
       if (wonderId) {
         target.activeStatuses = target.activeStatuses.filter((id) => id !== wonderId);
@@ -66,8 +61,38 @@ export function resolveSpyAction(
       }
       break;
     }
-    // conceal/insert_lie/reveal меняют только информацию — их полезную нагрузку
-    // (текст лжи, раскрытые статы) обрабатывает сервер по факту success
+    case 'steal_money': {
+      const stolen = Math.round(target.resources.money * 0.15);
+      target.resources.money -= stolen;
+      attacker.resources.money += stolen;
+      break;
+    }
+    case 'steal_food': {
+      const stolen = Math.round(target.resources.food * 0.25);
+      target.resources.food -= stolen;
+      attacker.resources.food += stolen;
+      break;
+    }
+    case 'steal_gold': {
+      const stolen = Math.round(target.resources.gold * 0.1);
+      target.resources.gold -= stolen;
+      attacker.resources.gold += stolen;
+      break;
+    }
+    case 'provoke_riot': {
+      target.dovolstvo = Math.max(0, target.dovolstvo - 15);
+      break;
+    }
+    case 'assassinate_minister': {
+      target.population.ministry = Math.max(0, target.population.ministry - 1);
+      target.delayed.push({
+        dueYear: world.year + 1,
+        effects: { modifiers: { ministerUpkeepMult: 2 } } as unknown as import('@leaders/shared').Effects,
+        description: 'Убийство министра — аппарат в панике, расходы на лояльность выросли',
+      });
+      break;
+    }
+    // reveal — сервер обрабатывает раскрытие данных по факту success
     default:
       break;
   }

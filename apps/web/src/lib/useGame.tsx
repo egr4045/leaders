@@ -34,22 +34,31 @@ function loadSession(): Session | null {
   }
 }
 
+export interface Announcement {
+  id: number;
+  title: string;
+  text: string;
+}
+
 interface GameApi {
   connected: boolean;
   snapshot: RoomSnapshot | null;
   session: Session | null;
   error: string | null;
+  announcements: Announcement[];
+  dismissAnnouncement: () => void;
   clearError: () => void;
   createRoom: (name: string) => Promise<void>;
   joinRoom: (roomCode: string, name: string) => Promise<void>;
   leaveRoom: () => Promise<void>;
   pickCountry: (countryId: string) => Promise<void>;
   startGame: () => Promise<void>;
-  chooseCard: (cardId: string, choiceIndex: number) => Promise<void>;
+  chooseCard: (cardId: string, choiceIndex: number) => Promise<{ wonderFallback: string | null } | null>;
+  markReady: () => Promise<void>;
+  hostContinue: () => Promise<void>;
   spyOrder: (
     kind: string,
     targetCountryId: string,
-    payload?: string,
   ) => Promise<{ success: boolean } | null>;
   declareForbes: (value: number) => Promise<void>;
   commentDone: () => Promise<void>;
@@ -58,11 +67,14 @@ interface GameApi {
 
 const GameContext = createContext<GameApi | null>(null);
 
+let announcementIdCounter = 0;
+
 export function GameProvider({ children }: { children: ReactNode }) {
   const [connected, setConnected] = useState(socket.connected);
   const [snapshot, setSnapshot] = useState<RoomSnapshot | null>(null);
   const [session, setSession] = useState<Session | null>(loadSession);
   const [error, setError] = useState<string | null>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   const emitRaw = useCallback(<T,>(event: string, body: unknown = {}): Promise<Ack<T>> => {
     return new Promise((resolve) => {
@@ -106,17 +118,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
         'color:#cbd5e1',
       );
     };
+    const onAnnouncement = (d: { title: string; text: string }) => {
+      setAnnouncements((prev) => [...prev, { id: ++announcementIdCounter, ...d }]);
+    };
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on(SocketEvents.RoomState, onState);
     socket.on(SocketEvents.BotLog, onBotLog);
+    socket.on(SocketEvents.GameAnnouncement, onAnnouncement);
     if (socket.connected) onConnect();
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off(SocketEvents.RoomState, onState);
       socket.off(SocketEvents.BotLog, onBotLog);
+      socket.off(SocketEvents.GameAnnouncement, onAnnouncement);
     };
   }, [emitRaw, saveSession]);
 
@@ -132,6 +149,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       snapshot,
       session,
       error,
+      announcements,
+      dismissAnnouncement: () => setAnnouncements((prev) => prev.slice(1)),
       clearError: () => setError(null),
       createRoom: async (name) => {
         const res = await guard<{ roomCode: string; playerId: string; playerToken: string }>(
@@ -152,11 +171,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
       },
       pickCountry: async (countryId) => void (await guard(emitRaw(SocketEvents.RoomPickCountry, { countryId }))),
       startGame: async () => void (await guard(emitRaw(SocketEvents.RoomStart))),
-      chooseCard: async (cardId, choiceIndex) =>
-        void (await guard(emitRaw(SocketEvents.CabinetChoose, { cardId, choiceIndex }))),
-      spyOrder: async (kind, targetCountryId, payload) => {
+      chooseCard: async (cardId, choiceIndex) => {
+        const res = await guard<{ wonderFallback: string | null }>(
+          emitRaw(SocketEvents.CabinetChoose, { cardId, choiceIndex }),
+        );
+        return res.ok ? { wonderFallback: res.data?.wonderFallback ?? null } : null;
+      },
+      markReady: async () => void (await guard(emitRaw(SocketEvents.CabinetReady))),
+      hostContinue: async () => void (await guard(emitRaw(SocketEvents.RoomHostContinue))),
+      spyOrder: async (kind, targetCountryId) => {
         const res = await guard<{ success: boolean }>(
-          emitRaw(SocketEvents.SpyOrder, { kind, targetCountryId, payload }),
+          emitRaw(SocketEvents.SpyOrder, { kind, targetCountryId }),
         );
         return res.ok ? (res.data ?? null) : null;
       },
@@ -164,7 +189,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       commentDone: async () => void (await guard(emitRaw(SocketEvents.UnCommentDone))),
       emitRaw,
     }),
-    [connected, snapshot, session, error, emitRaw, guard, saveSession],
+    [connected, snapshot, session, error, announcements, emitRaw, guard, saveSession],
   );
 
   return <GameContext.Provider value={api}>{children}</GameContext.Provider>;

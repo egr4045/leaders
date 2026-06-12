@@ -1,4 +1,4 @@
-import type { AdvisorCard, GamePhase, TradeOfferView } from '@leaders/shared';
+import type { AdvisorCard, GamePhase, TradeOfferView, UnLayout } from '@leaders/shared';
 import type { SpyActionKind, SpyOutcome, WorldState } from '@leaders/engine';
 
 export interface RoomPlayer {
@@ -19,8 +19,6 @@ export interface SpyOrderRec {
   attackerCountryId: string;
   targetCountryId: string;
   kind: SpyActionKind;
-  /** текст лжи для insert_lie / суть умолчания для conceal */
-  payload?: string;
   outcome?: SpyOutcome;
 }
 
@@ -58,7 +56,7 @@ export interface RoomState {
   /** ящик предложений: все сделки партии */
   tradeOffers: TradeOfferView[];
   /** решения карт за текущий год (для сводки новостей) */
-  choicesThisYear: Record<string, { speaker: string; label: string }[]>;
+  choicesThisYear: Record<string, { speaker: string; label: string; newsLines?: { liberal: string; state: string } }[]>;
   /** голоса ООН текущего года */
   votes: { voterCountryId: string; targetCountryId: string; kind: 'sanction' | 'support' }[];
   /** сводка новостей текущего года (с искажениями), по странам */
@@ -75,6 +73,18 @@ export interface RoomState {
   /** инкрементный счётчик для детерминированного rng */
   rngNonce: number;
   createdAt: number;
+  /** таймер истёк, ждём нажатия хоста «Продолжить» (un_summary / un_debate / results) */
+  waitingContinue: boolean;
+  /** сколько карточек каждый игрок взял в этом раунде кабинета */
+  cardsChosenThisYear: Record<string, number>;
+  /** игроки (не боты), нажавшие «Готов» в фазе кабинета */
+  readyPlayerIds: string[];
+  /** распределение бюджета по секторам (% дохода), per countryId */
+  sectorBudget: Record<string, Partial<Record<string, number>>>;
+  /** ручная пауза председателя (без дедлайна авто-возобновления) */
+  manualPause: boolean;
+  /** раскладка видео ООН, принудительно выбранная председателем */
+  unLayout: UnLayout;
 }
 
 /** Транзиентные таймеры (не сериализуются в Redis). */

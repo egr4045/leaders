@@ -8,14 +8,29 @@
       "choices": [
         {
           "label": "Запретить туфли",
-          "effects": { "sectors": { "smi": -1 }, "dovolstvo": -5 },
-          "addStatuses": ["law_zapret_tufel"]
+          "effects": {
+            "sectors": {
+              "smi": -1
+            },
+            "dovolstvo": -5
+          },
+          "addStatuses": [
+            "law_zapret_tufel"
+          ]
         },
         {
           "label": "Только импортные",
-          "effects": { "resources": { "money": 50 }, "dovolstvo": -2 }
+          "effects": {
+            "resources": {
+              "money": 50
+            },
+            "dovolstvo": -2
+          }
         },
-        { "label": "Забить", "effects": {} }
+        {
+          "label": "Забить",
+          "effects": {}
+        }
       ]
     },
     {
@@ -25,15 +40,46 @@
       "choices": [
         {
           "label": "Печатаем триллион",
-          "effects": { "resources": { "money": 300 }, "modifiers": { "special": { "printedMoney": 300 } } },
-          "delayed": { "years": 1, "effects": { "dovolstvo": -4 }, "description": "Цены незаметно подросли. Заметно." }
+          "effects": {
+            "resources": {
+              "money": 300
+            },
+            "modifiers": {
+              "special": {
+                "printedMoney": 300
+              }
+            }
+          },
+          "delayed": {
+            "years": 1,
+            "effects": {
+              "dovolstvo": -4
+            },
+            "description": "Цены незаметно подросли. Заметно."
+          }
         },
         {
           "label": "Чуть-чуть, аккуратно",
-          "effects": { "resources": { "money": 100 }, "modifiers": { "special": { "printedMoney": 100 } } }
+          "effects": {
+            "resources": {
+              "money": 100
+            },
+            "modifiers": {
+              "special": {
+                "printedMoney": 100
+              }
+            }
+          }
         },
-        { "label": "Жить по средствам", "effects": { "dovolstvo": -1 } }
-      ]
+        {
+          "label": "Жить по средствам",
+          "effects": {
+            "dovolstvo": -1
+          }
+        }
+      ],
+      "weight": 1,
+      "once": false
     },
     {
       "id": "silikonovaya_dolina",
@@ -42,13 +88,32 @@
       "choices": [
         {
           "label": "Вложиться в долину",
-          "effects": { "resources": { "money": -150 }, "sectors": { "science": 1 } }
+          "effects": {
+            "resources": {
+              "money": -150
+            },
+            "sectors": {
+              "science": 1
+            }
+          }
         },
         {
           "label": "Переманить чужих умников",
-          "effects": { "resources": { "influence": -10 }, "population": { "umniki": 20 } }
+          "effects": {
+            "resources": {
+              "influence": -10
+            },
+            "population": {
+              "umniki": 20
+            }
+          }
         },
-        { "label": "Джеты важнее", "effects": { "dovolstvo": -2 } }
+        {
+          "label": "Джеты важнее",
+          "effects": {
+            "dovolstvo": -2
+          }
+        }
       ]
     }
   ]

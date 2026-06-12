@@ -3,8 +3,19 @@
   "name": "Госплан",
   "type": "law",
   "description": "Спланируем всё: от чугуна до количества улыбок на душу населения.",
-  "cost": { "money": 40 },
+  "cost": {
+    "money": 40
+  },
   "minMinistry": 25,
   "revocable": true,
-  "effects": { "modifiers": { "outputMult": { "ministry": 1 }, "special": { "planEconomy": 1 } } }
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "ministry": 1
+      },
+      "special": {
+        "planEconomy": 1
+      }
+    }
+  }
 }

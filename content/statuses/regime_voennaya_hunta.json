@@ -4,10 +4,30 @@
   "type": "regime",
   "description": "Генералы навели порядок. Теперь беспорядок официально называется порядком.",
   "exclusiveGroup": "regime",
-  "requires": { "statuses": ["law_voennoe_polozhenie"], "conditions": ["siloviki_dominate"] },
-  "effects": {
-    "sectors": { "army": 1 },
-    "modifiers": { "dovolstvoDrift": -3, "emigration": { "umniki": 0.1 }, "special": { "coupImmunity": true } }
+  "requires": {
+    "statuses": [
+      "law_voennoe_polozhenie"
+    ],
+    "conditions": [
+      "siloviki_dominate"
+    ]
   },
-  "triggers": ["news_regime_change"]
+  "effects": {
+    "sectors": {
+      "army": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -3,
+      "emigration": {
+        "umniki": 0.1
+      },
+      "special": {
+        "coupImmunity": true
+      }
+    }
+  },
+  "triggers": [
+    "news_regime_change"
+  ],
+  "mediaIsLiberal": false
 }
