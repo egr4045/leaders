@@ -151,12 +151,14 @@ c2s события (клиент → сервер, с ack):
 - `un:comment_done`, `un:vote`, `forbes:declare`
 - `video:token`, `call:invite`, `call:accept`, `call:decline`, `call:end`
 - `room:host_continue`, `room:host_extend`
+- председатель ООН (только хост): `room:host_pause` ({paused}), `room:host_set_phase` ({phase} — прыжок между un_*), `room:host_set_speaker` ({playerId}), `room:host_skip_speaker`, `room:host_layout` ({layout: auto|spotlight|grid}), `room:host_mute` ({playerId})
 
 s2c события (сервер → клиент):
 - `room:state` — полный снапшот (broadcast после каждого изменения)
 - `game:announcement` — важное объявление поверх экрана
 - `bot:log` — действия ботов в консоль браузера
 - `call:incoming`, `call:started`, `call:ended`
+- `video:force_mute` ({by}) — председатель попросил выключить микрофон (только цели; клиент глушит мик + тост, можно включить обратно)
 
 ---
 
@@ -199,6 +201,7 @@ readyPlayerIds: string[]
 - `chooseCard()` — карточка + wonder fallback
 - `setBudget()` — сохраняет % распределение по секторам
 - `hostExtendPhase(extraSeconds)` — 0 = завершить сразу, >0 = продлить
+- председатель: `hostPause(paused)` (ручной перерыв, `manualPause`, без дедлайна), `hostSetPhase(phase)` (прыжок между un_*), `hostSetSpeaker(targetId)` / `hostSkipSpeaker()` (очередь un_comments), `hostSetLayout(layout)` (→ `room.unLayout`), `hostMute(targetId)` (шлёт `video:force_mute` цели)
 - `broadcast(room)` — рассылает `room:state` всем игрокам комнаты
 
 ### Боты
@@ -241,11 +244,14 @@ readyPlayerIds: string[]
 - Дипломатия: `CallPanel` + `TradePanel` + `SpyPanel`
 - Кнопка «Готов» → `showReadyConfirm` модал → `markReady()`
 
-**UnScreen.tsx** (все фазы ООН + results):
+**UnScreen.tsx** (все фазы ООН + results) — «как Google Meet»:
 - `flex h-dvh flex-col overflow-hidden` — нет скролла
-- Шапка (фаза + таймер) → основной контент → видео-полоса (strip) → контрол-бар
-- Хост-кнопки (только `un_debate`): «+2 мин» и «Завершить»
-- `waitingContinue` → кнопка «Продолжить»
+- Раскладка видео авто по фазе: `un_comments`=spotlight (спикер крупно по центру), `un_debate`=grid («балаган», все крупно), остальные=strip; председатель форсит через `snapshot.unLayout` (≠'auto' главнее)
+- При видео-раскладке (spotlight/grid) контент фазы сворачивается в `<details>` «Материалы года», видео занимает flex-1
+- **VideoGrid смонтирован в одной точке дерева, меняются только props** — перенос между ветками JSX = реконнект LiveKit
+- Приглушение: un_summary глушит всех (spotlightId='__news__'), un_comments глушит всех кроме спикера
+- Контрол-бар: «Я закончил» (спикер), «+2 мин»/«Завершить» (хост, un_debate), «Продолжить» (waitingContinue), 👑 пульт председателя (сегменты/раскладка/перерыв/слово/скип/мьют)
+- Перерыв председателя (`pause.manual`) — отдельный вид PauseOverlay с кнопкой возобновления у хоста
 
 **LobbyScreen.tsx**:
 - VideoGrid вверху (~55vh)
@@ -253,13 +259,16 @@ readyPlayerIds: string[]
 - Страны: карточки всех стран с описанием, amber-border для своей
 
 ### Видео (LiveKit)
-- `useVideoRoom.ts` — подключается к LiveKit, управляет mic/cam
+- `useVideoRoom.ts` — подключается к LiveKit, управляет mic/cam; отдаёт `speakingIds` (кто говорит, [0] = громче всех, через `ActiveSpeakersChanged`), `forceMutedBy`/`clearForceMuted` (обработка `video:force_mute`)
 - `VideoGrid.tsx` — рендерит тайлы, props:
-  - `layout?: 'grid' | 'strip'`
+  - `layout?: 'grid' | 'strip' | 'spotlight'` — spotlight: главный крупно + полоса остальных снизу; grid: говорящие сортируются в начало, колонки по числу участников
+  - `spotlightId?: string | null` — кто в центре spotlight и кого НЕ приглушать (null = самый громкий)
+  - `duckOthers?: boolean` — приглушать всех кроме spotlightId (volume 0.2 на их `<audio>`)
   - `showControls?: boolean` — кнопки mic/cam на локальном тайле
   - `showControlBar?: boolean` — обёртка с контрол-баром внизу
   - `hostControls?: ReactNode` — хост-кнопки внутри контрол-бара
-- **Важно**: один `VideoGrid` на экран = одно LiveKit-подключение. Не плодить.
+  - говорящие подсвечиваются рамкой (`ring-emerald-400`) + зелёная точка у имени
+- **Важно**: один `VideoGrid` на экран = одно LiveKit-подключение. Не плодить и не перемещать между ветками JSX (см. UnScreen).
 
 ---
 
