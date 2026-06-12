@@ -6,6 +6,7 @@ import { CardResultModal } from './cabinet/CardResultModal';
 import { ResourcePanel } from './cabinet/ResourcePanel';
 import { SpyPanel } from './cabinet/SpyPanel';
 import { TradePanel } from './cabinet/TradePanel';
+import { WarPanel } from './cabinet/WarPanel';
 import { CallPanel } from '../video/CallPanel';
 import { BudgetPanel } from './cabinet/BudgetPanel';
 import type { AdvisorCard } from '@leaders/shared';
@@ -135,6 +136,7 @@ export function CabinetScreen() {
             <CallPanel you={you} others={snapshot.others} />
             <TradePanel you={you} others={snapshot.others} />
             <SpyPanel others={snapshot.others} myCountryId={you.countryId} />
+            <WarPanel others={snapshot.others} />
           </div>
         )}
       </div>

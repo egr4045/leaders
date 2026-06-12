@@ -14,6 +14,51 @@ export interface DelayedEntry {
   description?: string;
 }
 
+/** Чужая глобальная аура (чудо), действующая на эту страну. */
+export interface ExternalAura {
+  statusId: string;
+  ownerCountryId: string;
+  effects: {
+    modifiers?: Modifiers;
+    sectors?: Partial<Record<SectorKey, number>>;
+  };
+}
+
+/** Статус с истечением (контрибуция «Побеждённый», «причина войны» и т.п.). */
+export interface TimedStatus {
+  statusId: string;
+  /** статус снимается, когда world.year достигает untilYear */
+  untilYear: number;
+}
+
+// ---------- Война ----------
+
+export interface WarSide {
+  /** [0] = лидер стороны (объявивший / цель) */
+  countryIds: string[];
+  /** СЕКРЕТ: вложения денег за текущий год по странам; сбрасывается каждый тик */
+  investedThisYear: Record<string, number>;
+  /** публичный счёт выигранных годовых битв */
+  score: number;
+}
+
+export interface WarState {
+  id: string;
+  startedYear: number;
+  /** текст-обоснование агрессора (публичен) */
+  casusBelli: string;
+  attacker: WarSide;
+  defender: WarSide;
+  status: 'active' | 'ended';
+  /** вердикт суда ООН (постфактум) */
+  unVerdict: 'pending' | 'just' | 'unjust';
+  endedYear?: number;
+  /** null = мирный договор без победителя */
+  winnerSide?: 'attacker' | 'defender' | null;
+  /** нерастраченные очки победителя (тратит лидер победившей стороны) */
+  victorPointsRemaining: number;
+}
+
 /** Полное (скрытое) состояние одной страны. Никогда не уходит клиенту целиком. */
 export interface CountryState {
   id: string;
@@ -54,6 +99,10 @@ export interface CountryState {
   declaredForbes: number | null;
   /** накопленные инвестиции по секторам (бюджетный механик) */
   sectorInvestment: Partial<Record<SectorKey, number>>;
+  /** чужие глобальные ауры; пересобирается recomputeAuras(), не редактировать руками */
+  externalAuras: ExternalAura[];
+  /** статусы с истечением (untilYear); чистятся в начале тика */
+  timedStatuses: TimedStatus[];
 }
 
 export interface WorldState {
@@ -63,6 +112,8 @@ export interface WorldState {
   /** какие чудеса уже заняты: wonderId → countryId */
   wondersTaken: Map<string, string>;
   seed: number;
+  /** войны мира (активные и завершённые) */
+  wars: WarState[];
 }
 
 export function createCountryState(country: Country, questId: string | null = null): CountryState {
@@ -93,6 +144,8 @@ export function createCountryState(country: Country, questId: string | null = nu
     questId,
     declaredForbes: null,
     sectorInvestment: {},
+    externalAuras: [],
+    timedStatuses: [],
   };
 }
 
@@ -110,7 +163,7 @@ export function createWorld(
     state.dovolstvo = content.tunables.dovolstvo.start;
     countries.set(id, state);
   }
-  return { year: 1, countries, wondersTaken: new Map(), seed };
+  return { year: 1, countries, wondersTaken: new Map(), seed, wars: [] };
 }
 
 export function totalPopulation(s: CountryState): number {
@@ -123,6 +176,7 @@ export interface WorldStateJson {
   countries: Record<string, CountryState>;
   wondersTaken: Record<string, string>;
   seed: number;
+  wars?: WarState[];
 }
 
 export function serializeWorld(w: WorldState): WorldStateJson {
@@ -131,14 +185,22 @@ export function serializeWorld(w: WorldState): WorldStateJson {
     countries: Object.fromEntries(w.countries),
     wondersTaken: Object.fromEntries(w.wondersTaken),
     seed: w.seed,
+    wars: w.wars,
   };
 }
 
 export function deserializeWorld(j: WorldStateJson): WorldState {
+  const countries = new Map(Object.entries(j.countries));
+  // дефолты для миров, сохранённых до Э10 (живые комнаты в Redis)
+  for (const s of countries.values()) {
+    s.externalAuras ??= [];
+    s.timedStatuses ??= [];
+  }
   return {
     year: j.year,
-    countries: new Map(Object.entries(j.countries)),
+    countries,
     wondersTaken: new Map(Object.entries(j.wondersTaken)),
     seed: j.seed,
+    wars: j.wars ?? [],
   };
 }

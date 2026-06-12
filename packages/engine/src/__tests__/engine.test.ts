@@ -2,8 +2,28 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent, type GameContent } from '../content/load.js';
-import { createWorld, createCountryState, totalPopulation, type WorldState } from '../state.js';
+import {
+  createWorld,
+  createCountryState,
+  deserializeWorld,
+  serializeWorld,
+  totalPopulation,
+  type WorldState,
+} from '../state.js';
 import { tick } from '../tick.js';
+import { aggregateModifiers } from '../modifiers.js';
+import { recomputeAuras } from '../auras.js';
+import {
+  WarError,
+  applyVictorReward,
+  declareWar,
+  endWarByPeace,
+  expireTimedStatuses,
+  investInWar,
+  joinWar,
+  resolveWarBattles,
+  sideStrength,
+} from '../war.js';
 import { recomputeStatuses } from '../combo.js';
 import { applyChoice, availableCards, drawCard } from '../cards.js';
 import { computeForbes, questCompleted } from '../forbes.js';
@@ -319,5 +339,174 @@ describe('симуляция партии', () => {
       expect(Number.isFinite(f.total)).toBe(true);
       expect(f.total).toBeGreaterThanOrEqual(0);
     }
+  });
+});
+
+describe('глобальные ауры чудес (Э10)', () => {
+  it('YouTube принуждает чужие СМИ к либеральности, владельца не трогает', () => {
+    const world = freshWorld();
+    const am = world.countries.get('amerika')!;
+    const im = world.countries.get('imperiya')!;
+    buildWonder(world, am, 'wonder_first_youtube', content);
+    recomputeAuras(world, content);
+    expect(aggregateModifiers(im, content).special.forceLiberalMedia).toBe(true);
+    expect(aggregateModifiers(am, content).special.forceLiberalMedia).toBeUndefined();
+  });
+
+  it('слом чуда снимает ауру', () => {
+    const world = freshWorld();
+    const am = world.countries.get('amerika')!;
+    const im = world.countries.get('imperiya')!;
+    buildWonder(world, am, 'wonder_first_youtube', content);
+    recomputeAuras(world, content);
+    expect(aggregateModifiers(im, content).special.forceLiberalMedia).toBe(true);
+    // имитация wreck_wonder
+    am.wondersBuilt.pop();
+    am.activeStatuses = am.activeStatuses.filter((id) => id !== 'wonder_first_youtube');
+    world.wondersTaken.delete('wonder_first_youtube');
+    recomputeAuras(world, content);
+    expect(aggregateModifiers(im, content).special.forceLiberalMedia).toBeUndefined();
+  });
+
+  it('Луна давит чужое довольство через тик', () => {
+    const worldA = freshWorld();
+    const worldB = freshWorld();
+    buildWonder(worldB, worldB.countries.get('amerika')!, 'wonder_lunar_flight', content);
+    tick(worldA, content, makeRng(7));
+    tick(worldB, content, makeRng(7));
+    const dovWithout = worldA.countries.get('imperiya')!.dovolstvo;
+    const dovWith = worldB.countries.get('imperiya')!.dovolstvo;
+    expect(dovWith).toBeLessThan(dovWithout);
+  });
+});
+
+describe('война (Э10)', () => {
+  function warWorld() {
+    const world = freshWorld(['amerika', 'imperiya', 'drakoniya']);
+    // запас прочности, чтобы голод/перевороты не шумели в тестах
+    for (const s of world.countries.values()) {
+      s.resources.food = 5000;
+      s.resources.money = 1000;
+      s.resources.influence = 100;
+      s.dovolstvo = 80;
+    }
+    return world;
+  }
+
+  it('объявление: списывает влияние, война активна, дубль запрещён', () => {
+    const world = warWorld();
+    const am = world.countries.get('amerika')!;
+    const before = am.resources.influence;
+    const war = declareWar(world, 'amerika', 'imperiya', 'Они украли наши чертежи', content);
+    expect(war.status).toBe('active');
+    expect(am.resources.influence).toBe(before - content.tunables.war.declareCostInfluence);
+    expect(() => declareWar(world, 'amerika', 'imperiya', 'ещё раз', content)).toThrow(WarError);
+  });
+
+  it('сила: вложения и скрытое видны только в полной оценке', () => {
+    const world = warWorld();
+    const war = declareWar(world, 'amerika', 'imperiya', 'тест', content);
+    investInWar(world, war, 'amerika', 500);
+    const pubNoInvest = sideStrength(world, war.attacker, content, { hidden: false, invest: false });
+    const fullInvest = sideStrength(world, war.attacker, content, { hidden: true, invest: true });
+    expect(fullInvest).toBeGreaterThan(pubNoInvest);
+    expect(world.countries.get('amerika')!.resources.money).toBe(500);
+  });
+
+  it('битва детерминирована с фиксированным rng, содержание платят оба', () => {
+    const world = warWorld();
+    const am = world.countries.get('amerika')!;
+    const im = world.countries.get('imperiya')!;
+    am.sectors.army = 12;
+    am.population.siloviki = 500;
+    im.sectors.army = 0;
+    im.population.siloviki = 0;
+    const war = declareWar(world, 'amerika', 'imperiya', 'тест', content);
+    const moneyBefore = im.resources.money;
+    const events = resolveWarBattles(world, content, makeRng(1));
+    expect(war.attacker.score + war.defender.score).toBe(1);
+    expect(events.some((e) => e.kind === 'war')).toBe(true);
+    expect(im.resources.money).toBeLessThan(moneyBefore);
+  });
+
+  it('решающая победа: очки, грабёж, контрибуция со сроком', () => {
+    const world = warWorld();
+    const am = world.countries.get('amerika')!;
+    const im = world.countries.get('imperiya')!;
+    am.sectors.army = 12;
+    am.population.siloviki = 1000;
+    im.sectors.army = 0;
+    im.population.siloviki = 0;
+    const war = declareWar(world, 'amerika', 'imperiya', 'тест', content);
+    const t = content.tunables.war;
+    let guard = 0;
+    while (war.status === 'active' && guard++ < 20) {
+      resolveWarBattles(world, content, makeRng(guard));
+    }
+    expect(war.status).toBe('ended');
+    expect(war.winnerSide).toBe('attacker');
+    expect(war.victorPointsRemaining).toBeGreaterThanOrEqual(
+      t.decisiveScoreGap * t.victorPointsPerScoreGap,
+    );
+
+    im.resources.money = 1000;
+    const amMoney = am.resources.money;
+    applyVictorReward(world, war, 'amerika', 'loot', content);
+    expect(am.resources.money).toBeGreaterThan(amMoney);
+    expect(im.resources.money).toBeLessThan(1000);
+
+    applyVictorReward(world, war, 'amerika', 'kontributsiya', content);
+    expect(im.activeStatuses).toContain('status_pobezhdyonny');
+    expect(im.timedStatuses.some((ts) => ts.statusId === 'status_pobezhdyonny')).toBe(true);
+
+    world.year += t.kontributsiyaYears + 1;
+    expireTimedStatuses(world);
+    expect(im.activeStatuses).not.toContain('status_pobezhdyonny');
+  });
+
+  it('мирный договор завершает войну без победителя', () => {
+    const world = warWorld();
+    const war = declareWar(world, 'amerika', 'imperiya', 'тест', content);
+    const ended = endWarByPeace(world, war.id);
+    expect(ended.status).toBe('ended');
+    expect(ended.winnerSide).toBeNull();
+    expect(() => endWarByPeace(world, war.id)).toThrow(WarError);
+  });
+
+  it('коалиция: третья страна усиливает сторону и платит при поражении', () => {
+    const world = warWorld();
+    const am = world.countries.get('amerika')!;
+    const im = world.countries.get('imperiya')!;
+    const dr = world.countries.get('drakoniya')!;
+    am.sectors.army = 12;
+    am.population.siloviki = 1000;
+    im.sectors.army = 0;
+    im.population.siloviki = 0;
+    dr.sectors.army = 0;
+    dr.population.siloviki = 0;
+    const war = declareWar(world, 'amerika', 'imperiya', 'тест', content);
+    const before = sideStrength(world, war.defender, content, { hidden: true, invest: false });
+    joinWar(world, war, 'drakoniya', 'defender');
+    const after = sideStrength(world, war.defender, content, { hidden: true, invest: false });
+    expect(after).toBeGreaterThanOrEqual(before);
+
+    const drInfluence = dr.resources.influence;
+    let guard = 0;
+    while (war.status === 'active' && guard++ < 20) {
+      resolveWarBattles(world, content, makeRng(100 + guard));
+    }
+    expect(war.winnerSide).toBe('attacker');
+    expect(dr.resources.influence).toBeLessThan(drInfluence); // штраф союзнику проигравших
+  });
+
+  it('сериализация мира с войнами выживает в JSON', () => {
+    const world = warWorld();
+    declareWar(world, 'amerika', 'imperiya', 'тест', content);
+    const json = JSON.parse(JSON.stringify(serializeWorld(world)));
+    const back = deserializeWorld(json);
+    expect(back.wars.length).toBe(1);
+    expect(back.wars[0]!.casusBelli).toBe('тест');
+    expect(back.countries.get('amerika')!.externalAuras).toEqual([]);
+    expect(back.countries.get('amerika')!.timedStatuses).toEqual([]);
   });
 });

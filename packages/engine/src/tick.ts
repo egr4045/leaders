@@ -4,6 +4,9 @@ import { totalPopulation } from './state.js';
 import { aggregateModifiers, effectiveSector, type EffectiveModifiers } from './modifiers.js';
 import { applyEffectsOnce, clamp01_100 } from './effects.js';
 import { recomputeStatuses, type ComboEvent } from './combo.js';
+import { recomputeAuras } from './auras.js';
+import { expireTimedStatuses, resolveWarBattles } from './war.js';
+import { makeRng, type Rng } from './rng.js';
 
 /** Событие года для генерации новостей (Э6). */
 export interface YearEvent {
@@ -17,7 +20,8 @@ export interface YearEvent {
     | 'coup'
     | 'delayed'
     | 'status'
-    | 'population';
+    | 'population'
+    | 'war';
   text: string;
   /** скрытое событие не попадает в публичную сводку само по себе */
   hidden?: boolean;
@@ -31,12 +35,20 @@ export interface TickReport {
 
 /**
  * Годовой пересчёт (фаза Итогов, раздел 4.3). Порядок важен:
- * производство → еда → инфляция → довольство → население →
- * отложенные эффекты → комбо-статусы → переворот.
+ * [0: ауры, истечение статусов, битвы войн] → производство → еда →
+ * инфляция → довольство → население → отложенные эффекты →
+ * комбо-статусы → переворот.
  */
-export function tick(world: WorldState, content: GameContent): TickReport {
+export function tick(world: WorldState, content: GameContent, rng?: Rng): TickReport {
   const t = content.tunables;
   const report: TickReport = { year: world.year, events: [], comboEvents: [] };
+
+  // --- 0. Мировые механики (Э10): ауры чудес, временные статусы, войны ---
+  // битвы — до пер-странового цикла: усталость войны должна попасть
+  // под шаг довольства/переворота этого же года
+  recomputeAuras(world, content);
+  report.events.push(...expireTimedStatuses(world));
+  report.events.push(...resolveWarBattles(world, content, rng ?? makeRng(world.seed + world.year)));
 
   for (const s of world.countries.values()) {
     const eff = aggregateModifiers(s, content);

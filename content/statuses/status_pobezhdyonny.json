@@ -1,0 +1,12 @@
+{
+  "id": "status_pobezhdyonny",
+  "name": "Побеждённый",
+  "type": "state",
+  "description": "Страна проиграла войну и платит контрибуцию: народ унижен, экономика работает на победителя.",
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": -3,
+      "outputMult": { "rabotyagi": 0.9 }
+    }
+  }
+}

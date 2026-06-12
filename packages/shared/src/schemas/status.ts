@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { zId, EffectsSchema } from './common.js';
+import { zId, EffectsSchema, ModifiersSchema, SectorDeltasSchema } from './common.js';
 
 /**
  * Пять типов статусов (раздел 7 спеки):
@@ -31,6 +31,19 @@ export const StatusSchema = z
     description: z.string().optional(),
     /** эффекты, пока статус активен */
     effects: EffectsSchema.optional(),
+    /**
+     * Глобальная аура: модификаторы/добавки секторов, действующие на ВСЕ
+     * ОСТАЛЬНЫЕ страны каждый тик, пока статус активен у владельца
+     * (для чудес: wreck_wonder снимает ауру вместе с чудом).
+     */
+    globalEffects: z
+      .object({
+        modifiers: ModifiersSchema,
+        sectors: SectorDeltasSchema,
+      })
+      .partial()
+      .strict()
+      .optional(),
     unlocks: z
       .object({
         advisorCards: z.array(zId),

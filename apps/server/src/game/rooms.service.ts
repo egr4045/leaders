@@ -18,13 +18,22 @@ import {
   buildWonder,
   WonderError,
   TradeError,
+  declareWar,
+  investInWar,
+  joinWar,
+  endWarByPeace,
+  applyVictorReward,
+  recomputeAuras,
+  sideOf,
   type SpyActionKind,
+  type WarRewardKind,
 } from '@leaders/engine';
 import type { TradeSidePayload } from '@leaders/shared';
 import { ContentService } from '../content.service.js';
 import { RedisService } from '../redis.service.js';
 import { MlService } from '../ml/ml.service.js';
 import { buildSnapshot } from './snapshot.builder.js';
+import { buildYearReports, captureBefore } from './year-report.js';
 import type { RoomState, RoomTimers, RoomPlayer } from './room.types.js';
 
 const ROOM_TTL_SECONDS = 60 * 60 * 24;
@@ -97,6 +106,8 @@ export class RoomsService {
       sectorBudget: {},
       manualPause: false,
       unLayout: 'auto',
+      warVotes: [],
+      yearReports: {},
     };
     this.rooms.set(code, room);
     this.timers.set(code, { botTimers: [] });
@@ -133,6 +144,7 @@ export class RoomsService {
     }
     this.mustPlayer(room, playerId).countryId = countryId;
     this.persist(room);
+    this.broadcast(room);
   }
 
   leaveRoom(code: string, playerId: string) {
@@ -202,6 +214,8 @@ export class RoomsService {
         return t.unVoteSeconds * 1000;
       case 'results':
         return t.resultsSeconds * 1000;
+      case 'year_summary':
+        return t.yearSummarySeconds * 1000;
       default:
         return null;
     }
@@ -231,6 +245,10 @@ export class RoomsService {
           });
         }, 1500);
       }
+    }
+    if (phase === 'year_summary') {
+      // личная сводка: ждём «В кабинет» от всех живых игроков (паттерн readyPlayerIds)
+      room.readyPlayerIds = [];
     }
     if (phase === 'un_comments') {
       room.speakerOrder = room.players.map((p) => p.playerId);
@@ -268,8 +286,8 @@ export class RoomsService {
       this.nextSpeaker(room);
       return;
     }
-    // кабинет и голосование — автоматический переход
-    if (room.phase === 'cabinet' || room.phase === 'un_vote') {
+    // кабинет, голосование и сводка года — автоматический переход
+    if (room.phase === 'cabinet' || room.phase === 'un_vote' || room.phase === 'year_summary') {
       this.advancePhase(room);
       return;
     }
@@ -409,7 +427,10 @@ export class RoomsService {
 
   markReady(code: string, playerId: string) {
     const room = this.mustRoom(code);
-    this.assertPhase(room, 'cabinet');
+    if (room.phase !== 'cabinet' && room.phase !== 'year_summary') {
+      throw new Error('Готовность отмечается в кабинете или сводке года');
+    }
+    if (room.paused) throw new Error('Игра на паузе');
     if (!room.readyPlayerIds.includes(playerId)) {
       room.readyPlayerIds.push(playerId);
     }
@@ -447,10 +468,13 @@ export class RoomsService {
         if (room.world && room.world.year > years) {
           this.enterPhase(room, 'final');
         } else {
-          this.enterPhase(room, 'cabinet');
+          this.enterPhase(room, 'year_summary');
         }
         break;
       }
+      case 'year_summary':
+        this.enterPhase(room, 'cabinet');
+        break;
       default:
         break;
     }
@@ -475,6 +499,9 @@ export class RoomsService {
    */
   /** Определить режим СМИ страны: true = независимые/частные, false = провластные. */
   private isSmiLiberal(country: import('@leaders/engine').CountryState): boolean {
+    // аура чужого YouTube (Э10): СМИ принудительно либеральные
+    const eff = aggregateModifiers(country, this.content);
+    if (eff.special.forceLiberalMedia === true) return true;
     for (const id of country.activeStatuses) {
       const st = this.content.statuses.get(id);
       if (st?.exclusiveGroup === 'regime') {
@@ -527,6 +554,17 @@ export class RoomsService {
           lines.push(liberal ? ch.newsLines.liberal : ch.newsLines.state);
         } else {
           lines.push(`${ch.speaker} предложил — лидер решил: «${ch.label}»`);
+        }
+      }
+      // войны, объявленные в этом году, и заключённый мир — в сводку агрессора/сторон
+      for (const war of room.world.wars) {
+        if (war.startedYear === year && war.attacker.countryIds[0] === countryId) {
+          const targetName =
+            this.content.countries.get(war.defender.countryIds[0]!)?.name ?? '?';
+          lines.push(`Объявлена война «${targetName}». Обоснование: «${war.casusBelli}»`);
+        }
+        if (war.endedYear === year && war.winnerSide === null && sideOf(war, countryId)) {
+          lines.push('Подписан мирный договор — война окончена');
         }
       }
       if (lines.length === 0) lines.push('Год прошёл тихо. Подозрительно тихо.');
@@ -582,7 +620,101 @@ export class RoomsService {
     this.broadcast(room);
   }
 
-  /** Итоги года: применяем голосование ООН, затем tick движка. */
+  // ---------- война (Э10) ----------
+
+  warDeclare(code: string, playerId: string, targetCountryId: string, casusBelli: string) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    const text = String(casusBelli ?? '').trim().slice(0, 300);
+    if (!text) throw new Error('Нужно обоснование войны — ООН будет судить');
+
+    const war = declareWar(room.world, player.countryId, targetCountryId, text, this.content);
+
+    const attackerName = this.content.countries.get(player.countryId)!.name;
+    const targetName = this.content.countries.get(targetCountryId)!.name;
+    this.server?.to(room.code).emit(SocketEvents.GameAnnouncement, {
+      title: '⚔️ ОБЪЯВЛЕНА ВОЙНА',
+      text: `«${attackerName}» объявила войну «${targetName}». Обоснование: «${text}». ООН рассмотрит его на ближайшем заседании.`,
+    });
+    this.botLog(room, `${player.name} объявил войну ${targetName}: «${text}»`);
+    this.persist(room);
+    this.broadcast(room);
+    return { warId: war.id };
+  }
+
+  warInvest(code: string, playerId: string, warId: string, amount: number) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    const war = room.world.wars.find((w) => w.id === warId);
+    if (!war) throw new Error('Война не найдена');
+    investInWar(room.world, war, player.countryId, Number(amount));
+    this.persist(room);
+    this.broadcast(room);
+    const side = sideOf(war, player.countryId);
+    return { invested: war[side!].investedThisYear[player.countryId] ?? 0 };
+  }
+
+  warJoin(code: string, playerId: string, warId: string, side: 'attacker' | 'defender') {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    if (side !== 'attacker' && side !== 'defender') throw new Error('Сторона: attacker или defender');
+    const war = room.world.wars.find((w) => w.id === warId);
+    if (!war) throw new Error('Война не найдена');
+    joinWar(room.world, war, player.countryId, side);
+
+    const joinerName = this.content.countries.get(player.countryId)!.name;
+    const leaderName =
+      this.content.countries.get(war[side].countryIds[0]!)?.name ?? war[side].countryIds[0];
+    this.server?.to(room.code).emit(SocketEvents.GameAnnouncement, {
+      title: '🤝 КОАЛИЦИЯ РАСШИРЯЕТСЯ',
+      text: `«${joinerName}» вступила в войну на стороне «${leaderName}».`,
+    });
+    this.persist(room);
+    this.broadcast(room);
+  }
+
+  /** Суд ООН: голос по справедливости войны (бесплатно, не-участники, 1 голос). */
+  warVote(code: string, playerId: string, warId: string, verdict: 'just' | 'unjust') {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'un_vote');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    if (verdict !== 'just' && verdict !== 'unjust') throw new Error('Вердикт: just или unjust');
+    const war = room.world.wars.find((w) => w.id === warId);
+    if (!war || war.unVerdict !== 'pending') throw new Error('Эта война не на рассмотрении');
+    if (sideOf(war, player.countryId)) throw new Error('Участники войны не голосуют о её справедливости');
+    if (room.warVotes.some((v) => v.warId === warId && v.voterCountryId === player.countryId)) {
+      throw new Error('Вы уже голосовали по этой войне');
+    }
+    room.warVotes.push({ warId, voterCountryId: player.countryId, verdict });
+    this.persist(room);
+    this.broadcast(room);
+  }
+
+  /** Трата очков победителя лидером победившей стороны (в кабинете после победы). */
+  warSpendPoints(code: string, playerId: string, warId: string, reward: WarRewardKind) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) throw new Error('Нет страны');
+    if (reward !== 'loot' && reward !== 'kontributsiya') throw new Error('Награда: loot или kontributsiya');
+    const war = room.world.wars.find((w) => w.id === warId);
+    if (!war) throw new Error('Война не найдена');
+    const result = applyVictorReward(room.world, war, player.countryId, reward, this.content);
+    recomputeAuras(room.world, this.content);
+    this.botLog(room, `${player.name}: ${result.description}`);
+    this.persist(room);
+    this.broadcast(room);
+    return { description: result.description, pointsLeft: war.victorPointsRemaining };
+  }
+
+  /** Итоги года: применяем голосование ООН, вердикты по войнам, затем tick движка. */
   private applyYearResults(room: RoomState) {
     if (!room.world) return;
     const t = this.content.tunables;
@@ -604,7 +736,31 @@ export class RoomsService {
       }
     }
 
-    const report = tick(room.world, this.content);
+    // суд ООН по войнам (Э10): большинство «несправедливо» → санкции агрессору
+    const warEventLines: Record<string, string[]> = {};
+    for (const war of room.world.wars.filter((w) => w.unVerdict === 'pending')) {
+      const votes = room.warVotes.filter((v) => v.warId === war.id);
+      const unjust = votes.filter((v) => v.verdict === 'unjust').length;
+      const just = votes.length - unjust;
+      war.unVerdict = unjust > just ? 'unjust' : 'just';
+      const aggressorId = war.attacker.countryIds[0]!;
+      const aggressor = room.world.countries.get(aggressorId);
+      if (war.unVerdict === 'unjust' && aggressor) {
+        aggressor.sanctions += t.war.unjustSanctions;
+        aggressor.sanctionsReceivedTotal += t.war.unjustSanctions;
+        (warEventLines[aggressorId] ??= []).push(
+          'ООН признала войну несправедливой: агрессор под санкциями',
+        );
+      } else {
+        (warEventLines[aggressorId] ??= []).push('ООН признала войну справедливой');
+      }
+    }
+    room.warVotes = [];
+
+    // снимок «до» для личных сводок года (Э10)
+    const before = captureBefore(room.world, this.content);
+
+    const report = tick(room.world, this.content, makeRng(room.world.seed + room.rngNonce++));
 
     // объявление о переворотах
     for (const ev of report.events) {
@@ -626,7 +782,31 @@ export class RoomsService {
       if (net > 0) (publicEvents[countryId] ??= []).push('ООН ввела санкции');
       else if (net < 0) (publicEvents[countryId] ??= []).push('ООН выразила поддержку');
     }
+    for (const [countryId, lines] of Object.entries(warEventLines)) {
+      (publicEvents[countryId] ??= []).push(...lines);
+    }
     room.lastTickEvents = publicEvents;
+
+    // личные сводки года (фаза year_summary)
+    const unLines: Record<string, string[]> = {};
+    for (const [countryId, net] of tally) {
+      if (net > 0) (unLines[countryId] ??= []).push('ООН ввела против вас санкции');
+      else if (net < 0) (unLines[countryId] ??= []).push('ООН выразила вам поддержку');
+    }
+    for (const [countryId, lines] of Object.entries(warEventLines)) {
+      (unLines[countryId] ??= []).push(...lines);
+    }
+    room.yearReports = buildYearReports(room.world, before, report, unLines, this.content);
+
+    // объявление о решающих победах в войнах
+    for (const war of room.world.wars.filter((w) => w.endedYear === report.year && w.winnerSide)) {
+      const winnerId = war[war.winnerSide!].countryIds[0]!;
+      const winnerName = this.content.countries.get(winnerId)?.name ?? winnerId;
+      this.server?.to(room.code).emit('game:announcement', {
+        title: '⚔️ ВОЙНА ОКОНЧЕНА',
+        text: `«${winnerName}» одержала решающую победу (${war.attacker.score}:${war.defender.score}). Победитель выбирает трофеи.`,
+      });
+    }
 
     // сброс годовых записей
     room.choicesThisYear = {};
@@ -659,6 +839,8 @@ export class RoomsService {
     if (typeof wonderId === 'string') {
       try {
         buildWonder(room.world, s, wonderId, this.content);
+        // чудо могло включить глобальную ауру (Э10)
+        recomputeAuras(room.world, this.content);
       } catch (e) {
         if (e instanceof WonderError) {
           const wonderName = this.content.statuses.get(wonderId)?.name ?? wonderId;
@@ -715,6 +897,10 @@ export class RoomsService {
 
     const rng = makeRng(room.world.seed + room.rngNonce++);
     const outcome = resolveSpyAction(attacker, target, kind, room.world, this.content, rng);
+    // слом чуда снимает его глобальную ауру (Э10)
+    if (kind === 'wreck_wonder' && outcome.success) {
+      recomputeAuras(room.world, this.content);
+    }
     room.spyOrdersLeft[player.countryId] = left - 1;
     room.spyOrders.push({
       year: room.world.year,
@@ -746,7 +932,14 @@ export class RoomsService {
 
   // ---------- дипломатия: ящик предложений (раздел 9) ----------
 
-  tradeOffer(code: string, playerId: string, toCountryId: string, give: TradeSidePayload, take: TradeSidePayload) {
+  tradeOffer(
+    code: string,
+    playerId: string,
+    toCountryId: string,
+    give: TradeSidePayload,
+    take: TradeSidePayload,
+    peaceWarId?: string,
+  ) {
     const room = this.mustRoom(code);
     this.assertPhase(room, 'cabinet');
     const player = this.mustPlayer(room, playerId);
@@ -756,7 +949,21 @@ export class RoomsService {
 
     const cleanGive = this.cleanSide(give);
     const cleanTake = this.cleanSide(take);
-    if (this.sideEmpty(cleanGive) && this.sideEmpty(cleanTake)) {
+
+    // 🕊 мирное предложение (Э10): стороны должны быть по разные стороны активной войны
+    let peace: string | undefined;
+    if (peaceWarId) {
+      const war = room.world.wars.find((w) => w.id === peaceWarId);
+      if (!war || war.status !== 'active') throw new Error('Эта война уже не идёт');
+      const mySide = sideOf(war, player.countryId);
+      const theirSide = sideOf(war, toCountryId);
+      if (!mySide || !theirSide || mySide === theirSide) {
+        throw new Error('Мир предлагают противнику по войне');
+      }
+      peace = peaceWarId;
+    }
+
+    if (this.sideEmpty(cleanGive) && this.sideEmpty(cleanTake) && !peace) {
       throw new Error('Пустая сделка');
     }
 
@@ -770,6 +977,7 @@ export class RoomsService {
       give: cleanGive,
       take: cleanTake,
       status: 'pending' as const,
+      ...(peace ? { peaceWarId: peace } : {}),
     };
     room.tradeOffers.push(offer);
     this.persist(room);
@@ -795,6 +1003,17 @@ export class RoomsService {
         // сервер валидирует и применяет атомарно; обещания не enforced
         applyTrade(from, to, { from: from.id, to: to.id, give: offer.give, take: offer.take }, this.content);
         offer.status = 'accepted';
+        // 🕊 мирное предложение: принятие завершает войну (Э10)
+        if (offer.peaceWarId) {
+          const war = room.world.wars.find((w) => w.id === offer.peaceWarId);
+          if (war && war.status === 'active') {
+            endWarByPeace(room.world, war.id);
+            this.server?.to(room.code).emit(SocketEvents.GameAnnouncement, {
+              title: '🕊 МИР',
+              text: `«${offer.fromName}» и «${offer.toName}» подписали мирный договор. Война окончена.`,
+            });
+          }
+        }
       } catch (e) {
         if (e instanceof TradeError) {
           offer.status = 'failed';
@@ -980,6 +1199,19 @@ export class RoomsService {
             /* не хватило влияния */
           }
         });
+        // суд ООН по войнам: бот голосует по каждой pending-войне (60% «несправедливо»)
+        this.botSchedule(room, rnd(1000, 3000), () => {
+          if (room.phase !== 'un_vote' || !room.world || !bot.countryId) return;
+          for (const war of room.world.wars.filter((w) => w.unVerdict === 'pending')) {
+            const verdict = Math.random() < 0.6 ? 'unjust' : 'just';
+            try {
+              this.warVote(room.code, bot.playerId, war.id, verdict);
+              this.botLog(room, `${bot.name} судит войну: ${verdict === 'unjust' ? 'несправедлива' : 'справедлива'}`);
+            } catch {
+              /* участник или уже голосовал */
+            }
+          }
+        });
       }
     }
   }
@@ -1003,9 +1235,19 @@ export class RoomsService {
     // 1) сначала ответить на входящие сделки
     const pending = room.tradeOffers.find((o) => o.toCountryId === bot.countryId && o.status === 'pending');
     if (pending) {
-      const accept = Math.random() < 0.6;
+      // мирное предложение бот принимает охотнее (80%), если его сторона проигрывает
+      let acceptChance = 0.6;
+      if (pending.peaceWarId) {
+        const war = room.world.wars.find((w) => w.id === pending.peaceWarId);
+        const mySide = war && bot.countryId ? sideOf(war, bot.countryId) : null;
+        if (war && mySide) {
+          const other = mySide === 'attacker' ? 'defender' : 'attacker';
+          acceptChance = war[mySide].score < war[other].score ? 0.8 : 0.4;
+        }
+      }
+      const accept = Math.random() < acceptChance;
       const res = this.tradeRespond(room.code, bot.playerId, pending.id, accept);
-      this.botLog(room, `${bot.name} ${accept ? 'принял' : 'отклонил'} сделку от ${pending.fromName}${res.status === 'failed' ? ` (сорвалась: ${res.failReason})` : ''}`);
+      this.botLog(room, `${bot.name} ${accept ? 'принял' : 'отклонил'} ${pending.peaceWarId ? 'мирное предложение' : 'сделку'} от ${pending.fromName}${res.status === 'failed' ? ` (сорвалась: ${res.failReason})` : ''}`);
       return;
     }
 
@@ -1273,6 +1515,8 @@ export class RoomsService {
           lastTickEvents: data.lastTickEvents ?? null,
           manualPause: data.manualPause ?? false,
           unLayout: data.unLayout ?? 'auto',
+          warVotes: data.warVotes ?? [],
+          yearReports: data.yearReports ?? {},
           world: data.world ? deserializeWorld(data.world) : null,
         };
         // все соединения мертвы после рестарта (боты живут на сервере — остаются connected)

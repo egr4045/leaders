@@ -3,6 +3,7 @@ import { JoinScreen } from './screens/JoinScreen';
 import { LobbyScreen } from './screens/LobbyScreen';
 import { CabinetScreen } from './screens/CabinetScreen';
 import { UnScreen } from './screens/UnScreen';
+import { YearSummaryScreen } from './screens/YearSummaryScreen';
 import { FinalScreen } from './screens/FinalScreen';
 import { PauseOverlay, ErrorToast } from './ui/Overlays';
 import { AnnouncementOverlay } from './ui/AnnouncementOverlay';
@@ -24,6 +25,8 @@ function Router() {
     case 'un_vote':
     case 'results':
       return <UnScreen />;
+    case 'year_summary':
+      return <YearSummaryScreen />;
     case 'final':
       return <FinalScreen />;
     default:

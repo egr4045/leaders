@@ -115,19 +115,35 @@ export function TradePanel({
   const [target, setTarget] = useState('');
   const [give, setGive] = useState<TradeSidePayload>({});
   const [take, setTake] = useState<TradeSidePayload>({});
+  const [withPeace, setWithPeace] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   const offers = snapshot?.offers ?? [];
   const incoming = offers.filter((o) => o.toCountryId === you.countryId && o.status === 'pending');
   const recent = [...offers].reverse().slice(0, 6);
 
+  // активная война между мной и выбранным контрагентом (для мирного предложения)
+  const warWithTarget = (snapshot?.wars ?? []).find(
+    (w) =>
+      w.status === 'active' &&
+      w.yourSide &&
+      target &&
+      (w.yourSide === 'attacker' ? w.defender : w.attacker).countryIds.includes(target),
+  );
+
   const send = async () => {
     setMsg(null);
-    const res = await emitRaw<{ offerId: string }>('trade:offer', { toCountryId: target, give, take });
+    const res = await emitRaw<{ offerId: string }>('trade:offer', {
+      toCountryId: target,
+      give,
+      take,
+      ...(withPeace && warWithTarget ? { peaceWarId: warWithTarget.id } : {}),
+    });
     if (res.ok) {
-      setMsg('📨 Предложение отправлено');
+      setMsg(withPeace && warWithTarget ? '🕊 Мирное предложение отправлено' : '📨 Предложение отправлено');
       setGive({});
       setTake({});
+      setWithPeace(false);
     } else setMsg(res.error ?? 'Ошибка');
   };
 
@@ -159,6 +175,9 @@ export function TradePanel({
               {incoming.map((o) => (
                 <div key={o.id} className="mb-2 rounded-lg border border-amber-700/40 p-2 text-xs">
                   <div className="mb-1 font-semibold text-amber-300">{o.fromName}</div>
+                  {o.peaceWarId && (
+                    <div className="mb-1 font-semibold text-emerald-300">🕊 Мирное предложение — принятие завершит войну</div>
+                  )}
                   <div>Предлагает: <span className="text-emerald-300">{sideText(o.give)}</span></div>
                   <div>Хочет взамен: <span className="text-red-300">{sideText(o.take)}</span></div>
                   <div className="mt-1 flex gap-2">
@@ -192,6 +211,16 @@ export function TradePanel({
               <SideEditor title="Я отдаю" value={give} onChange={setGive} />
               <SideEditor title="Хочу взамен" value={take} onChange={setTake} />
             </div>
+            {warWithTarget && (
+              <label className="mt-2 flex items-center gap-2 rounded-lg border border-emerald-800/60 bg-emerald-950/30 px-2 py-1.5 text-xs">
+                <input
+                  type="checkbox"
+                  checked={withPeace}
+                  onChange={(e) => setWithPeace(e.target.checked)}
+                />
+                <span>🕊 <b>Завершить войну этой сделкой</b> — принятие = мирный договор</span>
+              </label>
+            )}
             <button
               disabled={!target}
               onClick={() => void send()}

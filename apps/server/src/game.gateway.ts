@@ -217,10 +217,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   tradeOffer(
     @ConnectedSocket() socket: Socket,
     @MessageBody()
-    body: { toCountryId: string; give: TradeSidePayload; take: TradeSidePayload },
+    body: { toCountryId: string; give: TradeSidePayload; take: TradeSidePayload; peaceWarId?: string },
   ) {
     return this.withSession(socket, (s) =>
-      this.rooms.tradeOffer(s.roomCode, s.playerId, body?.toCountryId ?? '', body?.give ?? {}, body?.take ?? {}),
+      this.rooms.tradeOffer(
+        s.roomCode,
+        s.playerId,
+        body?.toCountryId ?? '',
+        body?.give ?? {},
+        body?.take ?? {},
+        typeof body?.peaceWarId === 'string' ? body.peaceWarId : undefined,
+      ),
     );
   }
 
@@ -245,6 +252,55 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   forbesDeclare(@ConnectedSocket() socket: Socket, @MessageBody() body: { value: number }) {
     return this.withSession(socket, (s) =>
       this.rooms.declareForbes(s.roomCode, s.playerId, Number(body?.value)),
+    );
+  }
+
+  // ---------- война (Э10) ----------
+
+  @SubscribeMessage(SocketEvents.WarDeclare)
+  warDeclare(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { targetCountryId: string; casusBelli: string },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.warDeclare(s.roomCode, s.playerId, body?.targetCountryId ?? '', body?.casusBelli ?? ''),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.WarInvest)
+  warInvest(@ConnectedSocket() socket: Socket, @MessageBody() body: { warId: string; amount: number }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.warInvest(s.roomCode, s.playerId, body?.warId ?? '', Number(body?.amount)),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.WarJoin)
+  warJoin(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { warId: string; side: 'attacker' | 'defender' },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.warJoin(s.roomCode, s.playerId, body?.warId ?? '', body?.side),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.WarSpendPoints)
+  warSpendPoints(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { warId: string; reward: 'loot' | 'kontributsiya' },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.warSpendPoints(s.roomCode, s.playerId, body?.warId ?? '', body?.reward),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.UnWarVote)
+  unWarVote(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { warId: string; verdict: 'just' | 'unjust' },
+  ) {
+    return this.withSession(socket, (s) =>
+      this.rooms.warVote(s.roomCode, s.playerId, body?.warId ?? '', body?.verdict),
     );
   }
 

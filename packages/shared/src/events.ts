@@ -58,6 +58,18 @@ export const SocketEvents = {
   UnVote: 'un:vote',
   ForbesDeclare: 'forbes:declare',
 
+  // война (Э10)
+  /** объявить войну (c2s, { targetCountryId, casusBelli }) */
+  WarDeclare: 'war:declare',
+  /** вложить деньги в военную кампанию (c2s, { warId, amount }) */
+  WarInvest: 'war:invest',
+  /** вступить в коалицию (c2s, { warId, side }) */
+  WarJoin: 'war:join',
+  /** потратить очки победителя (c2s, { warId, reward: 'loot'|'kontributsiya' }) */
+  WarSpendPoints: 'war:spend_points',
+  /** суд ООН: голос по справедливости войны (c2s, { warId, verdict: 'just'|'unjust' }) */
+  UnWarVote: 'un:war_vote',
+
   // видео (Э7): токены LiveKit и приватные звонки
   VideoToken: 'video:token',
   CallInvite: 'call:invite',

@@ -28,6 +28,8 @@ export const TunablesSchema = z
         unVoteSeconds: z.number().default(60),
         /** показ итогов года, секунд */
         resultsSeconds: z.number().default(45),
+        /** личная сводка начала года, секунд */
+        yearSummarySeconds: z.number().default(90),
         /** максимальная пауза на реконнект, секунд */
         reconnectPauseSecondsMax: z.number().default(120),
       })
@@ -151,6 +153,48 @@ export const TunablesSchema = z
       .object({
         /** накопленных ден. инвестиций для роста сектора на 1 уровень */
         investPerLevel: z.number().default(1000),
+      })
+      .default({}),
+    war: z
+      .object({
+        /** цена объявления войны, влияния */
+        declareCostInfluence: z.number().default(5),
+        /** вклад уровня Армии в силу стороны */
+        armyWeightPerLevel: z.number().default(10),
+        /** вклад одного силовика в силу стороны */
+        silovikiWeight: z.number().default(0.05),
+        /** + к силе за каждые 100 вложенных денег */
+        investStrengthPer100: z.number().default(2),
+        /** ± к шансу победы в битве за каждый пункт разницы сил */
+        battlePerPointDelta: z.number().default(0.01),
+        /** разрыв счёта войны для решающей победы */
+        decisiveScoreGap: z.number().int().default(3),
+        /** очков победителя за каждый пункт итогового разрыва */
+        victorPointsPerScoreGap: z.number().default(10),
+        /** ежегодные военные расходы: доля казны каждого участника */
+        upkeepMoneyPct: z.number().default(0.05),
+        /** потери силовиков победителя битвы за год (доля) */
+        attritionWinnerPct: z.number().default(0.03),
+        /** потери силовиков проигравшего битву за год (доля) */
+        attritionLoserPct: z.number().default(0.06),
+        /** усталость от войны: − довольства каждому участнику в год */
+        warWearinessDovolstvo: z.number().default(3),
+        /** санкций агрессору, если ООН признала войну несправедливой */
+        unjustSanctions: z.number().int().default(1),
+        /** цена награды «Грабёж», очков победителя */
+        lootCostPoints: z.number().default(10),
+        /** доля денег/золота/еды проигравшего при грабеже */
+        lootPct: z.number().default(0.2),
+        /** цена награды «Контрибуция», очков победителя */
+        kontributsiyaCostPoints: z.number().default(15),
+        /** сколько лет проигравший носит статус «Побеждённый» */
+        kontributsiyaYears: z.number().int().default(3),
+        /** разовая дань: доля денег проигравшего */
+        kontributsiyaTributePct: z.number().default(0.15),
+        /** форбс-легаси победителю за контрибуцию */
+        kontributsiyaWinnerForbes: z.number().default(50),
+        /** штраф влияния союзникам проигравшей стороны */
+        allyDefeatInfluencePenalty: z.number().default(15),
       })
       .default({}),
   })

@@ -17,3 +17,5 @@ export * from './forbes.js';
 export * from './trade.js';
 export * from './spy.js';
 export * from './wonders.js';
+export * from './auras.js';
+export * from './war.js';

@@ -72,6 +72,15 @@ export function aggregateModifiers(state: CountryState, content: GameContent): E
     }
   }
   for (const m of state.permanentModifiers) foldModifiers(eff, m);
+  // чужие глобальные ауры (чудеса, Э10) — материализованы recomputeAuras()
+  for (const aura of state.externalAuras ?? []) {
+    if (aura.effects.modifiers) foldModifiers(eff, aura.effects.modifiers);
+    if (aura.effects.sectors) {
+      for (const k of SECTOR_KEYS) {
+        eff.sectorAdds[k] += aura.effects.sectors[k] ?? 0;
+      }
+    }
+  }
   return eff;
 }
 

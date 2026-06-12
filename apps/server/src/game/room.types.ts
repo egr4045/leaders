@@ -1,4 +1,4 @@
-import type { AdvisorCard, GamePhase, TradeOfferView, UnLayout } from '@leaders/shared';
+import type { AdvisorCard, GamePhase, TradeOfferView, UnLayout, YearReport } from '@leaders/shared';
 import type { SpyActionKind, SpyOutcome, WorldState } from '@leaders/engine';
 
 export interface RoomPlayer {
@@ -85,6 +85,10 @@ export interface RoomState {
   manualPause: boolean;
   /** раскладка видео ООН, принудительно выбранная председателем */
   unLayout: UnLayout;
+  /** голоса суда ООН по войнам (фаза un_vote, по войнам с вердиктом pending) */
+  warVotes: { warId: string; voterCountryId: string; verdict: 'just' | 'unjust' }[];
+  /** личные сводки прошедшего года (фаза year_summary), per countryId */
+  yearReports: Record<string, YearReport>;
 }
 
 /** Транзиентные таймеры (не сериализуются в Redis). */

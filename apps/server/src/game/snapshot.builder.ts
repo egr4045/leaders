@@ -3,15 +3,21 @@ import type {
   PrivateCountryView,
   RoomSnapshot,
   PlayerInfo,
+  WarView,
   YearProjection,
 } from '@leaders/shared';
 import { SECTOR_KEYS } from '@leaders/shared';
 import {
   aggregateModifiers,
+  battleWinChance,
   computeForbes,
   effectiveSector,
   questCompleted,
+  sideOf,
+  sideStrength,
   type GameContent,
+  type WarState,
+  type WorldState,
 } from '@leaders/engine';
 import type { RoomState } from './room.types.js';
 
@@ -60,10 +66,12 @@ export function buildSnapshot(
 
       if (p.playerId === forPlayerId) {
         const eff = aggregateModifiers(s, content);
-        const smiIsLiberal = s.activeStatuses.some((id) => {
-          const st = content.statuses.get(id);
-          return st?.exclusiveGroup === 'regime' && Boolean((st as Record<string, unknown>).mediaIsLiberal);
-        });
+        const smiIsLiberal =
+          eff.special.forceLiberalMedia === true ||
+          s.activeStatuses.some((id) => {
+            const st = content.statuses.get(id);
+            return st?.exclusiveGroup === 'regime' && Boolean((st as Record<string, unknown>).mediaIsLiberal);
+          });
         const quest = s.questId ? content.quests.get(s.questId) : null;
         you = {
           countryId: p.countryId,
@@ -95,6 +103,13 @@ export function buildSnapshot(
           callsLeft: room.callsLeft[p.countryId] ?? 0,
           cardsLeft: Math.max(0, (content.tunables.cabinet?.cardsPerTurn ?? 5) - (room.cardsChosenThisYear?.[p.countryId] ?? 0)),
           smiIsLiberal,
+          auras: (s.externalAuras ?? []).map((a) => ({
+            statusId: a.statusId,
+            name: content.statuses.get(a.statusId)?.name ?? a.statusId,
+            ownerCountryName:
+              content.countries.get(a.ownerCountryId)?.name ?? a.ownerCountryId,
+            description: content.statuses.get(a.statusId)?.description,
+          })),
           projection: computeProjection(s, content),
         };
       } else {
@@ -133,6 +148,18 @@ export function buildSnapshot(
         };
       })
       .sort((a, b) => b.real - a.real);
+  }
+
+  // войны: публичные факты всем, личные поля — только участнику.
+  // КРИТИЧНО: WarState не сериализуется сырым — investedThisYear врага секретен.
+  const myCountryId = me?.countryId ?? null;
+  const wars: WarView[] = room.world
+    ? room.world.wars.map((w) => buildWarView(w, room.world!, myCountryId, content))
+    : [];
+
+  const warVoteTally: Record<string, { just: number; unjust: number }> = {};
+  for (const v of room.warVotes ?? []) {
+    (warVoteTally[v.warId] ??= { just: 0, unjust: 0 })[v.verdict] += 1;
   }
 
   const realPlayers = room.players.filter((p) => !p.isBot);
@@ -179,6 +206,12 @@ export function buildSnapshot(
       }
       return tally;
     })(),
+    wars,
+    warVoteTally,
+    yearReport:
+      room.phase === 'year_summary' && myCountryId
+        ? (room.yearReports?.[myCountryId] ?? null)
+        : null,
     lastResults:
       room.lastTickEvents && (room.phase === 'results' || room.phase === 'final')
         ? Object.entries(room.lastTickEvents).map(([countryId, lines]) => ({
@@ -189,6 +222,47 @@ export function buildSnapshot(
         : null,
     finalForbes,
   };
+}
+
+/**
+ * Война глазами игрока. Публично: стороны, обоснование, счёт, вердикт.
+ * Участнику добавляются его вложения и оценка шанса (своя сторона — полная сила
+ * с вложениями; враг — публичная оценка без скрытых статусов и вложений).
+ */
+function buildWarView(
+  w: WarState,
+  world: WorldState,
+  myCountryId: string | null,
+  content: GameContent,
+): WarView {
+  const names = (ids: string[]) => ids.map((id) => content.countries.get(id)?.name ?? id);
+  const view: WarView = {
+    id: w.id,
+    startedYear: w.startedYear,
+    casusBelli: w.casusBelli,
+    attacker: { countryIds: w.attacker.countryIds, countryNames: names(w.attacker.countryIds), score: w.attacker.score },
+    defender: { countryIds: w.defender.countryIds, countryNames: names(w.defender.countryIds), score: w.defender.score },
+    status: w.status,
+    unVerdict: w.unVerdict,
+    endedYear: w.endedYear,
+    winnerSide: w.winnerSide,
+  };
+
+  const mySide = myCountryId ? sideOf(w, myCountryId) : null;
+  if (mySide && myCountryId) {
+    view.yourSide = mySide;
+    view.yourInvestedThisYear = w[mySide].investedThisYear[myCountryId] ?? 0;
+    if (w.status === 'active') {
+      const my = sideStrength(world, w[mySide], content, { hidden: true, invest: true });
+      const enemySide = mySide === 'attacker' ? 'defender' : 'attacker';
+      const enemy = sideStrength(world, w[enemySide], content, { hidden: false, invest: false });
+      view.estimatedWinChancePct = Math.round((battleWinChance(my, enemy, content) * 100) / 5) * 5;
+    }
+    if (w.status === 'ended' && w.winnerSide && w[w.winnerSide].countryIds[0] === myCountryId) {
+      view.victorPointsRemaining = w.victorPointsRemaining;
+    }
+  }
+  return view;
 }
 
 function roundRec<K extends string>(rec: Record<K, number>): Record<K, number> {

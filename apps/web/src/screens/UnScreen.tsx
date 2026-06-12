@@ -72,6 +72,71 @@ function NewsFeed() {
   );
 }
 
+/** Суд ООН по войнам: оглашение обоснования + голосование «справедлива/нет». */
+function WarCourtPanel() {
+  const { snapshot, emitRaw } = useGame();
+  const [msg, setMsg] = useState<string | null>(null);
+  if (!snapshot?.you) return null;
+
+  const pending = snapshot.wars.filter((w) => w.unVerdict === 'pending');
+  if (pending.length === 0) return null;
+
+  const vote = async (warId: string, verdict: 'just' | 'unjust') => {
+    const res = await emitRaw(SocketEvents.UnWarVote, { warId, verdict });
+    setMsg(res.ok ? '✓ Вердикт учтён' : (res.error ?? 'Ошибка'));
+    setTimeout(() => setMsg(null), 3000);
+  };
+
+  return (
+    <div className="w-full">
+      <div className="mb-2 flex items-center justify-between">
+        <div className="font-bold text-amber-400">⚖️ Суд ООН: справедливы ли войны?</div>
+        {msg && <span className="text-xs text-amber-400">{msg}</span>}
+      </div>
+      <div className="flex flex-col gap-2">
+        {pending.map((w) => {
+          const tally = snapshot.warVoteTally[w.id];
+          const iAmIn = !!w.yourSide;
+          return (
+            <div key={w.id} className="rounded-xl bg-slate-900 p-3 text-sm">
+              <div className="font-bold text-red-300">
+                ⚔️ {w.attacker.countryNames.join(' + ')} <span className="text-slate-500">против</span>{' '}
+                {w.defender.countryNames.join(' + ')}
+              </div>
+              <div className="my-1 rounded border-l-2 border-amber-600 bg-slate-950 px-2 py-1 text-xs italic text-slate-300">
+                «{w.casusBelli}»
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-slate-500">
+                  справедлива {tally?.just ?? 0} · несправедлива {tally?.unjust ?? 0}
+                </span>
+                {iAmIn ? (
+                  <span className="text-xs text-slate-600">участники не голосуют</span>
+                ) : (
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => void vote(w.id, 'just')}
+                      className="rounded bg-emerald-700 px-2 py-1 text-xs font-semibold hover:bg-emerald-600"
+                    >
+                      Справедлива
+                    </button>
+                    <button
+                      onClick={() => void vote(w.id, 'unjust')}
+                      className="rounded bg-red-700 px-2 py-1 text-xs font-semibold hover:bg-red-600"
+                    >
+                      Несправедлива
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function VotePanel() {
   const { snapshot, emitRaw } = useGame();
   const [msg, setMsg] = useState<string | null>(null);
@@ -350,6 +415,7 @@ export function UnScreen() {
       {phase === 'un_vote' && (
         <div className="flex flex-col gap-3">
           {snapshot.you && <DeclareForbes />}
+          <WarCourtPanel />
           <VotePanel />
         </div>
       )}
