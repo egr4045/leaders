@@ -109,7 +109,7 @@ export interface WarSideView {
 
 /**
  * Война глазами конкретного игрока. Публичные факты — всем;
- * поля your*/estimated* заполнены только участникам.
+ * поля your…/estimated… заполнены только участникам.
  */
 export interface WarView {
   id: string;
