@@ -36,7 +36,7 @@ Content-Type: application/json
 ```
 
 Ассет ляжет на VPS в `assets-cache/<id>.<ext>` и сразу станет доступен клиентам
-по `https://mygame-quiz.ru/assets/<id>.<ext>`.
+по `https://mygame-quiz.ru/media/<id>.<ext>`.
 
 ## 3. Сообщить о провале
 

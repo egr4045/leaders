@@ -105,6 +105,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
   }
 
+  @SubscribeMessage(SocketEvents.RoomAddBots)
+  addBots(@ConnectedSocket() socket: Socket, @MessageBody() body: { count?: number }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.addBots(s.roomCode, s.playerId, Number(body?.count) || 5),
+    );
+  }
+
   @SubscribeMessage(SocketEvents.RoomStart)
   roomStart(@ConnectedSocket() socket: Socket) {
     return this.withSession(socket, (s) => this.rooms.startGame(s.roomCode, s.playerId));

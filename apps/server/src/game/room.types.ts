@@ -10,6 +10,8 @@ export interface RoomPlayer {
   socketId: string | null;
   connected: boolean;
   isHost: boolean;
+  /** тест-режим: ботом управляет сервер, socketId всегда null, connected всегда true */
+  isBot?: boolean;
 }
 
 export interface SpyOrderRec {
@@ -79,4 +81,6 @@ export interface RoomState {
 export interface RoomTimers {
   phaseTimer?: NodeJS.Timeout;
   pauseTimer?: NodeJS.Timeout;
+  /** таймеры действий ботов; чистятся при каждой смене фазы */
+  botTimers: NodeJS.Timeout[];
 }

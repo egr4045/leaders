@@ -14,8 +14,9 @@ mygame-quiz.ru, www.mygame-quiz.ru {
 		reverse_proxy host.docker.internal:3000
 	}
 
-	# сгенерированные ассеты (озвучка диктора, картинки)
-	handle /assets/* {
+	# сгенерированные ассеты (озвучка диктора, картинки);
+	# /assets/* трогать нельзя — там бандл Vite из статики
+	handle /media/* {
 		reverse_proxy host.docker.internal:3000
 	}
 
@@ -24,9 +25,18 @@ mygame-quiz.ru, www.mygame-quiz.ru {
 		reverse_proxy livekit:7880
 	}
 
-	# статика клиента (vite build)
+	# хэшированный бандл Vite — кэшировать можно вечно (имя меняется при сборке)
+	handle /assets/* {
+		root * /srv/www
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	# статика клиента (vite build); index.html не кэшируем —
+	# иначе браузер держит ссылки на старый бандл и ловит 404/белый экран
 	handle {
 		root * /srv/www
+		header Cache-Control "no-cache"
 		try_files {path} /index.html
 		file_server
 	}

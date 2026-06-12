@@ -74,7 +74,7 @@ export class MlService {
     const file = `${id}.${safeExt}`;
     fs.writeFileSync(path.join(this.assetDir, file), data);
     await this.redis.client.hset(JOB_KEY(id), 'status', 'done' satisfies MlJobStatus, 'asset', file);
-    this.emitDone({ job, assetUrl: `/assets/${file}` });
+    this.emitDone({ job, assetUrl: `/media/${file}` });
   }
 
   async failJob(id: string, error: string): Promise<void> {
@@ -101,11 +101,11 @@ export class MlService {
         const wav = makeMockSpeechWav(seconds);
         const file = `${job.id}.wav`;
         fs.writeFileSync(path.join(this.assetDir, file), wav);
-        this.emitDone({ job, assetUrl: `/assets/${file}` });
+        this.emitDone({ job, assetUrl: `/media/${file}` });
       } else {
         const file = `${job.id}.svg`;
         fs.writeFileSync(path.join(this.assetDir, file), makeMockImageSvg(job.payload.prompt ?? ''));
-        this.emitDone({ job, assetUrl: `/assets/${file}` });
+        this.emitDone({ job, assetUrl: `/media/${file}` });
       }
     } catch (e) {
       this.logger.error(`mock: ${(e as Error).message}`);

@@ -90,7 +90,7 @@ export class RoomsService {
       createdAt: Date.now(),
     };
     this.rooms.set(code, room);
-    this.timers.set(code, {});
+    this.timers.set(code, { botTimers: [] });
     this.persist(room);
     return { room, player };
   }
@@ -222,6 +222,10 @@ export class RoomsService {
     this.armPhaseTimer(room);
     this.persist(room);
     this.broadcast(room);
+
+    // тест-режим: боты реагируют на новую фазу
+    this.clearBotTimers(room);
+    this.kickBots(room);
   }
 
   private armPhaseTimer(room: RoomState, overrideMs?: number) {
@@ -288,6 +292,7 @@ export class RoomsService {
       this.armPhaseTimer(room);
       this.persist(room);
       this.broadcast(room);
+      this.botMaybeSpeak(room);
     }
   }
 
@@ -623,6 +628,172 @@ export class RoomsService {
     this.broadcast(room);
   }
 
+  // ---------- тест-режим: боты (для одиночной отладки баланса) ----------
+
+  /** Добить комнату ботами. Только хост, только в лобби. */
+  addBots(code: string, playerId: string, count: number) {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    if (!player.isHost) throw new Error('Ботов добавляет хост');
+    if (room.phase !== 'lobby') throw new Error('Ботов добавляют в лобби');
+
+    const names = ['Бот Диктатор', 'Бот Олигарх', 'Бот Генерал', 'Бот Шейх', 'Бот Канцлер', 'Бот Председатель', 'Бот Султан', 'Бот Регент'];
+    const free = this.content.tunables.game.playersMax - room.players.length;
+    const n = Math.max(0, Math.min(Number(count) || 5, free));
+    for (let i = 0; i < n; i++) {
+      const name = names.find((nm) => !room.players.some((p) => p.name === nm)) ?? `Бот №${i}`;
+      const bot = this.makePlayer(name, false);
+      bot.isBot = true;
+      bot.connected = true; // бот живёт на сервере — паузу не вызывает
+      room.players.push(bot);
+    }
+    this.persist(room);
+    this.broadcast(room);
+    return { added: n };
+  }
+
+  /** Лог действий ботов — в консоль браузера всем живым игрокам. */
+  private botLog(room: RoomState, text: string) {
+    if (!this.server) return;
+    for (const p of room.players) {
+      if (p.socketId) this.server.to(p.socketId).emit(SocketEvents.BotLog, { text, ts: Date.now() });
+    }
+  }
+
+  private clearBotTimers(room: RoomState) {
+    const timers = this.timers.get(room.code);
+    if (!timers) return;
+    for (const t of timers.botTimers) clearTimeout(t);
+    timers.botTimers = [];
+  }
+
+  private botSchedule(room: RoomState, ms: number, fn: () => void) {
+    const timers = this.timers.get(room.code);
+    if (!timers) return;
+    timers.botTimers.push(setTimeout(fn, ms));
+  }
+
+  private bots(room: RoomState): RoomPlayer[] {
+    return room.players.filter((p) => p.isBot && p.countryId);
+  }
+
+  /** Хуки фаз: что боты делают в каждой фазе. */
+  private kickBots(room: RoomState) {
+    if (this.bots(room).length === 0) return;
+    const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+
+    if (room.phase === 'cabinet') {
+      for (const bot of this.bots(room)) {
+        const act = () => {
+          if (room.phase !== 'cabinet' || room.paused) return;
+          try {
+            this.botCabinetAction(room, bot);
+          } catch {
+            /* невалидное действие бота — просто пропуск хода */
+          }
+          this.botSchedule(room, rnd(4000, 9000), act);
+        };
+        this.botSchedule(room, rnd(1000, 4000), act);
+      }
+    }
+
+    if (room.phase === 'un_summary') {
+      // боты заявляют (лживый) Форбс
+      for (const bot of this.bots(room)) {
+        this.botSchedule(room, rnd(500, 2000), () => {
+          if (!room.world || !bot.countryId) return;
+          const s = room.world.countries.get(bot.countryId)!;
+          const real = Math.round(computeForbes(s, this.content).total);
+          const declared = Math.round(real * rnd(0.3, 1.8));
+          s.declaredForbes = declared;
+          this.botLog(room, `${bot.name} заявил Форбс ${declared} (реально ${real})`);
+          this.persist(room);
+          this.broadcast(room);
+        });
+      }
+    }
+
+    if (room.phase === 'un_comments') this.botMaybeSpeak(room);
+
+    if (room.phase === 'un_vote') {
+      for (const bot of this.bots(room)) {
+        this.botSchedule(room, rnd(800, 2500), () => {
+          if (room.phase !== 'un_vote' || !room.world || !bot.countryId) return;
+          const targets = room.players.filter((p) => p.countryId && p.countryId !== bot.countryId);
+          if (targets.length === 0) return;
+          const target = targets[Math.floor(Math.random() * targets.length)]!;
+          const kind = Math.random() < 0.6 ? 'sanction' : 'support';
+          try {
+            this.unVote(room.code, bot.playerId, target.countryId!, kind);
+            this.botLog(room, `${bot.name} голосует: ${kind === 'sanction' ? 'санкции против' : 'поддержать'} ${this.content.countries.get(target.countryId!)!.name}`);
+          } catch {
+            /* не хватило влияния */
+          }
+        });
+      }
+    }
+  }
+
+  /** Если сейчас говорит бот — он «выступает» и передаёт слово. */
+  private botMaybeSpeak(room: RoomState) {
+    const speakerId = room.speakerOrder[room.speakerIdx];
+    const speaker = room.players.find((p) => p.playerId === speakerId);
+    if (!speaker?.isBot) return;
+    this.botSchedule(room, 2500, () => {
+      if (room.phase !== 'un_comments' || room.speakerOrder[room.speakerIdx] !== speakerId) return;
+      this.botLog(room, `${speaker.name} выступил с пламенной речью и передал слово`);
+      this.nextSpeaker(room);
+    });
+  }
+
+  private botCabinetAction(room: RoomState, bot: RoomPlayer) {
+    if (!room.world || !bot.countryId) return;
+    const myCountry = this.content.countries.get(bot.countryId)!;
+
+    // 1) сначала ответить на входящие сделки
+    const pending = room.tradeOffers.find((o) => o.toCountryId === bot.countryId && o.status === 'pending');
+    if (pending) {
+      const accept = Math.random() < 0.6;
+      const res = this.tradeRespond(room.code, bot.playerId, pending.id, accept);
+      this.botLog(room, `${bot.name} ${accept ? 'принял' : 'отклонил'} сделку от ${pending.fromName}${res.status === 'failed' ? ` (сорвалась: ${res.failReason})` : ''}`);
+      return;
+    }
+
+    const others = room.players.filter((p) => p.countryId && p.countryId !== bot.countryId);
+    const roll = Math.random();
+
+    // 2) свайп карты (основное действие)
+    if (roll < 0.75) {
+      const card = room.currentCards[bot.countryId];
+      if (!card) return;
+      const idx = Math.floor(Math.random() * card.choices.length);
+      this.chooseCard(room.code, bot.playerId, card.id, idx);
+      this.botLog(room, `${bot.name} (${myCountry.name}): «${card.speaker}» → выбрал «${card.choices[idx]!.label}»`);
+      return;
+    }
+
+    // 3) шпионаж
+    if (roll < 0.87 && others.length > 0) {
+      const target = others[Math.floor(Math.random() * others.length)]!;
+      const kinds = ['reveal', 'steal_science', 'insert_lie'] as const;
+      const kind = kinds[Math.floor(Math.random() * kinds.length)]!;
+      const payload = kind === 'insert_lie' ? `${this.content.countries.get(target.countryId!)!.name} тайно скупает носки с дырками` : undefined;
+      const out = this.spyOrder(room.code, bot.playerId, kind, target.countryId!, payload);
+      this.botLog(room, `${bot.name} шпионит (${kind}) против ${this.content.countries.get(target.countryId!)!.name}: ${out.success ? 'успех' : 'провал'}`);
+      return;
+    }
+
+    // 4) предложить сделку
+    if (others.length > 0) {
+      const target = others[Math.floor(Math.random() * others.length)]!;
+      const s = room.world.countries.get(bot.countryId)!;
+      const money = Math.min(100, Math.floor(s.resources.money * 0.1));
+      if (money < 10) return;
+      this.tradeOffer(room.code, bot.playerId, target.countryId!, { resources: { money } }, { resources: { gold: Math.max(5, Math.floor(money / 5)) } });
+      this.botLog(room, `${bot.name} предложил ${this.content.countries.get(target.countryId!)!.name}: 💰${money} ⇄ 🥇${Math.max(5, Math.floor(money / 5))}`);
+    }
+  }
+
   // ---------- видео: токены LiveKit и звонки 1-на-1 (Э7) ----------
 
   /** Кому игрок может писать/звонить: вернёт socketId игрока страны. */
@@ -646,6 +817,15 @@ export class RoomsService {
     room.callsLeft[player.countryId] = left - 1;
     const call = { id: randomUUID(), fromCountryId: player.countryId, toCountryId, status: 'ringing' as const };
     room.calls.push(call);
+
+    // бот всегда занят государственными делами
+    const targetPlayer = room.players.find((p) => p.countryId === toCountryId);
+    if (targetPlayer?.isBot) {
+      this.botSchedule(room, 2000, () => {
+        this.callRespond(room.code, targetPlayer.playerId, call.id, false);
+        this.botLog(room, `${targetPlayer.name} отклонил звонок: «занят государственными делами»`);
+      });
+    }
 
     const targetSocket = this.socketOfCountry(room, toCountryId);
     if (targetSocket && this.server) {
@@ -826,16 +1006,16 @@ export class RoomsService {
           lastTickEvents: data.lastTickEvents ?? null,
           world: data.world ? deserializeWorld(data.world) : null,
         };
-        // все соединения мертвы после рестарта
+        // все соединения мертвы после рестарта (боты живут на сервере — остаются connected)
         for (const p of room.players) {
-          p.connected = false;
+          p.connected = Boolean(p.isBot);
           p.socketId = null;
         }
         room.paused = room.phase !== 'lobby' && room.phase !== 'final';
         room.phaseEndsAt = null;
         if (room.remainingMs === null) room.remainingMs = this.phaseDuration(room, room.phase);
         this.rooms.set(room.code, room);
-        this.timers.set(room.code, {});
+        this.timers.set(room.code, { botTimers: [] });
         this.logger.log(`Комната ${room.code} восстановлена из Redis (фаза ${room.phase})`);
       } catch (e) {
         this.logger.warn(`Не восстановил ${key}: ${(e as Error).message}`);
@@ -847,6 +1027,7 @@ export class RoomsService {
     const timers = this.timers.get(code);
     if (timers?.phaseTimer) clearTimeout(timers.phaseTimer);
     if (timers?.pauseTimer) clearTimeout(timers.pauseTimer);
+    for (const t of timers?.botTimers ?? []) clearTimeout(t);
     this.timers.delete(code);
     this.rooms.delete(code);
     this.redis.client.del(`room:${code}`).catch(() => undefined);

@@ -98,15 +98,25 @@ export function GameProvider({ children }: { children: ReactNode }) {
     };
     const onDisconnect = () => setConnected(false);
     const onState = (snap: RoomSnapshot) => setSnapshot(snap);
+    // тест-режим: действия ботов — в консоль браузера
+    const onBotLog = (d: { text: string; ts: number }) => {
+      console.log(
+        `%c🤖 ${new Date(d.ts).toLocaleTimeString()} %c${d.text}`,
+        'color:#f59e0b;font-weight:bold',
+        'color:#cbd5e1',
+      );
+    };
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on(SocketEvents.RoomState, onState);
+    socket.on(SocketEvents.BotLog, onBotLog);
     if (socket.connected) onConnect();
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off(SocketEvents.RoomState, onState);
+      socket.off(SocketEvents.BotLog, onBotLog);
     };
   }, [emitRaw, saveSession]);
 

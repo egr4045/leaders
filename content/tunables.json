@@ -1,6 +1,13 @@
 {
   "game": { "years": 5, "playersMin": 6, "playersMax": 9 },
-  "timers": { "cabinetSeconds": 600 },
+  "timers": {
+    "cabinetSeconds": 120,
+    "unSummarySeconds": 25,
+    "unCommentSecondsPerPlayer": 10,
+    "unDebateSeconds": 30,
+    "unVoteSeconds": 30,
+    "resultsSeconds": 20
+  },
   "diplomacy": { "callsPerYear": 2 },
   "production": { "sciencePerSectorLevel": 200 },
   "dovolstvo": {

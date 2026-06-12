@@ -13,6 +13,10 @@ export const SocketEvents = {
   RoomLeave: 'room:leave',
   RoomStart: 'room:start',
   RoomPickCountry: 'room:pick_country',
+  /** тест-режим: добить комнату ботами (хост) */
+  RoomAddBots: 'room:add_bots',
+  /** s2c: что сделал бот (для отладки баланса в консоли браузера) */
+  BotLog: 'bot:log',
 
   // состояние (s2c)
   RoomState: 'room:state',

@@ -1,7 +1,7 @@
 import { useGame } from '../lib/useGame';
 
 export function LobbyScreen() {
-  const { snapshot, session, pickCountry, startGame, leaveRoom } = useGame();
+  const { snapshot, session, pickCountry, startGame, leaveRoom, emitRaw } = useGame();
   if (!snapshot || !session) return null;
 
   const me = snapshot.players.find((p) => p.playerId === session.playerId);
@@ -65,12 +65,20 @@ export function LobbyScreen() {
 
       <div className="mt-auto flex flex-col gap-2">
         {me?.isHost && (
-          <button
-            onClick={() => void startGame()}
-            className="rounded-xl bg-amber-500 px-4 py-3 font-bold text-slate-950"
-          >
-            Начать партию
-          </button>
+          <>
+            <button
+              onClick={() => void emitRaw('room:add_bots', { count: 8 })}
+              className="rounded-xl border border-dashed border-slate-600 px-4 py-2 text-sm text-slate-400"
+            >
+              🤖 Тест-режим: заполнить ботами (их действия — в консоли браузера, F12)
+            </button>
+            <button
+              onClick={() => void startGame()}
+              className="rounded-xl bg-amber-500 px-4 py-3 font-bold text-slate-950"
+            >
+              Начать партию
+            </button>
+          </>
         )}
         <button onClick={() => void leaveRoom()} className="text-sm text-slate-500 underline">
           Выйти из комнаты
