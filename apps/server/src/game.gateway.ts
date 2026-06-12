@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { SocketEvents, type TradeSidePayload } from '@leaders/shared';
+import { SocketEvents, type GamePhase, type TradeSidePayload } from '@leaders/shared';
 import { AccessToken } from 'livekit-server-sdk';
 import type { SpyActionKind } from '@leaders/engine';
 import { RoomsService } from './game/rooms.service.js';
@@ -156,6 +156,48 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ) {
     return this.withSession(socket, (s) =>
       this.rooms.hostExtendPhase(s.roomCode, s.playerId, body?.extraSeconds ?? 120),
+    );
+  }
+
+  // ---------- председатель ООН ----------
+
+  @SubscribeMessage(SocketEvents.RoomHostPause)
+  hostPause(@ConnectedSocket() socket: Socket, @MessageBody() body: { paused: boolean }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.hostPause(s.roomCode, s.playerId, Boolean(body?.paused)),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.RoomHostSetPhase)
+  hostSetPhase(@ConnectedSocket() socket: Socket, @MessageBody() body: { phase: GamePhase }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.hostSetPhase(s.roomCode, s.playerId, body?.phase),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.RoomHostSetSpeaker)
+  hostSetSpeaker(@ConnectedSocket() socket: Socket, @MessageBody() body: { playerId: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.hostSetSpeaker(s.roomCode, s.playerId, body?.playerId ?? ''),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.RoomHostSkipSpeaker)
+  hostSkipSpeaker(@ConnectedSocket() socket: Socket) {
+    return this.withSession(socket, (s) => this.rooms.hostSkipSpeaker(s.roomCode, s.playerId));
+  }
+
+  @SubscribeMessage(SocketEvents.RoomHostLayout)
+  hostLayout(@ConnectedSocket() socket: Socket, @MessageBody() body: { layout: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.hostSetLayout(s.roomCode, s.playerId, body?.layout ?? 'auto'),
+    );
+  }
+
+  @SubscribeMessage(SocketEvents.RoomHostMute)
+  hostMute(@ConnectedSocket() socket: Socket, @MessageBody() body: { playerId: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.hostMute(s.roomCode, s.playerId, body?.playerId ?? ''),
     );
   }
 

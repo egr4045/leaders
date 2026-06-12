@@ -6,7 +6,9 @@ import {
   type RemoteTrack,
   type RemoteParticipant,
 } from 'livekit-client';
+import { SocketEvents } from '@leaders/shared';
 import { useGame } from '../lib/useGame';
+import { socket } from '../socket';
 
 export interface VideoTile {
   identity: string;
@@ -23,6 +25,10 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
   const [error, setError] = useState<string | null>(null);
   const [micEnabled, setMicEnabled] = useState(true);
   const [camEnabled, setCamEnabled] = useState(true);
+  /** identity говорящих прямо сейчас, [0] = самый громкий (доминантный) */
+  const [speakingIds, setSpeakingIds] = useState<string[]>([]);
+  /** имя председателя, попросившего выключить микрофон (null = не просили) */
+  const [forceMutedBy, setForceMutedBy] = useState<string | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -64,6 +70,21 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
     ];
     for (const e of events) room.on(e, rebuild);
 
+    const onSpeakers = () => {
+      if (cancelled) return;
+      setSpeakingIds(room.activeSpeakers.map((p) => p.identity));
+    };
+    room.on(RoomEvent.ActiveSpeakersChanged, onSpeakers);
+
+    // председатель попросил замьютиться: глушим локальный мик (включить обратно можно)
+    const onForceMute = (d: { by: string }) => {
+      if (cancelled) return;
+      void room.localParticipant.setMicrophoneEnabled(false);
+      setMicEnabled(false);
+      setForceMutedBy(d?.by ?? 'Председатель');
+    };
+    socket.on(SocketEvents.VideoForceMute, onForceMute);
+
     void (async () => {
       const res = await emitRaw<{ url: string; token: string }>('video:token', { kind, callId });
       if (!res.ok || !res.data) {
@@ -82,9 +103,12 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
     return () => {
       cancelled = true;
       for (const e of events) room.off(e, rebuild);
+      room.off(RoomEvent.ActiveSpeakersChanged, onSpeakers);
+      socket.off(SocketEvents.VideoForceMute, onForceMute);
       void room.disconnect();
       roomRef.current = null;
       setTiles([]);
+      setSpeakingIds([]);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind, callId, enabled, emitRaw]);
@@ -95,6 +119,7 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
     const next = !micEnabled;
     void room.localParticipant.setMicrophoneEnabled(next);
     setMicEnabled(next);
+    if (next) setForceMutedBy(null);
   };
 
   const toggleCam = () => {
@@ -105,7 +130,17 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
     setCamEnabled(next);
   };
 
-  return { tiles, error, micEnabled, camEnabled, toggleMic, toggleCam };
+  return {
+    tiles,
+    error,
+    micEnabled,
+    camEnabled,
+    toggleMic,
+    toggleCam,
+    speakingIds,
+    forceMutedBy,
+    clearForceMuted: () => setForceMutedBy(null),
+  };
 }
 
 export function attachTrack(el: HTMLMediaElement | null, track: MediaStreamTrack | null) {

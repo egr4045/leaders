@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useVideoRoom, attachTrack, type VideoTile } from './useVideoRoom';
 import type { PlayerInfo } from '@leaders/shared';
 
@@ -26,11 +26,21 @@ function CamIcon({ on }: { on: boolean }) {
   );
 }
 
+/** Размер тайла: fill = занять контейнер, strip = фикс. ширина в полосе, иначе по сетке. */
+function tileSizeClass(opts: { fill?: boolean; stripMode?: boolean; large?: boolean }) {
+  if (opts.fill) return 'h-full w-full';
+  if (opts.stripMode) return 'h-full w-28 shrink-0';
+  return opts.large ? 'aspect-video' : 'aspect-square sm:aspect-video';
+}
+
 function Tile({
   tile,
   player,
   large,
   stripMode,
+  fill,
+  speaking,
+  volume,
   showControls,
   micEnabled,
   camEnabled,
@@ -41,6 +51,11 @@ function Tile({
   player?: PlayerInfo;
   large?: boolean;
   stripMode?: boolean;
+  fill?: boolean;
+  /** говорит прямо сейчас — подсветка рамкой как в Мите */
+  speaking?: boolean;
+  /** громкость удалённого участника (приглушение при выбранном спикере) */
+  volume?: number;
   showControls?: boolean;
   micEnabled?: boolean;
   camEnabled?: boolean;
@@ -52,18 +67,18 @@ function Tile({
 
   useEffect(() => attachTrack(videoRef.current, tile.videoTrack), [tile.videoTrack]);
   useEffect(() => attachTrack(audioRef.current, tile.audioTrack), [tile.audioTrack]);
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume ?? 1;
+  }, [volume, tile.audioTrack]);
 
   const displayName = player?.name ?? tile.name;
   const countryName = player?.countryName ?? null;
-
-  const sizeClass = stripMode
-    ? 'h-full w-28 shrink-0'
-    : large
-    ? 'aspect-video'
-    : 'aspect-square sm:aspect-video';
+  const ring = speaking ? 'ring-2 ring-emerald-400' : '';
 
   return (
-    <div className={`relative overflow-hidden rounded-xl bg-slate-900 ${sizeClass}`}>
+    <div
+      className={`relative overflow-hidden rounded-xl bg-slate-900 transition-shadow ${ring} ${tileSizeClass({ fill, stripMode, large })}`}
+    >
       <video
         ref={videoRef}
         autoPlay
@@ -78,7 +93,10 @@ function Tile({
 
       {/* Name + country overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
-        <div className="text-xs font-semibold leading-tight text-white">{displayName}</div>
+        <div className="flex items-center gap-1 text-xs font-semibold leading-tight text-white">
+          {speaking && <span className="inline-block h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-emerald-400" />}
+          {displayName}
+        </div>
         {countryName && (
           <div className="text-[10px] leading-tight text-amber-300">{countryName}</div>
         )}
@@ -113,26 +131,25 @@ function PlaceholderTile({
   player,
   stripMode,
   large,
+  fill,
+  speaking,
 }: {
   player: PlayerInfo;
   stripMode?: boolean;
   large?: boolean;
+  fill?: boolean;
+  speaking?: boolean;
 }) {
-  const sizeClass = stripMode
-    ? 'h-full w-28 shrink-0'
-    : large
-    ? 'aspect-video'
-    : 'aspect-square sm:aspect-video';
-
+  const ring = speaking ? 'ring-2 ring-emerald-400' : '';
   return (
     <div
-      className={`relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-slate-800 ${sizeClass}`}
+      className={`relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-slate-800 ${ring} ${tileSizeClass({ fill, stripMode, large })}`}
     >
-      <div className="text-3xl">{player.isBot ? '🤖' : '👤'}</div>
+      <div className={fill ? 'text-6xl' : 'text-3xl'}>{player.isBot ? '🤖' : '👤'}</div>
       <div className="mt-1 px-1 text-center">
-        <div className="text-xs font-semibold text-slate-300">{player.name}</div>
+        <div className={`font-semibold text-slate-300 ${fill ? 'text-base' : 'text-xs'}`}>{player.name}</div>
         {player.countryName && (
-          <div className="text-[10px] text-amber-300">{player.countryName}</div>
+          <div className={`text-amber-300 ${fill ? 'text-sm' : 'text-[10px]'}`}>{player.countryName}</div>
         )}
         {player.isBot && <div className="text-[10px] text-slate-600">AI</div>}
       </div>
@@ -140,13 +157,20 @@ function PlaceholderTile({
   );
 }
 
-import type { ReactNode } from 'react';
+/** Запись участника: связывает игрока комнаты с его видеотайлом (если опубликован). */
+interface Entry {
+  id: string;
+  player?: PlayerInfo;
+  tile?: VideoTile;
+}
 
 export function VideoGrid({
   kind,
   callId,
   players,
   layout = 'grid',
+  spotlightId = null,
+  duckOthers = false,
   showControls = false,
   showControlBar = false,
   hostControls,
@@ -154,17 +178,28 @@ export function VideoGrid({
   kind: 'lobby' | 'un' | 'call';
   callId?: string;
   players?: PlayerInfo[];
-  layout?: 'grid' | 'strip';
+  layout?: 'grid' | 'strip' | 'spotlight';
+  /** кто в центре spotlight и кого НЕ приглушать; null = самый громкий */
+  spotlightId?: string | null;
+  /** приглушать всех, кроме spotlightId (выбранный спикер / новостная сводка) */
+  duckOthers?: boolean;
   showControls?: boolean;
   /** Показывать нижний бар с кнопками mic/cam */
   showControlBar?: boolean;
-  /** Дополнительные кнопки хоста в нижнем баре */
+  /** Дополнительные кнопки (хост/спикер) в нижнем баре */
   hostControls?: ReactNode;
 }) {
-  const { tiles, error, micEnabled, camEnabled, toggleMic, toggleCam } = useVideoRoom(
-    kind === 'lobby' ? 'lobby' : kind === 'call' ? 'call' : 'un',
-    callId,
-  );
+  const {
+    tiles,
+    error,
+    micEnabled,
+    camEnabled,
+    toggleMic,
+    toggleCam,
+    speakingIds,
+    forceMutedBy,
+    clearForceMuted,
+  } = useVideoRoom(kind === 'lobby' ? 'lobby' : kind === 'call' ? 'call' : 'un', callId);
 
   if (error) {
     return (
@@ -174,53 +209,107 @@ export function VideoGrid({
     );
   }
 
-  const large = kind === 'call' || tiles.length <= 2;
   const stripMode = layout === 'strip';
+  const large = kind === 'call' || tiles.length <= 2;
 
-  const renderTile = (tile: VideoTile, player?: PlayerInfo) => (
-    <Tile
-      key={tile.identity}
-      tile={tile}
-      player={player}
-      large={large}
-      stripMode={stripMode}
-      showControls={showControls}
-      micEnabled={micEnabled}
-      camEnabled={camEnabled}
-      onToggleMic={toggleMic}
-      onToggleCam={toggleCam}
-    />
-  );
+  const tilesByIdentity = new Map(tiles.map((t) => [t.identity, t]));
+  const entries: Entry[] =
+    players && players.length > 0
+      ? players.map((p) => ({ id: p.playerId, player: p, tile: tilesByIdentity.get(p.playerId) }))
+      : tiles.map((t) => ({ id: t.identity, tile: t }));
 
-  const tilesByIdentity = players && players.length > 0
-    ? new Map(tiles.map((t) => [t.identity, t]))
-    : null;
+  const isSpeaking = (id: string) => speakingIds.includes(id);
+  // приглушаем всех, кроме выбранного спикера (локальный тайл и так muted)
+  const volumeFor = (e: Entry) =>
+    duckOthers && e.id !== spotlightId ? 0.2 : 1;
 
-  const tileItems = tilesByIdentity
-    ? players!.map((p) => {
-        const tile = tilesByIdentity.get(p.playerId);
-        return tile
-          ? renderTile(tile, p)
-          : <PlaceholderTile key={p.playerId} player={p} stripMode={stripMode} large={large} />;
-      })
-    : tiles.map((t) => renderTile(t));
+  const renderEntry = (e: Entry, opts: { fill?: boolean; strip?: boolean } = {}) =>
+    e.tile ? (
+      <Tile
+        key={e.id}
+        tile={e.tile}
+        player={e.player}
+        large={large}
+        stripMode={opts.strip}
+        fill={opts.fill}
+        speaking={isSpeaking(e.id)}
+        volume={volumeFor(e)}
+        showControls={showControls}
+        micEnabled={micEnabled}
+        camEnabled={camEnabled}
+        onToggleMic={toggleMic}
+        onToggleCam={toggleCam}
+      />
+    ) : e.player ? (
+      <PlaceholderTile
+        key={e.id}
+        player={e.player}
+        stripMode={opts.strip}
+        large={large}
+        fill={opts.fill}
+        speaking={isSpeaking(e.id)}
+      />
+    ) : null;
 
-  const tilesEl = stripMode
-    ? <div className="flex h-full gap-2 overflow-x-auto">{tileItems}</div>
-    : (
-      <div
-        className={`grid w-full gap-2 ${
-          large ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5'
-        }`}
-      >
-        {tileItems}
+  let tilesEl: ReactNode;
+
+  if (layout === 'spotlight') {
+    // главный спикер крупно в центре, остальные — полоса снизу (как шаринг экрана в Мите)
+    const mainId = spotlightId ?? speakingIds[0] ?? entries[0]?.id ?? null;
+    const main = entries.find((e) => e.id === mainId) ?? entries[0];
+    const rest = entries.filter((e) => e.id !== main?.id);
+    tilesEl = (
+      <div className="flex h-full flex-col gap-2">
+        <div className="min-h-0 flex-1">{main && renderEntry(main, { fill: true })}</div>
+        {rest.length > 0 && (
+          <div className="flex h-20 shrink-0 gap-2 overflow-x-auto">
+            {rest.map((e) => renderEntry(e, { strip: true }))}
+          </div>
+        )}
       </div>
     );
+  } else if (stripMode) {
+    tilesEl = <div className="flex h-full gap-2 overflow-x-auto">{entries.map((e) => renderEntry(e, { strip: true }))}</div>;
+  } else {
+    // сетка («балаган»): говорящие — в начало, число колонок по количеству участников
+    const rank = (id: string) => {
+      const i = speakingIds.indexOf(id);
+      return i === -1 ? speakingIds.length : i;
+    };
+    const sorted = [...entries].sort((a, b) => rank(a.id) - rank(b.id));
+    const n = sorted.length;
+    const cols =
+      n <= 2
+        ? 'grid-cols-1 sm:grid-cols-2'
+        : n <= 4
+        ? 'grid-cols-2'
+        : n <= 6
+        ? 'grid-cols-2 sm:grid-cols-3'
+        : 'grid-cols-3 sm:grid-cols-4';
+    tilesEl = <div className={`grid w-full gap-2 ${cols}`}>{sorted.map((e) => renderEntry(e))}</div>;
+  }
 
-  if (!showControlBar) return tilesEl;
+  const muteToast = forceMutedBy && (
+    <button
+      onClick={clearForceMuted}
+      className="flex w-full items-center justify-center gap-2 bg-amber-900/60 px-3 py-1.5 text-xs text-amber-200"
+    >
+      🔇 {forceMutedBy} попросил вас выключить микрофон (можно включить обратно) ✕
+    </button>
+  );
+
+  if (!showControlBar) {
+    return (
+      <div className="flex h-full flex-col">
+        {muteToast}
+        <div className="min-h-0 flex-1">{tilesEl}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">
+      {muteToast}
       <div className="min-h-0 flex-1 overflow-hidden">{tilesEl}</div>
       <div className="flex items-center gap-2 border-t border-slate-800 bg-slate-950 px-3 py-2">
         <button
@@ -243,7 +332,7 @@ export function VideoGrid({
           <CamIcon on={camEnabled} />
           <span className="hidden sm:inline">{camEnabled ? 'Камера' : 'Камера выкл'}</span>
         </button>
-        {hostControls && <div className="ml-auto flex gap-2">{hostControls}</div>}
+        {hostControls && <div className="ml-auto flex items-center gap-2">{hostControls}</div>}
       </div>
     </div>
   );
