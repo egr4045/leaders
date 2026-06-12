@@ -6,3 +6,4 @@ build/
 .env.local
 .pnpm-store/
 assets-cache/
+.claude/
