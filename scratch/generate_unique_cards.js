@@ -486,53 +486,164 @@ const decks = {
   ],
   china: [
     {
-      id: "cn_credit",
-      speaker: "Партийный Куратор",
-      situation: "Кто-то в соцсетях сравнил нашего Лидера с Винни-Пухом.",
-      requires: { statuses: ["social_credit"] },
-      weight: 1,
-      choices: [
-        {
-          label: "Снизить им социальный рейтинг до нуля! [СМИ: Очередные вредители пойманы партией]",
-          effects: { dovolstvo: 10, resources: { influence: 50 } }
-        },
-        {
-          label: "Удалить все упоминания Винни-Пуха из интернета [СМИ: Технические работы в сети]",
-          effects: { sectors: { intel: 1 } }
-        }
-      ]
-    },
-    {
-      id: "cn_factory",
-      speaker: "Директор Завода",
-      situation: "Работяги жалуются на 14-часовой рабочий день. Хотят 12-часовой.",
+      id: "cn_evergrande",
+      speaker: "Министр Строительства",
+      situation: "Крупнейший застройщик страны не может выплатить долги. Миллионы дольщиков в панике.",
       requires: { statuses: ["world_factory"] },
       weight: 1,
       choices: [
-        {
-          label: "Выдать всем двойную миску риса и отправить работать [СМИ: Новые рекорды производства!]",
-          effects: { resources: { food: -500, money: 1000 }, sectors: { economy: 1 } }
-        },
-        {
-          label: "Разрешить спать по 6 часов [СМИ: Партия заботится о народе]",
-          effects: { dovolstvo: 15, sectors: { economy: -1 } }
-        }
+        { label: "Спасти компанию за госсчет", effects: { resources: { money: -3000 }, sectors: { economy: 1 }, dovolstvo: 15 }, newsLines: { state: "Партия не бросает своих", liberal: "Олигархи спасены за наш счет" } },
+        { label: "Пусть лопнет, мы накажем виновных", addStatuses: ["cn_real_estate_crisis"], effects: { sectors: { intel: 1 }, dovolstvo: -10 }, newsLines: { state: "Борьба с коррупцией в строительстве", liberal: "Экономика начинает сыпаться" } }
       ]
     },
     {
-      id: "cn_panda",
-      speaker: "Министр Дипломатии",
-      situation: "Мы можем сдать в аренду пару Панд соседней стране.",
+      id: "cn_ghost_cities",
+      speaker: "Губернатор Провинции",
+      situation: "Из-за кризиса недвижимости у нас целые города стоят пустые.",
+      requires: { statuses: ["cn_real_estate_crisis"] },
       weight: 1,
       choices: [
-        {
-          label: "Панда-дипломатия в действии! [СМИ: Китайские панды умиляют мир]",
-          effects: { resources: { money: 500, influence: 100 } }
-        },
-        {
-          label: "Панды нужны нам самим [СМИ: Зоопарк Пекина пополнился новыми жильцами]",
-          effects: { dovolstvo: 5 }
-        }
+        { label: "Заселить туда бедняков бесплатно", removeStatuses: ["cn_real_estate_crisis"], effects: { resources: { money: -1000 }, dovolstvo: 30 }, newsLines: { state: "Беспрецедентная социальная программа", liberal: "Коммунизм в действии" } },
+        { label: "Взорвать эти дома, чтобы поднять цены", effects: { sectors: { economy: 1 }, dovolstvo: -15 }, newsLines: { state: "Регулирование рынка недвижимости", liberal: "Уничтожение ресурсов ради цифр ВВП" } }
+      ]
+    },
+    {
+      id: "cn_belt_road_init",
+      speaker: "Министр Иностранных Дел",
+      situation: "Нам нужны новые рынки сбыта. Предлагаю глобальный инфраструктурный проект.",
+      weight: 1,
+      choices: [
+        { label: "Запустить 'Один пояс — один путь'", addStatuses: ["cn_belt_and_road"], effects: { resources: { money: -2000, influence: 200 } }, newsLines: { state: "Глобальное лидерство Китая", liberal: "Долговая ловушка для бедных стран" } },
+        { label: "Сосредоточиться на внутреннем потреблении", effects: { sectors: { economy: 1 }, dovolstvo: 10 } }
+      ]
+    },
+    {
+      id: "cn_african_debt",
+      speaker: "Дипломат в Африке",
+      situation: "Африканская страна не может выплатить долг за построенный нами порт.",
+      requires: { statuses: ["cn_belt_and_road"] },
+      weight: 1,
+      choices: [
+        { label: "Забрать порт в аренду на 99 лет", effects: { resources: { influence: 150 }, sectors: { economy: 1 } }, newsLines: { state: "Расширение стратегических активов", liberal: "Неоколониализм 21 века" } },
+        { label: "Простить долг ради дружбы", effects: { resources: { money: -1000, influence: 50 }, dovolstvo: -10 } }
+      ]
+    },
+    {
+      id: "cn_gaming_ban",
+      speaker: "Министр Образования",
+      situation: "Дети слишком много играют в видеоигры. Это духовный опиум!",
+      requires: { statuses: ["social_credit"] },
+      weight: 1,
+      choices: [
+        { label: "Ограничить игры до 3 часов в неделю", addStatuses: ["cn_tech_crackdown"], effects: { sectors: { science: -1 }, dovolstvo: -20 }, newsLines: { state: "Молодежь будет больше учиться", liberal: "Уничтожение киберспорта" } },
+        { label: "Создать патриотичные игры от государства", effects: { resources: { money: -500 }, sectors: { smi: 1 } } }
+      ]
+    },
+    {
+      id: "cn_jack_ma",
+      speaker: "Комитет Безопасности",
+      situation: "Глава крупнейшей IT-компании слишком много болтает и критикует регуляторов.",
+      requires: { statuses: ["cn_tech_crackdown"] },
+      weight: 1,
+      choices: [
+        { label: "Отправить его на перевоспитание (он исчезнет на 3 месяца)", effects: { sectors: { intel: 1, economy: -2 }, dovolstvo: 10 }, newsLines: { state: "Никто не выше закона", liberal: "Миллиардеры пропадают без следа" } },
+        { label: "Штрафануть на 3 миллиарда долларов", effects: { resources: { money: 3000 }, sectors: { economy: -1 } } }
+      ]
+    },
+    {
+      id: "cn_firewall_upgrade",
+      speaker: "Глава Цензуры",
+      situation: "Люди научились обходить Великий Файрвол с помощью новых VPN.",
+      requires: { statuses: ["great_firewall"] },
+      weight: 1,
+      choices: [
+        { label: "Инвестировать в нейросети-цензоры", effects: { resources: { money: -1000 }, sectors: { intel: 2, science: 1 }, dovolstvo: -15 }, newsLines: { state: "Цифровая стена стала надежнее", liberal: "Интернет превращается в интранет" } },
+        { label: "Отключить зарубежный интернет вообще", effects: { sectors: { economy: -3, intel: 3 }, dovolstvo: -30 } }
+      ]
+    },
+    {
+      id: "cn_one_child_legacy",
+      speaker: "Министр Демографии",
+      situation: "Политика одного ребенка привела к старению нации. Молодежь не хочет заводить детей.",
+      weight: 1,
+      choices: [
+        { label: "Признать демографический кризис", addStatuses: ["cn_demographic_crisis"], effects: { dovolstvo: -10 }, newsLines: { state: "Необходимы меры стимулирования", liberal: "Мы постареем раньше, чем разбогатеем" } },
+        { label: "Запретить аборты", effects: { dovolstvo: -30, sectors: { economy: -1 } } }
+      ]
+    },
+    {
+      id: "cn_three_children_policy",
+      speaker: "ЦК Партии",
+      situation: "Чтобы исправить яму, нужно заставить людей рожать троих.",
+      requires: { statuses: ["cn_demographic_crisis"] },
+      weight: 1,
+      choices: [
+        { label: "Выдавать бесплатные квартиры за третьего", removeStatuses: ["cn_demographic_crisis"], effects: { resources: { money: -3000 }, dovolstvo: 30 }, newsLines: { state: "Семья — основа государства", liberal: "Бюджет трещит по швам" } },
+        { label: "Ввести налог на бездетность", effects: { resources: { money: 1000 }, dovolstvo: -25 } }
+      ]
+    },
+    {
+      id: "cn_aging_workforce",
+      speaker: "Директор Фабрики",
+      situation: "Рабочие стареют, а молодые хотят быть блогерами, а не стоять у станка.",
+      requires: { statuses: ["cn_demographic_crisis"] },
+      weight: 1,
+      choices: [
+        { label: "Массовая роботизация производства", effects: { resources: { money: -2000 }, sectors: { science: 2, economy: 1 } }, newsLines: { state: "Переход к Индустрии 4.0", liberal: "Рабочие боятся увольнений" } },
+        { label: "Завезти мигрантов из Африки", effects: { sectors: { economy: 1 }, dovolstvo: -15 } }
+      ]
+    },
+    {
+      id: "cn_wolf_diplomacy",
+      speaker: "Министр Пропаганды",
+      situation: "Западные страны обвиняют нас во всех грехах. Как будем отвечать?",
+      weight: 1,
+      choices: [
+        { label: "Отвечать агрессивно! Мы никому не позволим диктовать условия", addStatuses: ["cn_wolf_warrior"], effects: { resources: { influence: 50 }, sectors: { smi: 1 }, dovolstvo: 15 }, newsLines: { state: "Наш голос звучит громко", liberal: "Дипломаты ведут себя как хулиганы" } },
+        { label: "Улыбаться и махать. Деньги любят тишину", effects: { sectors: { economy: 1 }, resources: { influence: -50 } } }
+      ]
+    },
+    {
+      id: "cn_taiwan_blockade",
+      speaker: "Генерал НОАК",
+      situation: "Американский политик прилетел на Мятежный Остров. Это оскорбление!",
+      requires: { statuses: ["cn_wolf_warrior"] },
+      weight: 1,
+      choices: [
+        { label: "Начать военные учения и блокаду", addStatuses: ["cn_taiwan_tension"], effects: { resources: { money: -1000 }, sectors: { army: 2 }, dovolstvo: 20 }, newsLines: { state: "Армия демонстрирует мощь", liberal: "Мир на пороге Третьей мировой" } },
+        { label: "Выразить 'решительный протест'", effects: { resources: { influence: -100 }, dovolstvo: -20 } }
+      ]
+    },
+    {
+      id: "cn_chip_war",
+      speaker: "Глава Минтеха",
+      situation: "Из-за кризиса нам перекрыли доступ к передовым микрочипам.",
+      requires: { statuses: ["cn_taiwan_tension"] },
+      weight: 1,
+      choices: [
+        { label: "Влить триллионы в собственное производство", effects: { resources: { money: -3000 }, sectors: { science: 2 } }, newsLines: { state: "Полная технологическая независимость близка", liberal: "Деньги уходят в коррупционные схемы" } },
+        { label: "Покупать чипы через серые схемы", effects: { resources: { money: -1000 }, sectors: { economy: -1 } } }
+      ]
+    },
+    {
+      id: "cn_new_virus",
+      speaker: "Министр Здравоохранения",
+      situation: "В Ухане снова кто-то съел летучую мышь. Новый вирус распространяется.",
+      weight: 1,
+      choices: [
+        { label: "Закрыть всех по домам! Заварить двери!", addStatuses: ["cn_zero_covid"], effects: { sectors: { economy: -2, science: 1 }, dovolstvo: -15 }, newsLines: { state: "Жизнь людей важнее экономики", liberal: "Тотальный концлагерь под предлогом здоровья" } },
+        { label: "Это просто грипп, не останавливаем фабрики", effects: { sectors: { economy: 1 }, dovolstvo: -20, modifiers: { populationMult: -0.05 } } }
+      ]
+    },
+    {
+      id: "cn_white_paper_protests",
+      speaker: "Глава Полиции",
+      situation: "Люди устали сидеть взаперти 3 года. Они вышли на улицы с белыми листами бумаги.",
+      requires: { statuses: ["cn_zero_covid"] },
+      weight: 1,
+      choices: [
+        { label: "Снять все ограничения немедленно", removeStatuses: ["cn_zero_covid"], effects: { sectors: { economy: 2 }, dovolstvo: 30 }, newsLines: { state: "Партия слышит народ", liberal: "Протесты сработали" } },
+        { label: "Подавить бунт! Танки на улицы", effects: { sectors: { army: 1, intel: 1 }, dovolstvo: -40 } }
       ]
     }
   ],

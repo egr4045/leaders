@@ -1,0 +1,14 @@
+{
+  "id": "cn_wolf_warrior",
+  "name": "Волчья Дипломатия",
+  "type": "state",
+  "description": "Агрессивная риторика дипломатов отпугивает инвесторов.",
+  "effects": {
+    "sectors": {
+      "smi": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": 5
+    }
+  }
+}

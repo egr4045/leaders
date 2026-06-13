@@ -1,0 +1,15 @@
+{
+  "id": "cn_zero_covid",
+  "name": "Нулевой Ковид",
+  "type": "state",
+  "description": "Тотальные локдауны целых мегаполисов.",
+  "effects": {
+    "sectors": {
+      "economy": -3,
+      "science": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -25
+    }
+  }
+}

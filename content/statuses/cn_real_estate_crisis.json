@@ -1,0 +1,16 @@
+{
+  "id": "cn_real_estate_crisis",
+  "name": "Пузырь Недвижимости",
+  "type": "state",
+  "description": "Крупнейшие застройщики банкротятся. Города-призраки пустуют.",
+  "effects": {
+    "sectors": {
+      "economy": -2
+    },
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 0.8
+      }
+    }
+  }
+}

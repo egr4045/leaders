@@ -6,6 +6,13 @@ if (!fs.existsSync(statusesDir)) fs.mkdirSync(statusesDir, { recursive: true });
 
 const statuses = [
   // Глобальные мемы
+  { id: 'cn_taiwan_tension', name: 'Тайваньский Кризис', type: 'state', description: 'Отношения с Западом накалены до предела.', effects: { sectors: { army: 2, economy: -1 }, modifiers: { dovolstvoDrift: -10 } } },
+  { id: 'cn_real_estate_crisis', name: 'Пузырь Недвижимости', type: 'state', description: 'Крупнейшие застройщики банкротятся. Города-призраки пустуют.', effects: { sectors: { economy: -2 }, modifiers: { outputMult: { rabotyagi: 0.8 } } } },
+  { id: 'cn_demographic_crisis', name: 'Демографическая Яма', type: 'state', description: 'Наследие политики одного ребенка. Работать некому.', effects: { modifiers: { outputMult: { rabotyagi: 0.7, umniki: 0.9 }, dovolstvoDrift: -5 } } },
+  { id: 'cn_wolf_warrior', name: 'Волчья Дипломатия', type: 'state', description: 'Агрессивная риторика дипломатов отпугивает инвесторов.', effects: { sectors: { smi: 1 }, modifiers: { dovolstvoDrift: 5 } } },
+  { id: 'cn_belt_and_road', name: 'Один пояс — один путь', type: 'state', description: 'Мы скупаем порты по всему миру.', effects: { sectors: { economy: 2 }, modifiers: { outputMult: { siloviki: 1.1 } } } },
+  { id: 'cn_zero_covid', name: 'Нулевой Ковид', type: 'state', description: 'Тотальные локдауны целых мегаполисов.', effects: { sectors: { economy: -3, science: 1 }, modifiers: { dovolstvoDrift: -25 } } },
+  { id: 'cn_tech_crackdown', name: 'Репрессии Бигтеха', type: 'state', description: 'Партия ставит на место зарвавшихся IT-миллиардеров.', effects: { sectors: { intel: 2, economy: -1 }, modifiers: { outputMult: { umniki: 0.8 } } } },
   { id: 'us_tech_monopoly', name: 'Монополия Бигтеха', type: 'state', description: 'Техногиганты стали сильнее правительства.', effects: { sectors: { science: 2, economy: 1 }, modifiers: { dovolstvoDrift: -5 } } },
   { id: 'us_woke_capitalism', name: 'ESG Корпорации', type: 'state', description: 'Повесточка решает всё. Корпорации увольняют за неправильные мысли.', effects: { sectors: { smi: 2, economy: -1 }, modifiers: { dovolstvoDrift: -10 } } },
   { id: 'us_mars_program', name: 'Колонизация Марса', type: 'state', description: 'Мы летим на Красную Планету!', effects: { sectors: { science: 3 }, modifiers: { outputMult: { umniki: 1.2 } } } },

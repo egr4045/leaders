@@ -1,0 +1,16 @@
+{
+  "id": "cn_belt_and_road",
+  "name": "Один пояс — один путь",
+  "type": "state",
+  "description": "Мы скупаем порты по всему миру.",
+  "effects": {
+    "sectors": {
+      "economy": 2
+    },
+    "modifiers": {
+      "outputMult": {
+        "siloviki": 1.1
+      }
+    }
+  }
+}

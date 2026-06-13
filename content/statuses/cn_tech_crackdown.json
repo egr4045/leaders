@@ -1,0 +1,17 @@
+{
+  "id": "cn_tech_crackdown",
+  "name": "Репрессии Бигтеха",
+  "type": "state",
+  "description": "Партия ставит на место зарвавшихся IT-миллиардеров.",
+  "effects": {
+    "sectors": {
+      "intel": 2,
+      "economy": -1
+    },
+    "modifiers": {
+      "outputMult": {
+        "umniki": 0.8
+      }
+    }
+  }
+}

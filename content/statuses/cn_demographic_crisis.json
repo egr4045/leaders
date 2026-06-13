@@ -1,0 +1,15 @@
+{
+  "id": "cn_demographic_crisis",
+  "name": "Демографическая Яма",
+  "type": "state",
+  "description": "Наследие политики одного ребенка. Работать некому.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 0.7,
+        "umniki": 0.9
+      },
+      "dovolstvoDrift": -5
+    }
+  }
+}
