@@ -366,19 +366,25 @@ export function VideoGrid({
     };
     const sorted = [...entries].sort((a, b) => rank(a.id) - rank(b.id));
     const n = sorted.length;
-    const cols =
-      n <= 1
-        ? 'grid-cols-1'
-        : n <= 2
-        ? 'grid-cols-1 sm:grid-cols-2'
-        : n <= 4
-        ? 'grid-cols-2'
-        : n <= 6
-        ? 'grid-cols-2 md:grid-cols-3'
-        : n <= 8
-        ? 'grid-cols-3 md:grid-cols-4'
-        : 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
     const isLobby = kind === 'lobby';
+    // Lobby: fewer columns so aspect-video tiles grow tall enough to fill the screen height
+    const cols = isLobby
+      ? n <= 2
+        ? 'grid-cols-1 sm:grid-cols-2'
+        : n <= 6
+        ? 'grid-cols-2'
+        : 'grid-cols-2 md:grid-cols-3'
+      : n <= 1
+      ? 'grid-cols-1'
+      : n <= 2
+      ? 'grid-cols-1 sm:grid-cols-2'
+      : n <= 4
+      ? 'grid-cols-2'
+      : n <= 6
+      ? 'grid-cols-2 md:grid-cols-3'
+      : n <= 8
+      ? 'grid-cols-3 md:grid-cols-4'
+      : 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
     tilesEl = (
       <div className={`grid gap-2 ${cols} ${isLobby ? 'h-full place-content-center' : 'h-full w-full content-center'}`}>
         {sorted.map((e) => renderEntry(e))}
