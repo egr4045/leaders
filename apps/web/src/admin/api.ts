@@ -40,11 +40,17 @@ export const adminApi = {
     apiFetch('/api/admin/cards/' + id, { method: 'DELETE' }),
   updateStatus: (id: string, data: Partial<StatusEntry>) =>
     apiFetch('/api/admin/statuses/' + id, { method: 'PUT', body: JSON.stringify(data) }),
-  createStatus: (data: StatusEntry) =>
+  replaceStatus: (id: string, raw: Record<string, unknown>) =>
+    apiFetch('/api/admin/statuses/' + id + '/raw', { method: 'PUT', body: JSON.stringify(raw) }),
+  createStatus: (data: Record<string, unknown>) =>
     apiFetch('/api/admin/statuses', { method: 'POST', body: JSON.stringify(data) }),
   // сессии
   getRooms: () => apiFetch<RoomSummary[]>('/api/admin/rooms'),
   killRoom: (code: string) => apiFetch<{ ok: boolean }>(`/api/admin/rooms/${code}/kill`, { method: 'POST' }),
+  // страны
+  getCountries: () => apiFetch<CountryEntry[]>('/api/admin/countries'),
+  updateCountry: (id: string, raw: Record<string, unknown>) =>
+    apiFetch<{ ok: boolean }>('/api/admin/countries/' + id, { method: 'PUT', body: JSON.stringify(raw) }),
   // контент / tunables
   reload: () => apiFetch<{ ok: boolean }>('/api/admin/reload', { method: 'POST' }),
   getTunables: () => apiFetch<TunablesView>('/api/admin/tunables'),
@@ -135,5 +141,20 @@ export interface TunablesTimers {
 export interface TunablesView {
   game: { years: number; playersMin: number; playersMax: number };
   timers: TunablesTimers;
+  [k: string]: unknown;
+}
+
+export interface CountryEntry {
+  id: string;
+  name: string;
+  startResources?: Record<string, number>;
+  startPopulation?: Record<string, number>;
+  startSectors?: Record<string, number>;
+  startStatuses?: string[];
+  uniquePerks?: string[];
+  uniqueWeaknesses?: string[];
+  exclusiveWonders?: string[];
+  advisorsRef?: string;
+  notes?: string;
   [k: string]: unknown;
 }

@@ -5,8 +5,9 @@ import { BalanceReport } from './BalanceReport';
 import { StatusEditor } from './StatusEditor';
 import { SessionsPanel } from './SessionsPanel';
 import { TimersPanel } from './TimersPanel';
+import { CountryEditor } from './CountryEditor';
 
-type Tab = 'cards' | 'statuses' | 'analysis' | 'sessions' | 'timers';
+type Tab = 'cards' | 'statuses' | 'countries' | 'analysis' | 'sessions' | 'timers';
 
 export function AdminPage() {
   const [secret, setSecret] = useState(getSecret);
@@ -138,6 +139,7 @@ export function AdminPage() {
           {([
             ['cards', 'Карточки'],
             ['statuses', 'Статусы'],
+            ['countries', 'Страны'],
             ['analysis', 'Баланс'],
             ['sessions', 'Сессии'],
             ['timers', 'Тест-режим'],
@@ -175,6 +177,8 @@ export function AdminPage() {
         {!loading && tab === 'analysis' && analysis && (
           <BalanceReport report={analysis} />
         )}
+
+        {tab === 'countries' && <CountryEditor />}
 
         {tab === 'sessions' && <SessionsPanel />}
 

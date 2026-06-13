@@ -118,6 +118,27 @@ export class AdminController {
     return { ok: true };
   }
 
+  // ---------- страны ----------
+
+  @Get('countries')
+  getCountries() {
+    const dir = path.join(this.contentDir, 'countries');
+    if (!fs.existsSync(dir)) return [];
+    return fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')) as Record<string, unknown>);
+  }
+
+  /** Полная замена страны (стартовые секторы/ресурсы/население/статусы и т.п.). */
+  @Put('countries/:id')
+  updateCountry(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+    const filePath = path.join(this.contentDir, 'countries', `${id}.json`);
+    if (!fs.existsSync(filePath)) throw new HttpException('Страна не найдена', HttpStatus.NOT_FOUND);
+    fs.writeFileSync(filePath, JSON.stringify({ ...body, id }, null, 2), 'utf8');
+    return { ok: true };
+  }
+
   // ---------- контент: горячая перезагрузка + tunables ----------
 
   /** Применить правки контента без рестарта (фича 4). */
@@ -388,6 +409,27 @@ export class AdminController {
       const idx = arr.findIndex((s) => s.id === id);
       if (idx >= 0) {
         arr[idx] = { ...arr[idx], ...body, id };
+        fs.writeFileSync(filePath, JSON.stringify(Array.isArray(data) ? arr : arr[0], null, 2), 'utf8');
+        return { ok: true };
+      }
+    }
+    throw new HttpException('Статус не найден', HttpStatus.NOT_FOUND);
+  }
+
+  /** Полная замена статуса сырым объектом (для структурного редактора). */
+  @Put('statuses/:id/raw')
+  replaceStatus(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+    if (!body || typeof body !== 'object' || !body.type || !body.name) {
+      throw new HttpException('Нужен объект статуса с name и type', HttpStatus.BAD_REQUEST);
+    }
+    const statusesDir = path.join(this.contentDir, 'statuses');
+    for (const file of fs.readdirSync(statusesDir).filter((f) => f.endsWith('.json'))) {
+      const filePath = path.join(statusesDir, file);
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const arr: Record<string, unknown>[] = Array.isArray(data) ? data : [data];
+      const idx = arr.findIndex((s) => s.id === id);
+      if (idx >= 0) {
+        arr[idx] = { ...body, id };
         fs.writeFileSync(filePath, JSON.stringify(Array.isArray(data) ? arr : arr[0], null, 2), 'utf8');
         return { ok: true };
       }
