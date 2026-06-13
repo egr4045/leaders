@@ -1,0 +1,16 @@
+{
+  "id": "jp_deflation",
+  "name": "Дефляционная Ловушка",
+  "type": "state",
+  "description": "Экономика не растет 10 лет. Люди откладывают деньги.",
+  "effects": {
+    "sectors": {
+      "economy": -2
+    },
+    "modifiers": {
+      "outputMult": {
+        "umniki": 0.9
+      }
+    }
+  }
+}

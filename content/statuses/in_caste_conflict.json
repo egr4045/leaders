@@ -1,0 +1,14 @@
+{
+  "id": "in_caste_conflict",
+  "name": "Кастовый Конфликт",
+  "type": "state",
+  "description": "Общественные напряжения зашкаливают.",
+  "effects": {
+    "sectors": {
+      "economy": -1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -15
+    }
+  }
+}

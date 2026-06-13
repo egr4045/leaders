@@ -1,0 +1,14 @@
+{
+  "id": "de_afd_rise",
+  "name": "Подъём Популизма",
+  "type": "state",
+  "description": "Правые популисты набирают очки в парламенте.",
+  "effects": {
+    "sectors": {
+      "smi": -1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -10
+    }
+  }
+}

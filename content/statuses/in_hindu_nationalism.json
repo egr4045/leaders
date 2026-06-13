@@ -1,0 +1,14 @@
+{
+  "id": "in_hindu_nationalism",
+  "name": "Хиндутва",
+  "type": "state",
+  "description": "Хинду-национализм на подъёме. Меч возрождается.",
+  "effects": {
+    "sectors": {
+      "smi": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": 10
+    }
+  }
+}

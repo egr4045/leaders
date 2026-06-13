@@ -1,0 +1,16 @@
+{
+  "id": "de_auto_crisis",
+  "name": "Кризис Автопрома",
+  "type": "state",
+  "description": "Немецкие гиганты теряют рынок электромобилей китайцам.",
+  "effects": {
+    "sectors": {
+      "economy": -2
+    },
+    "modifiers": {
+      "outputMult": {
+        "umniki": 0.8
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "il_intifada",
+  "name": "Интифада",
+  "type": "state",
+  "description": "Волна насилия в городах. Туристы боятся приезжать.",
+  "effects": {
+    "sectors": {
+      "economy": -2,
+      "army": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -20
+    }
+  }
+}

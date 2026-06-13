@@ -1,0 +1,14 @@
+{
+  "id": "jp_island_dispute",
+  "name": "Островной Спор",
+  "type": "state",
+  "description": "Китай ведет себя всё наглее вокруг Сенкаку.",
+  "effects": {
+    "sectors": {
+      "army": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -10
+    }
+  }
+}

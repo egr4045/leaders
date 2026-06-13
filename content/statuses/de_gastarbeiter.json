@@ -1,0 +1,17 @@
+{
+  "id": "de_gastarbeiter",
+  "name": "Гастарбайтер",
+  "type": "state",
+  "description": "Миллионы иммигрантов заполнили заводы.",
+  "effects": {
+    "sectors": {
+      "economy": 2
+    },
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.3
+      },
+      "dovolstvoDrift": -5
+    }
+  }
+}

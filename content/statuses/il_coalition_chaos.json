@@ -1,0 +1,14 @@
+{
+  "id": "il_coalition_chaos",
+  "name": "Кальция Из 11 Партий",
+  "type": "state",
+  "description": "Правительство разваливается на ходу из-за ультрарелигиозных партнеров.",
+  "effects": {
+    "sectors": {
+      "intel": -1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -15
+    }
+  }
+}

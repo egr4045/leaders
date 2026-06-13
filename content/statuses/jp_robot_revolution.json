@@ -1,0 +1,17 @@
+{
+  "id": "jp_robot_revolution",
+  "name": "Роботизация",
+  "type": "state",
+  "description": "Роботы заменяют человека везде.",
+  "effects": {
+    "sectors": {
+      "science": 2,
+      "economy": 1
+    },
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.5
+      }
+    }
+  }
+}

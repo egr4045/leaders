@@ -1,0 +1,14 @@
+{
+  "id": "in_space_power",
+  "name": "Космическая Держава",
+  "type": "state",
+  "description": "Индия запустила ракету на Луну дешевле, чем все.",
+  "effects": {
+    "sectors": {
+      "science": 3
+    },
+    "modifiers": {
+      "dovolstvoDrift": 15
+    }
+  }
+}

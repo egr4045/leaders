@@ -1,0 +1,15 @@
+{
+  "id": "il_judicial_reform",
+  "name": "Судебная Реформа",
+  "type": "state",
+  "description": "Министры хотят ослабить Суд. Улицы полны протестующих.",
+  "effects": {
+    "sectors": {
+      "smi": 1,
+      "intel": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -20
+    }
+  }
+}

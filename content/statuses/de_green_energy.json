@@ -1,0 +1,16 @@
+{
+  "id": "de_green_energy",
+  "name": "Грин Революция",
+  "type": "state",
+  "description": "Ветряки и солнечные панели закрывают потребность.",
+  "effects": {
+    "sectors": {
+      "science": 2
+    },
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.1
+      }
+    }
+  }
+}

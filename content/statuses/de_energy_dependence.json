@@ -1,0 +1,17 @@
+{
+  "id": "de_energy_dependence",
+  "name": "Газовая Зависимость",
+  "type": "state",
+  "description": "Северный поток закрыт. Промышленность замерзает.",
+  "effects": {
+    "sectors": {
+      "economy": -3
+    },
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 0.7
+      },
+      "dovolstvoDrift": -15
+    }
+  }
+}

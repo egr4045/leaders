@@ -1,0 +1,14 @@
+{
+  "id": "in_pakistan_tension",
+  "name": "Напряженность с Пакистаном",
+  "type": "state",
+  "description": "Стрельба на линии контроля.",
+  "effects": {
+    "sectors": {
+      "army": 2
+    },
+    "modifiers": {
+      "dovolstvoDrift": -10
+    }
+  }
+}
