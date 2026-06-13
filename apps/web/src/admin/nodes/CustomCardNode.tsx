@@ -7,21 +7,30 @@ interface CustomCardNodeData {
   onRefresh: () => void;
 }
 
+const AVAILABLE_CONDITIONS = [
+  { id: 'no_rich', label: 'Нет богачей' },
+  { id: 'rich_exist', label: 'Есть богачи' },
+  { id: 'siloviki_dominate', label: 'Силовики ≥20%' },
+  { id: 'smi_strong', label: 'СМИ ≥7' },
+  { id: 'food_surplus', label: 'Избыток еды' },
+  { id: 'golod', label: 'Голод' },
+  { id: 'giperinflyaciya', label: 'Инфляция ≥20%' },
+];
+
 export function CustomCardNode({ data }: { data: CustomCardNodeData }) {
   const { card, onRefresh } = data;
   
   // Local state for condition editing
-  const initialConditions = (card.raw?.requires as any)?.conditions?.join(', ') || '';
-  const [conditions, setConditions] = useState(initialConditions);
+  const initialConditions = (card.raw?.requires as any)?.conditions || [];
+  const [conditions, setConditions] = useState<string[]>(initialConditions);
   const [saving, setSaving] = useState(false);
 
   const handleSaveConditions = async () => {
     setSaving(true);
     try {
-      const condArray = conditions.split(',').map((c: string) => c.trim()).filter(Boolean);
       const newRequires = { ...(card.raw?.requires as any) };
-      if (condArray.length > 0) {
-        newRequires.conditions = condArray;
+      if (conditions.length > 0) {
+        newRequires.conditions = conditions;
       } else {
         delete newRequires.conditions;
       }
@@ -36,6 +45,16 @@ export function CustomCardNode({ data }: { data: CustomCardNodeData }) {
       setSaving(false);
     }
   };
+
+  const toggleCondition = (id: string) => {
+    if (conditions.includes(id)) {
+      setConditions(conditions.filter(c => c !== id));
+    } else {
+      setConditions([...conditions, id]);
+    }
+  };
+
+  const hasChanges = JSON.stringify(conditions.sort()) !== JSON.stringify([...initialConditions].sort());
 
   // Compile inputs (requirements)
   const reqStatuses = (card.raw?.requires as any)?.statuses as string[] || [];
@@ -125,28 +144,36 @@ export function CustomCardNode({ data }: { data: CustomCardNodeData }) {
       </div>
 
       {/* Footer / Editor */}
-      <div className="p-2 bg-slate-900 border-t border-slate-950 flex flex-col gap-1">
-        <label className="text-[10px] text-slate-500 font-semibold uppercase">Conditions (движок)</label>
-        <div className="flex gap-1">
-          <input 
-            type="text" 
-            value={conditions}
-            onChange={(e) => setConditions(e.target.value)}
-            placeholder="no_rich, hunger..."
-            className="flex-1 bg-slate-950 text-slate-300 text-xs px-1.5 py-1 rounded border border-slate-700 focus:outline-none focus:border-amber-500"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSaveConditions();
-            }}
-          />
-          {(conditions !== initialConditions) && (
+      <div className="p-2 bg-slate-900 border-t border-slate-950 flex flex-col gap-1.5">
+        <div className="flex justify-between items-center">
+          <label className="text-[10px] text-slate-500 font-semibold uppercase">Условия появления</label>
+          {hasChanges && (
             <button 
               onClick={handleSaveConditions}
               disabled={saving}
-              className="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-[10px] font-bold text-slate-900 rounded"
+              className="px-2 py-0.5 bg-amber-600 hover:bg-amber-500 text-[10px] font-bold text-slate-900 rounded"
             >
-              {saving ? '...' : 'OK'}
+              {saving ? '...' : 'Сохранить'}
             </button>
           )}
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {AVAILABLE_CONDITIONS.map(cond => {
+            const isActive = conditions.includes(cond.id);
+            return (
+              <button
+                key={cond.id}
+                onClick={() => toggleCondition(cond.id)}
+                className={`text-[9px] px-1.5 py-0.5 rounded border transition-colors ${
+                  isActive 
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/50' 
+                    : 'bg-slate-950 text-slate-500 border-slate-800 hover:border-slate-600'
+                }`}
+              >
+                {cond.label}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

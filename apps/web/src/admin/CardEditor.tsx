@@ -453,9 +453,24 @@ function CardRow({ card, onUpdate }: { card: CardEntry; onUpdate: () => void }) 
                 </div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {c.tags.map((t, j) => <EffectTag key={j} tag={t} />)}
-                  {c.newsLines && <span className="rounded bg-sky-900/40 px-1 py-0.5 text-[9px] text-sky-300 border border-sky-800/50">СМИ ✓</span>}
                   {c.wonderFallbackName && <span className="rounded bg-purple-900/40 px-1 py-0.5 text-[9px] text-purple-300">fallback</span>}
                 </div>
+                {c.newsLines && (
+                  <div className="mt-1.5 flex flex-col gap-1 border-t border-slate-700/50 pt-1.5">
+                    {c.newsLines.liberal && (
+                      <div className="text-[10px] text-sky-300 leading-tight">
+                        <span className="opacity-60 mr-1">🗞 Либеральные:</span>
+                        {c.newsLines.liberal}
+                      </div>
+                    )}
+                    {c.newsLines.state && (
+                      <div className="text-[10px] text-red-300 leading-tight">
+                        <span className="opacity-60 mr-1">📺 Провластные:</span>
+                        {c.newsLines.state}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
