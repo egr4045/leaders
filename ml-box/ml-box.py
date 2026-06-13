@@ -37,7 +37,10 @@ async def _synth(text: str) -> bytes:
 
 
 def generate_tts(text: str) -> bytes:
-    return asyncio.run(_synth(text))
+    try:
+        return asyncio.run(_synth(text))
+    except KeyboardInterrupt:
+        raise RuntimeError("edge-tts connection cancelled")
 
 
 def api(method: str, path: str, **kwargs):

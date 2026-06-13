@@ -6,6 +6,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors({ origin: true, credentials: true });
+  // ML-box отправляет аудио base64 (~300 KB), увеличиваем лимит тела
+  app.use('/ml', require('express').json({ limit: '10mb' }));
   // кэш сгенерированных ассетов (озвучка, картинки) — раздаётся как /media/*
   // (НЕ /assets/ — этот префикс занят бандлом Vite)
   const assetDir = process.env.ASSET_DIR ?? path.resolve(process.cwd(), '../../assets-cache');
