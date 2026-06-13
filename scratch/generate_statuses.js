@@ -219,6 +219,12 @@ const statuses = [
     id: "mossad", name: "Моссад", type: "state",
     description: "Лучшая разведка в мире. Бонус к сектору Разведки.",
     effects: { sectors: { intel: 2 } }
+  },
+  {
+    id: "ru_social_credit_lite",
+    name: "Социальный рейтинг (Лайт)",
+    description: "Китайские партнеры внедрили систему поощрения лояльных граждан.",
+    effects: { modifiers: { outputMult: { army: 1.1, intel: 1.2 } } }
   }
 ];
 

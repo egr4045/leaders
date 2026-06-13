@@ -64,11 +64,17 @@ export function CustomCardNode({ data }: { data: CustomCardNodeData }) {
   const removeStatuses = new Set<string>();
   const resourceEffects = new Set<string>();
 
-  card.choices.forEach(ch => {
+  card.choices.forEach((ch, idx) => {
+    const rawChoice = (card.raw?.choices as any[])?.[idx];
     const ef = ch.effects as any;
+
+    const addSt = rawChoice?.addStatuses || ef?.addStatuses as string[];
+    if (addSt) addSt.forEach((s: string) => addStatuses.add(s));
+
+    const remSt = rawChoice?.removeStatuses || ef?.removeStatuses as string[];
+    if (remSt) remSt.forEach((s: string) => removeStatuses.add(s));
+
     if (ef) {
-      if (ef.addStatuses) ef.addStatuses.forEach((s: string) => addStatuses.add(s));
-      if (ef.removeStatuses) ef.removeStatuses.forEach((s: string) => removeStatuses.add(s));
       // Try to parse basic resource impacts to show
       ['money', 'food', 'influence', 'population', 'industry'].forEach(res => {
         if (ef[res]) resourceEffects.add(res + (ef[res] > 0 ? '+' : '-'));

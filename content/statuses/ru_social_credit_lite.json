@@ -1,0 +1,13 @@
+{
+  "id": "ru_social_credit_lite",
+  "name": "Социальный рейтинг (Лайт)",
+  "description": "Китайские партнеры внедрили систему поощрения лояльных граждан.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "army": 1.1,
+        "intel": 1.2
+      }
+    }
+  }
+}
