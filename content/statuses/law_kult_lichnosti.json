@@ -3,8 +3,54 @@
   "name": "Культ личности",
   "type": "law",
   "description": "Лидер на каждом столбе. Столбам нравится — у них нет выбора.",
-  "cost": { "money": 50 },
-  "minMinistry": 10,
   "revocable": true,
-  "effects": { "modifiers": { "dovolstvoDrift": 1, "emigration": { "umniki": 0.03 }, "forbesLegacy": 10 } }
+  "levels": [
+    {
+      "name": "Узнаваемость",
+      "effects": {
+        "modifiers": {
+          "dovolstvoDrift": 1,
+          "forbesLegacy": 5
+        }
+      },
+      "cost": {
+        "money": 50
+      },
+      "minMinistry": 10
+    },
+    {
+      "name": "Портреты в кабинетах",
+      "effects": {
+        "modifiers": {
+          "dovolstvoDrift": 2,
+          "forbesLegacy": 15,
+          "emigration": {
+            "umniki": 0.03
+          }
+        }
+      },
+      "cost": {
+        "money": 100,
+        "influence": 10
+      },
+      "minMinistry": 20
+    },
+    {
+      "name": "Отец Нации",
+      "effects": {
+        "modifiers": {
+          "dovolstvoDrift": 4,
+          "forbesLegacy": 30,
+          "emigration": {
+            "umniki": 0.08
+          }
+        }
+      },
+      "cost": {
+        "money": 200,
+        "influence": 40
+      },
+      "minMinistry": 40
+    }
+  ]
 }

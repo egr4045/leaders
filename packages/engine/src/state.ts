@@ -103,6 +103,10 @@ export interface CountryState {
   externalAuras: ExternalAura[];
   /** статусы с истечением (untilYear); чистятся в начале тика */
   timedStatuses: TimedStatus[];
+  /** Текущий уровень принятого закона (id закона -> индекс уровня, 0-indexed). Если нет, значит 0. */
+  lawLevels: Record<string, number>;
+  /** Год, когда закон улучшался в последний раз (id закона -> year) */
+  lawUpgradedYear: Record<string, number>;
 }
 
 export interface WorldState {
@@ -146,6 +150,8 @@ export function createCountryState(country: Country, questId: string | null = nu
     sectorInvestment: {},
     externalAuras: [],
     timedStatuses: [],
+    lawLevels: {},
+    lawUpgradedYear: {},
   };
 }
 
@@ -195,6 +201,8 @@ export function deserializeWorld(j: WorldStateJson): WorldState {
   for (const s of countries.values()) {
     s.externalAuras ??= [];
     s.timedStatuses ??= [];
+    s.lawLevels ??= {};
+    s.lawUpgradedYear ??= {};
   }
   return {
     year: j.year,

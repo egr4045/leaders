@@ -497,16 +497,64 @@ export class RoomsService {
     const law = this.content.statuses.get(lawId);
     if (!law || law.type !== 'law') return { ok: false, error: 'Неизвестный закон' };
 
-    if (s.activeStatuses.includes(lawId)) return { ok: false, error: 'Уже принят' };
+    const isAdopted = s.activeStatuses.includes(lawId);
+    const hasLevels = law.levels && law.levels.length > 0;
+    const currentLevel = s.lawLevels?.[lawId] ?? 0;
+    const maxLevel = hasLevels ? law.levels!.length - 1 : 0;
+    
+    if (isAdopted && (!hasLevels || currentLevel >= maxLevel)) {
+      return { ok: false, error: 'Уже принят или достигнут максимальный уровень' };
+    }
 
-    if (law.cost?.money && s.resources.money < law.cost.money) return { ok: false, error: 'Не хватает денег' };
-    if (law.cost?.influence && s.resources.influence < law.cost.influence) return { ok: false, error: 'Не хватает влияния' };
-    if (law.minMinistry && s.population.ministry < law.minMinistry) return { ok: false, error: 'Не хватает министров' };
+    if (s.lawUpgradedYear?.[lawId] === room.world.year) {
+      return { ok: false, error: 'Улучшать закон можно только раз в год' };
+    }
 
-    if (law.cost?.money) s.resources.money -= law.cost.money;
-    if (law.cost?.influence) s.resources.influence -= law.cost.influence;
+    const nextLevelIdx = isAdopted ? currentLevel + 1 : 0;
+    const lvlData = hasLevels ? law.levels![nextLevelIdx] : undefined;
+    const cost = lvlData?.cost ?? law.cost;
+    const minMinistry = lvlData?.minMinistry ?? law.minMinistry;
 
-    s.activeStatuses.push(lawId);
+    if (cost?.money && s.resources.money < cost.money) return { ok: false, error: 'Не хватает денег' };
+    if (cost?.influence && s.resources.influence < cost.influence) return { ok: false, error: 'Не хватает влияния' };
+    if (minMinistry && s.population.ministry < minMinistry) return { ok: false, error: 'Не хватает министров' };
+
+    if (cost?.money) s.resources.money -= cost.money;
+    if (cost?.influence) s.resources.influence -= cost.influence;
+
+    if (!isAdopted) {
+      s.activeStatuses.push(lawId);
+    }
+    
+    s.lawLevels = s.lawLevels ?? {};
+    s.lawUpgradedYear = s.lawUpgradedYear ?? {};
+    
+    s.lawLevels[lawId] = nextLevelIdx;
+    s.lawUpgradedYear[lawId] = room.world.year;
+
+    this.persist(room);
+    this.broadcast(room);
+    return { ok: true };
+  }
+
+  cancelLaw(code: string, playerId: string, lawId: string) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) return { ok: false, error: 'Нет страны' };
+    const s = room.world.countries.get(player.countryId);
+    if (!s) return { ok: false, error: 'Нет страны' };
+
+    const law = this.content.statuses.get(lawId);
+    if (!law || law.type !== 'law') return { ok: false, error: 'Неизвестный закон' };
+
+    if (!s.activeStatuses.includes(lawId)) return { ok: false, error: 'Закон не принят' };
+
+    s.activeStatuses = s.activeStatuses.filter((id) => id !== lawId);
+    
+    if (s.lawLevels) delete s.lawLevels[lawId];
+    if (s.lawUpgradedYear) delete s.lawUpgradedYear[lawId];
+
     this.persist(room);
     this.broadcast(room);
     return { ok: true };

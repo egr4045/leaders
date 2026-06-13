@@ -22,8 +22,9 @@ function Router() {
     case 'lobby':
       return <LobbyScreen />;
     case 'cabinet':
-    case 'year_summary':
       return <CabinetScreen />;
+    case 'year_summary':
+      return <YearSummaryScreen />;
     case 'un_summary':
     case 'un_comments':
     case 'un_debate':

@@ -28,20 +28,12 @@ export function BudgetPanel({ you }: { you: PrivateCountryView }) {
 
   const setSlider = useCallback((key: string, value: number) => {
     setAlloc((prev) => {
-      const next = { ...prev, [key]: value };
-      const total = Object.values(next).reduce((a, b) => a + b, 0);
-      if (total > 100) {
-        // clamp: scale others down proportionally
-        const excess = total - 100;
-        const others = Object.entries(next).filter(([k]) => k !== key);
-        const othersTotal = others.reduce((a, [, v]) => a + v, 0);
-        if (othersTotal > 0) {
-          for (const [k] of others) {
-            next[k] = Math.max(0, Math.round((next[k]! - (next[k]! / othersTotal) * excess)));
-          }
-        }
-      }
-      return next;
+      const othersSum = Object.entries(prev)
+        .filter(([k]) => k !== key)
+        .reduce((a, [, v]) => a + v, 0);
+      // Each slider is independent: max = what's left after others
+      const clamped = Math.min(value, Math.max(0, 100 - othersSum));
+      return { ...prev, [key]: clamped };
     });
   }, []);
 
@@ -68,6 +60,8 @@ export function BudgetPanel({ you }: { you: PrivateCountryView }) {
         {SECTOR_KEYS.map((key) => {
           const pct = alloc[key] ?? 0;
           const amount = income > 0 ? Math.round(income * pct / 100) : 0;
+          const othersSum = SECTOR_KEYS.filter((k) => k !== key).reduce((a, k) => a + (alloc[k] ?? 0), 0);
+          const maxPct = Math.max(pct, 100 - othersSum);
           return (
             <div key={key}>
               <div className="mb-1 flex items-center justify-between text-xs">
@@ -79,7 +73,7 @@ export function BudgetPanel({ you }: { you: PrivateCountryView }) {
               <input
                 type="range"
                 min={0}
-                max={100}
+                max={maxPct}
                 step={1}
                 value={pct}
                 onChange={(e) => setSlider(key, Number(e.target.value))}

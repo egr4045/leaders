@@ -52,6 +52,7 @@ export const SocketEvents = {
   CabinetSetBudget: 'cabinet:set_budget',
   CabinetAdoptLaw: 'cabinet:adopt_law',
   CabinetRejectLaw: 'cabinet:reject_law',
+  CabinetCancelLaw: 'cabinet:cancel_law',
   SpyOrder: 'spy:order',
 
   // дипломатия (Э5)

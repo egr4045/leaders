@@ -56,14 +56,12 @@ interface GameApi {
   chooseCard: (cardId: string, choiceIndex: number) => Promise<{ wonderFallback: string | null } | null>;
   markReady: () => Promise<void>;
   hostContinue: () => Promise<void>;
-  spyOrder: (
-    kind: string,
-    targetCountryId: string,
-  ) => Promise<{ success: boolean } | null>;
+  spyOrder: (targetCountryId: string, kind: string) => Promise<Ack>;
   declareForbes: (value: number) => Promise<void>;
   commentDone: () => Promise<void>;
-  adoptLaw: (lawId: string) => Promise<void>;
-  rejectLaw: (lawId: string) => Promise<void>;
+  adoptLaw: (lawId: string) => Promise<Ack>;
+  rejectLaw: (lawId: string) => Promise<Ack>;
+  cancelLaw: (lawId: string) => Promise<Ack>;
   emitRaw: <T>(event: string, body?: unknown) => Promise<Ack<T>>;
 }
 
@@ -181,16 +179,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       },
       markReady: async () => void (await guard(emitRaw(SocketEvents.CabinetReady))),
       hostContinue: async () => void (await guard(emitRaw(SocketEvents.RoomHostContinue))),
-      spyOrder: async (kind, targetCountryId) => {
-        const res = await guard<{ success: boolean }>(
-          emitRaw(SocketEvents.SpyOrder, { kind, targetCountryId }),
-        );
-        return res.ok ? (res.data ?? null) : null;
-      },
+      spyOrder: (targetCountryId, kind) => guard(emitRaw(SocketEvents.SpyOrder, { targetCountryId, kind })),
       declareForbes: async (value) => void (await guard(emitRaw(SocketEvents.ForbesDeclare, { value }))),
       commentDone: async () => void (await guard(emitRaw(SocketEvents.UnCommentDone))),
-      adoptLaw: async (lawId) => void (await guard(emitRaw(SocketEvents.CabinetAdoptLaw, { lawId }))),
-      rejectLaw: async (lawId) => void (await guard(emitRaw(SocketEvents.CabinetRejectLaw, { lawId }))),
+      adoptLaw: (lawId) => guard(emitRaw(SocketEvents.CabinetAdoptLaw, { lawId })),
+      rejectLaw: (lawId) => guard(emitRaw(SocketEvents.CabinetRejectLaw, { lawId })),
+      cancelLaw: (lawId) => guard(emitRaw(SocketEvents.CabinetCancelLaw, { lawId })),
       emitRaw,
     }),
     [connected, snapshot, session, error, announcements, emitRaw, guard, saveSession],

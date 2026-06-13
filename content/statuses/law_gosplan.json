@@ -3,19 +3,64 @@
   "name": "Госплан",
   "type": "law",
   "description": "Спланируем всё: от чугуна до количества улыбок на душу населения.",
-  "cost": {
-    "money": 40
-  },
-  "minMinistry": 25,
   "revocable": true,
-  "effects": {
-    "modifiers": {
-      "outputMult": {
-        "ministry": 1
+  "levels": [
+    {
+      "name": "Мягкое планирование",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "ministry": 1.2
+          },
+          "special": {
+            "planEconomy": 1
+          }
+        }
       },
-      "special": {
-        "planEconomy": 1
-      }
+      "cost": {
+        "money": 40
+      },
+      "minMinistry": 20
+    },
+    {
+      "name": "Жесткие квоты",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "ministry": 1.5,
+            "rabotyagi": 1.1
+          },
+          "dovolstvoDrift": -1,
+          "special": {
+            "planEconomy": 1
+          }
+        }
+      },
+      "cost": {
+        "money": 60,
+        "influence": 10
+      },
+      "minMinistry": 35
+    },
+    {
+      "name": "Тотальный Госснаб",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "ministry": 2,
+            "rabotyagi": 1.3
+          },
+          "dovolstvoDrift": -3,
+          "special": {
+            "planEconomy": 1
+          }
+        }
+      },
+      "cost": {
+        "money": 100,
+        "influence": 30
+      },
+      "minMinistry": 50
     }
-  }
+  ]
 }

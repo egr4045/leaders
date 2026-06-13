@@ -142,14 +142,39 @@ export function buildSnapshot(
           })),
           projection: computeProjection(s, content),
           availableLaws: Array.from(content.statuses.values())
-            .filter((st) => st.type === 'law' && !s.activeStatuses.includes(st.id) && !(me?.rejectedLaws ?? []).includes(st.id))
-            .map((st) => ({
-              id: st.id,
-              name: st.name,
-              description: st.description,
-              cost: st.cost,
-              effectsSummary: summarizeEffects(st.effects as Record<string, unknown> | undefined),
-            })),
+            .filter((st) => st.type === 'law' && !(me?.rejectedLaws ?? []).includes(st.id))
+            .map((st) => {
+              const isAdopted = s.activeStatuses.includes(st.id);
+              const currentLevel = s.lawLevels?.[st.id] ?? 0;
+              const hasLevels = st.levels && st.levels.length > 0;
+              const maxLevel = hasLevels ? st.levels!.length - 1 : 0;
+              const isMaxedOut = currentLevel >= maxLevel;
+              
+              if (isAdopted && (!hasLevels || isMaxedOut)) {
+                return null;
+              }
+
+              const nextLevelIdx = isAdopted ? currentLevel + 1 : 0;
+              const lvlData = hasLevels ? st.levels![nextLevelIdx] : undefined;
+              const cost = lvlData?.cost ?? st.cost;
+              const minMinistry = lvlData?.minMinistry ?? st.minMinistry;
+              const effects = lvlData?.effects ?? st.effects;
+              const upgradedThisYear = s.lawUpgradedYear?.[st.id] === room.world?.year;
+
+              return {
+                id: st.id,
+                name: lvlData?.name ? `${st.name}: ${lvlData.name}` : st.name,
+                description: lvlData?.description ?? st.description,
+                cost,
+                minMinistry,
+                effectsSummary: summarizeEffects(effects as Record<string, unknown> | undefined),
+                level: isAdopted ? currentLevel + 1 : 0, // for display (1-based if adopted, 0 if not? Let's just say "currentLevel" + 1 for display of what we are buying)
+                maxLevel: hasLevels ? st.levels!.length : 1,
+                upgradedThisYear,
+                isAdopted,
+              };
+            })
+            .filter(Boolean) as NonNullable<import('@leaders/shared').PrivateCountryView['availableLaws']>,
           budget: (room.sectorBudget?.[s.id] as Record<string, number>) ?? {},
           incomingCalls: [], // Заполним ниже
           outgoingCall: null, // Заполним ниже

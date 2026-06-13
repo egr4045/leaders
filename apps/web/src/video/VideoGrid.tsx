@@ -378,9 +378,10 @@ export function VideoGrid({
         : n <= 8
         ? 'grid-cols-3 md:grid-cols-4'
         : 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+    const isLobby = kind === 'lobby';
     tilesEl = (
-      <div className={`grid h-full w-full auto-rows-fr gap-2 ${cols}`}>
-        {sorted.map((e) => renderEntry(e, { fill: true }))}
+      <div className={`grid gap-2 ${cols} ${isLobby ? 'h-full place-content-center' : 'h-full w-full auto-rows-fr'}`}>
+        {sorted.map((e) => renderEntry(e, { fill: !isLobby }))}
       </div>
     );
   }

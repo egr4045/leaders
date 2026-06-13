@@ -17,7 +17,7 @@ import { BudgetPanel } from './cabinet/BudgetPanel';
 import { LawsPanel } from './cabinet/LawsPanel';
 import type { AdvisorCard } from '@leaders/shared';
 
-type Tab = 'advisor' | 'country' | 'laws' | 'diplomacy';
+type Tab = 'advisor' | 'budget' | 'laws' | 'diplomacy';
 
 interface PendingResult {
   card: AdvisorCard;
@@ -259,7 +259,7 @@ function ReadyButton({
 // ── Tab bar ─────────────────────────────────────────────────────────────
 const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'advisor', icon: '🃏', label: 'Советник' },
-  { id: 'country', icon: '🌍', label: 'Страна' },
+  { id: 'budget', icon: '💹', label: 'Бюджет' },
   { id: 'laws', icon: '⚖️', label: 'Законы' },
   { id: 'diplomacy', icon: '🤝', label: 'Дипломатия' },
 ];
@@ -267,31 +267,38 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
 function TabBar({
   tab,
   setTab,
-  readyCount,
-  readyTotal,
+  badges,
 }: {
   tab: Tab;
   setTab: (t: Tab) => void;
-  readyCount: number;
-  readyTotal: number;
+  badges: Partial<Record<Tab, number | boolean>>;
 }) {
   return (
     <nav className="flex shrink-0 border-t border-slate-800 bg-slate-950">
-      {TABS.map((t) => (
-        <button
-          key={t.id}
-          onClick={() => setTab(t.id)}
-          className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
-            tab === t.id ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'
-          }`}
-        >
-          <span className="text-xl leading-none">{t.icon}</span>
-          <span className="text-[10px] font-medium leading-none">{t.label}</span>
-          {t.id === 'diplomacy' && readyCount < readyTotal && (
-            <span className="text-[9px] text-slate-600">{readyCount}/{readyTotal} ✓</span>
-          )}
-        </button>
-      ))}
+      {TABS.map((t) => {
+        const badge = badges[t.id];
+        const hasBadge = !!badge;
+        const badgeNum = typeof badge === 'number' ? badge : null;
+        return (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
+              tab === t.id ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <span className="relative text-xl leading-none">
+              {t.icon}
+              {hasBadge && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-bold text-white">
+                  {badgeNum ?? ''}
+                </span>
+              )}
+            </span>
+            <span className="text-[10px] font-medium leading-none">{t.label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 }
@@ -301,11 +308,25 @@ export function CabinetScreen() {
   const { snapshot, chooseCard, markReady } = useGame();
   const [tab, setTab] = useState<Tab>('advisor');
   const [readyClicked, setReadyClicked] = useState(false);
+  const [budgetNotified, setBudgetNotified] = useState(false);
   const [showReadyConfirm, setShowReadyConfirm] = useState(false);
   const [pendingResult, setPendingResult] = useState<PendingResult | null>(null);
 
   if (!snapshot?.you) return null;
   const you = snapshot.you;
+
+  // Tab badges
+  const budgetSaved = you.budget ?? {};
+  const budgetUsed = Object.values(budgetSaved).reduce((a: number, b: number) => a + b, 0);
+  const budgetReserve = Math.max(0, 100 - budgetUsed);
+  const pendingTrades = (snapshot.offers ?? []).filter(
+    (o) => o.status === 'pending' && o.toCountryId === you.countryId,
+  ).length;
+  const tabBadges: Partial<Record<Tab, number | boolean>> = {
+    advisor: you.cardsLeft > 0 ? you.cardsLeft : false,
+    budget: !budgetNotified && budgetReserve > 0 ? true : false,
+    diplomacy: pendingTrades > 0 ? pendingTrades : false,
+  };
 
   const handleChoose = async (choiceIndex: number) => {
     const card = you.currentCard;
@@ -380,7 +401,7 @@ export function CabinetScreen() {
           </div>
         )}
 
-        {tab === 'country' && (
+        {tab === 'budget' && (
           <div className="flex h-full flex-col overflow-y-auto p-3">
             {/* ResourcePanel only on mobile (hidden on md+ — sidebar has it) */}
             <div className="md:hidden">
@@ -431,12 +452,6 @@ export function CabinetScreen() {
         <div className="flex-1 overflow-y-auto p-3">
           {snapshot.yearReport && <YearReportBanner report={snapshot.yearReport} />}
           <ResourcePanel you={you} />
-          <div className="mt-3">
-            <BudgetPanel you={you} />
-          </div>
-          <div className="mt-3">
-            <LawsPanel you={you} />
-          </div>
         </div>
         <div className="shrink-0 border-t border-slate-800 px-4 py-3">
           <ReadyButton
@@ -486,9 +501,11 @@ export function CabinetScreen() {
         {/* Tab bar */}
         <TabBar
           tab={tab}
-          setTab={setTab}
-          readyCount={snapshot.readyCount}
-          readyTotal={snapshot.readyTotal}
+          setTab={(t) => {
+            if (t === 'budget') setBudgetNotified(true);
+            setTab(t);
+          }}
+          badges={tabBadges}
         />
       </div>
 

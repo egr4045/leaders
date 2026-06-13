@@ -23,6 +23,20 @@ export const StatusRequiresSchema = z
   .partial()
   .strict();
 
+export const LawLevelSchema = z
+  .object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    effects: EffectsSchema.optional(),
+    cost: z
+      .object({ money: z.number(), influence: z.number() })
+      .partial()
+      .strict()
+      .optional(),
+    minMinistry: z.number().int().nonnegative().optional(),
+  })
+  .strict();
+
 export const StatusSchema = z
   .object({
     id: zId,
@@ -80,6 +94,8 @@ export const StatusSchema = z
     revocable: z.boolean().optional(),
     /** для режимов: true = независимые (либеральные) СМИ, false = провластные */
     mediaIsLiberal: z.boolean().optional(),
+    /** Уровни прокачки закона (первый уровень = индекс 0) */
+    levels: z.array(LawLevelSchema).optional(),
   })
   .strict();
 

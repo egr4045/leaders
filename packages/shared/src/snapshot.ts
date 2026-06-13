@@ -75,7 +75,18 @@ export interface PrivateCountryView {
   /** прогноз на следующий тик (без ООН-эффектов) */
   projection: YearProjection;
   /** Законы, доступные для принятия (не принятые и не отклонённые) */
-  availableLaws?: { id: string; name: string; description?: string; cost?: { money?: number; influence?: number }; effectsSummary?: string[] }[];
+  availableLaws?: {
+    id: string;
+    name: string;
+    description?: string;
+    cost?: { money?: number; influence?: number };
+    effectsSummary?: string[];
+    level?: number;
+    maxLevel?: number;
+    upgradedThisYear?: boolean;
+    isAdopted?: boolean;
+    minMinistry?: number;
+  }[];
   /** Установленный бюджет */
   budget?: Record<string, number>;
   /** Очередь входящих звонков */

@@ -3,11 +3,61 @@
   "name": "Цифровой суверенитет",
   "type": "law",
   "description": "Свой интернет, с блэкджеком и замедлением. Враньё прикрывать проще.",
-  "cost": { "money": 60, "influence": 10 },
-  "minMinistry": 20,
   "revocable": true,
-  "effects": {
-    "sectors": { "intel": 1 },
-    "modifiers": { "scienceMult": -0.1, "emigration": { "umniki": 0.05 } }
-  }
+  "levels": [
+    {
+      "name": "Цензура соцсетей",
+      "effects": {
+        "sectors": {
+          "intel": 1
+        },
+        "modifiers": {
+          "scienceMult": -0.05
+        }
+      },
+      "cost": {
+        "money": 50,
+        "influence": 10
+      },
+      "minMinistry": 15
+    },
+    {
+      "name": "Блокировка VPN",
+      "effects": {
+        "sectors": {
+          "intel": 2
+        },
+        "modifiers": {
+          "scienceMult": -0.15,
+          "emigration": {
+            "umniki": 0.05
+          }
+        }
+      },
+      "cost": {
+        "money": 100,
+        "influence": 20
+      },
+      "minMinistry": 30
+    },
+    {
+      "name": "Чебурнет",
+      "effects": {
+        "sectors": {
+          "intel": 4
+        },
+        "modifiers": {
+          "scienceMult": -0.3,
+          "emigration": {
+            "umniki": 0.15
+          }
+        }
+      },
+      "cost": {
+        "money": 200,
+        "influence": 40
+      },
+      "minMinistry": 50
+    }
+  ]
 }

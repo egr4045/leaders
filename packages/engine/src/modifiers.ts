@@ -66,11 +66,20 @@ export function aggregateModifiers(state: CountryState, content: GameContent): E
   const eff = emptyEffective();
   for (const id of state.activeStatuses) {
     const st = content.statuses.get(id);
-    if (!st?.effects) continue;
-    if (st.effects.modifiers) foldModifiers(eff, st.effects.modifiers);
-    if (st.effects.sectors) {
+    if (!st) continue;
+    
+    let activeEffects = st.effects;
+    if (st.type === 'law' && st.levels && st.levels.length > 0) {
+      const levelIdx = state.lawLevels?.[id] ?? 0;
+      activeEffects = st.levels[levelIdx]?.effects ?? st.effects;
+    }
+
+    if (!activeEffects) continue;
+
+    if (activeEffects.modifiers) foldModifiers(eff, activeEffects.modifiers);
+    if (activeEffects.sectors) {
       for (const k of SECTOR_KEYS) {
-        eff.sectorAdds[k] += st.effects.sectors[k] ?? 0;
+        eff.sectorAdds[k] += activeEffects.sectors[k] ?? 0;
       }
     }
   }

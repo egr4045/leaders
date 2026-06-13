@@ -205,51 +205,40 @@ function VotePanel() {
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between text-sm">
+      <div className="mb-2 flex items-center justify-between text-xs">
         <span className="text-slate-400">
           Влияние: <b className="text-sky-400">{snapshot.you.resources.influence}</b>
+          <span className="ml-2 text-slate-600">· голос = 10 влияния</span>
         </span>
-        {msg && <span className="text-amber-400 text-xs">{msg}</span>}
+        {msg && <span className="text-amber-400">{msg}</span>}
       </div>
-      <details className="mb-3 rounded-lg border border-slate-700 text-xs">
-        <summary className="cursor-pointer px-3 py-2 text-slate-400 hover:text-slate-200">
-          Что дают санкции и поддержка?
-        </summary>
-        <div className="border-t border-slate-700 px-3 py-2 text-slate-400 leading-relaxed">
-          <b className="text-red-400">Санкции</b> → +1 санкция → +2% инфляции/год
-          <br />
-          <b className="text-emerald-400">Поддержка</b> → −1 санкция (или +10 влияния)
-          <br />
-          Стоимость голоса: 10 влияния
-        </div>
-      </details>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-2">
         {snapshot.others.map((o: PublicCountryView) => {
           const tally = snapshot.voteTally[o.countryId];
           return (
             <div
               key={o.countryId}
-              className="flex items-center justify-between rounded-xl bg-slate-900 p-3 text-sm"
+              className="flex flex-col gap-2 rounded-xl bg-slate-900 p-2.5 text-xs"
             >
               <div>
-                <div className="font-bold">{o.countryName}</div>
-                <div className="text-xs text-slate-500">
-                  санкции {tally?.sanction ?? 0} · поддержка {tally?.support ?? 0}
-                  {o.sanctions > 0 && <span className="ml-1 text-red-400">({o.sanctions} акт.)</span>}
+                <div className="font-bold text-sm leading-tight">{o.countryName}</div>
+                <div className="text-slate-500">
+                  🚫{tally?.sanction ?? 0} · ✅{tally?.support ?? 0}
+                  {o.sanctions > 0 && <span className="ml-1 text-red-400">({o.sanctions})</span>}
                 </div>
               </div>
-              <div className="flex gap-1.5">
+              <div className="flex gap-1">
                 <button
                   onClick={() => void vote(o.countryId, 'sanction')}
-                  className="rounded-lg bg-red-700 px-2.5 py-1.5 text-xs font-semibold hover:bg-red-600"
+                  className="flex-1 rounded-lg bg-red-700 py-1.5 text-xs font-semibold hover:bg-red-600"
                 >
                   Санкции
                 </button>
                 <button
                   onClick={() => void vote(o.countryId, 'support')}
-                  className="rounded-lg bg-emerald-700 px-2.5 py-1.5 text-xs font-semibold hover:bg-emerald-600"
+                  className="flex-1 rounded-lg bg-emerald-700 py-1.5 text-xs font-semibold hover:bg-emerald-600"
                 >
-                  Поддержать
+                  ✅
                 </button>
               </div>
             </div>
@@ -401,9 +390,9 @@ export function UnScreen() {
   const effectiveLayout: 'spotlight' | 'grid' | 'strip' =
     snapshot.unLayout !== 'auto'
       ? snapshot.unLayout
-      : phase === 'un_debate'
+      : phase === 'un_debate' || phase === 'un_vote'
       ? 'grid'
-      : 'spotlight'; // un_summary, un_comments, un_vote, results — все spotlight
+      : 'spotlight'; // un_summary, un_comments, results — spotlight
 
   const duckOthers =
     phase === 'un_summary' || (phase === 'un_comments' && !!snapshot.currentSpeakerId);
@@ -529,57 +518,105 @@ export function UnScreen() {
     </AnimatePresence>
   );
 
+  // un_summary: news content is main, video is a strip
+  const newsFirst = phase === 'un_summary';
+
+  // Shared header block used in news-first mode
+  const phaseHeader = (
+    <div className="flex shrink-0 items-center justify-between border-b border-slate-800 px-4 py-2">
+      <div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-amber-400">
+          {PHASE_TITLES[phase] ?? phase}
+        </div>
+        <div className="text-xs text-slate-400">Год {snapshot.year}/{snapshot.totalYears}</div>
+      </div>
+      <div className="text-right">
+        {snapshot.waitingContinue ? (
+          <span className="text-xs text-amber-400">Таймер завершён</span>
+        ) : (
+          <Timer endsAt={snapshot.phaseEndsAt} />
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-slate-950 md:flex-row">
-      {/* ── Video: flex-1, takes the majority of the screen ── */}
-      <div className="relative min-h-0 flex-1 overflow-hidden">
-        {/* Floating header overlay */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between bg-gradient-to-b from-slate-950/90 to-transparent px-4 pb-6 pt-2">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-amber-400">
-              {PHASE_TITLES[phase] ?? phase}
+      {newsFirst ? (
+        <>
+          {/* NEWS-FIRST (un_summary): scrollable content on left/top, small video strip */}
+          <div className="flex min-h-0 flex-1 flex-col">
+            {phaseHeader}
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <div className="px-4 py-3">{phaseContent}</div>
             </div>
-            <div className="text-xs text-slate-400">Год {snapshot.year}/{snapshot.totalYears}</div>
           </div>
-          <div className="text-right">
-            {snapshot.waitingContinue ? (
-              <span className="text-xs text-amber-400">Таймер завершён</span>
-            ) : (
-              <Timer endsAt={snapshot.phaseEndsAt} />
+          {/* Video strip: horizontal on mobile (bottom), vertical on md+ (right) */}
+          <div className="h-32 shrink-0 border-t border-slate-800 md:h-auto md:w-44 md:border-l md:border-t-0">
+            <VideoGrid
+              kind="un"
+              players={snapshot.players}
+              layout="grid"
+              spotlightId={spotlightId}
+              duckOthers={duckOthers}
+              showControls={false}
+              showControlBar={true}
+              hostControls={barControls}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          {/* VIDEO-FIRST (default): video is main, content below/sidebar */}
+          <div className="relative min-h-0 flex-1 overflow-hidden">
+            {/* Floating header overlay */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between bg-gradient-to-b from-slate-950/90 to-transparent px-4 pb-6 pt-2">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-amber-400">
+                  {PHASE_TITLES[phase] ?? phase}
+                </div>
+                <div className="text-xs text-slate-400">Год {snapshot.year}/{snapshot.totalYears}</div>
+              </div>
+              <div className="text-right">
+                {snapshot.waitingContinue ? (
+                  <span className="text-xs text-amber-400">Таймер завершён</span>
+                ) : (
+                  <Timer endsAt={snapshot.phaseEndsAt} />
+                )}
+              </div>
+            </div>
+
+            {/* Current speaker indicator for un_comments */}
+            {phase === 'un_comments' && speaker && (
+              <div className="pointer-events-none absolute inset-x-0 top-1 z-10 flex justify-center">
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-full bg-emerald-900/80 px-4 py-1 text-xs font-semibold text-emerald-300 backdrop-blur-sm"
+                >
+                  🎤 {speaker.name} {speaker.countryName ? `· ${speaker.countryName}` : ''}
+                </motion.div>
+              </div>
             )}
+
+            <VideoGrid
+              kind="un"
+              players={snapshot.players}
+              layout={effectiveLayout}
+              spotlightId={spotlightId}
+              duckOthers={duckOthers}
+              showControls={false}
+              showControlBar={true}
+              hostControls={barControls}
+            />
           </div>
-        </div>
 
-        {/* Current speaker indicator for un_comments (floating at top-center) */}
-        {phase === 'un_comments' && speaker && (
-          <div className="pointer-events-none absolute inset-x-0 top-1 z-10 flex justify-center">
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-full bg-emerald-900/80 px-4 py-1 text-xs font-semibold text-emerald-300 backdrop-blur-sm"
-            >
-              🎤 {speaker.name} {speaker.countryName ? `· ${speaker.countryName}` : ''}
-            </motion.div>
+          {/* Phase content: below video (mobile) or right sidebar (md+) */}
+          <div className="max-h-[44dvh] shrink-0 overflow-y-auto border-t border-slate-800 md:max-h-none md:w-72 md:border-l md:border-t-0">
+            <div className="px-4 py-3">{phaseContent}</div>
           </div>
-        )}
-
-        {/* VideoGrid fills the entire video section */}
-        <VideoGrid
-          kind="un"
-          players={snapshot.players}
-          layout={effectiveLayout}
-          spotlightId={spotlightId}
-          duckOthers={duckOthers}
-          showControls={false}
-          showControlBar={true}
-          hostControls={barControls}
-        />
-      </div>
-
-      {/* ── Phase content: below video (mobile) or right sidebar (md+) ── */}
-      <div className="max-h-[38dvh] shrink-0 overflow-y-auto border-t border-slate-800 md:max-h-none md:w-72 md:border-l md:border-t-0">
-        <div className="px-4 py-3">{phaseContent}</div>
-      </div>
+        </>
+      )}
 
       {/* Chairman panel: BottomDrawer */}
       <BottomDrawer

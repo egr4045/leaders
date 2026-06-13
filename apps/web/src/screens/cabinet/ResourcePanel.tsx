@@ -45,17 +45,31 @@ export function ResourcePanel({ you }: { you: PrivateCountryView }) {
 
         {/* Ресурсы */}
         <div className="mb-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-          <div className="flex justify-between">
-            <span className="text-slate-400">💰 Деньги</span>
-            <span className="font-mono font-bold">{r.money}</span>
+          <div className="flex justify-between gap-1">
+            <span className="shrink-0 text-slate-400">💰 Деньги</span>
+            <span className="font-mono font-bold">
+              {r.money}
+              {you.projection?.moneyIncome !== undefined && (
+                <span className={`ml-1 text-xs ${you.projection.moneyIncome >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  ({you.projection.moneyIncome > 0 ? '+' : ''}{you.projection.moneyIncome})
+                </span>
+              )}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">🥇 Золото</span>
             <span className="font-mono font-bold text-amber-400">{r.gold}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">🌾 Еда</span>
-            <span className={`font-mono font-bold ${r.food < 0 ? 'text-red-400' : 'text-lime-400'}`}>{r.food}</span>
+          <div className="flex justify-between gap-1">
+            <span className="shrink-0 text-slate-400">🌾 Еда</span>
+            <span className={`font-mono font-bold ${r.food < 0 ? 'text-red-400' : 'text-lime-400'}`}>
+              {r.food}
+              {you.projection?.foodBalance !== undefined && (
+                <span className={`ml-1 text-xs ${you.projection.foodBalance >= 0 ? 'text-lime-400' : 'text-red-400'}`}>
+                  ({you.projection.foodBalance > 0 ? '+' : ''}{you.projection.foodBalance})
+                </span>
+              )}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">🗳 Влияние</span>
