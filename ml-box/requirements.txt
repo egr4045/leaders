@@ -1,4 +1,2 @@
-torch>=2.0
-torchaudio>=2.0
-silero>=0.4
+edge-tts>=6.1
 requests>=2.28

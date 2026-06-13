@@ -36,7 +36,7 @@ if (-not $Py) {
 Write-Host "Python: $(& $Py --version)"
 
 # --- 3. Venv ---
-$Venv = Join-Path $Root ".venv"
+$Venv    = Join-Path $Root ".venv"
 $VenvPy  = Join-Path $Venv "Scripts\python.exe"
 $VenvPip = Join-Path $Venv "Scripts\pip.exe"
 if (-not (Test-Path $VenvPy)) {
@@ -44,21 +44,16 @@ if (-not (Test-Path $VenvPy)) {
     & $Py -m venv $Venv
 }
 
-# --- 4. Dependencies ---
-$Marker = Join-Path $Root ".deps_ok"
-if (-not (Test-Path $Marker)) {
-    Write-Host "Installing PyTorch (CPU) + torchaudio (~2 GB, one-time)..."
-    & $VenvPip install --upgrade pip -q
-    & $VenvPip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-    & $VenvPip install requests -q
-    Set-Content $Marker "ok" -Encoding utf8
-    Write-Host "Dependencies installed."
-}
+# --- 4. Dependencies (edge-tts + requests, installs in seconds) ---
+Write-Host "Checking dependencies..."
+& $VenvPip install --upgrade pip -q 2>$null
+& $VenvPip install edge-tts requests -q
 
 # --- 5. Run with auto-restart ---
 Write-Host ""
 Write-Host "============================================"
-Write-Host "  Anchor TTS running. Keep this window open."
+Write-Host "  TTS anchor running. Keep this window open."
+Write-Host "  Voice: ru-RU-SvetlanaNeural (Edge Neural)"
 Write-Host "  Ctrl+C to stop."
 Write-Host "============================================"
 Write-Host ""
