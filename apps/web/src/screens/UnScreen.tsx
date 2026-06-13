@@ -4,7 +4,7 @@ import { useGame } from '../lib/useGame';
 import { Timer } from '../ui/Timer';
 import { VideoGrid } from '../video/VideoGrid';
 import { NewsPlayer } from '../news/NewsPlayer';
-import { SocketEvents, type GamePhase } from '@leaders/shared';
+import { SocketEvents, type GamePhase, type PublicCountryView, type PlayerInfo } from '@leaders/shared';
 import { BottomDrawer } from '../ui/BottomDrawer';
 
 const PHASE_TITLES: Record<string, string> = {
@@ -224,7 +224,7 @@ function VotePanel() {
         </div>
       </details>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {snapshot.others.map((o) => {
+        {snapshot.others.map((o: PublicCountryView) => {
           const tally = snapshot.voteTally[o.countryId];
           return (
             <div
@@ -338,7 +338,7 @@ function ChairmanContent() {
       <div>
         <div className="mb-2 text-xs font-semibold uppercase text-slate-500">Игроки</div>
         <div className="flex flex-wrap gap-2">
-          {snapshot.players.map((p) => {
+          {snapshot.players.map((p: PlayerInfo) => {
             const isSpeaker = p.playerId === snapshot.currentSpeakerId;
             const isSelf = p.playerId === session?.playerId;
             return (
@@ -383,9 +383,9 @@ export function UnScreen() {
 
   if (!snapshot) return null;
 
-  const me = snapshot.players.find((p) => p.playerId === session?.playerId);
+  const me = snapshot.players.find((p: PlayerInfo) => p.playerId === session?.playerId);
   const isHost = me?.isHost ?? false;
-  const speaker = snapshot.players.find((p) => p.playerId === snapshot.currentSpeakerId);
+  const speaker = snapshot.players.find((p: PlayerInfo) => p.playerId === snapshot.currentSpeakerId);
   const itsMe = snapshot.currentSpeakerId === session?.playerId;
   const phase = snapshot.phase;
 
@@ -498,11 +498,11 @@ export function UnScreen() {
 
         {phase === 'results' && (
           <>
-            {snapshot.lastResults?.map((r) => (
+            {snapshot.lastResults?.map((r: { countryId: string; countryName: string; lines: string[] }) => (
               <div key={r.countryId} className="rounded-xl bg-slate-900 p-4">
                 <div className="mb-1 font-bold text-amber-400">{r.countryName}</div>
                 <ul className="list-inside list-disc text-sm text-slate-300">
-                  {r.lines.map((l, i) => <li key={i}>{l}</li>)}
+                  {r.lines.map((l: string, i: number) => <li key={i}>{l}</li>)}
                 </ul>
               </div>
             ))}
