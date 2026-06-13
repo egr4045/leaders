@@ -9,4 +9,8 @@ assets-cache/
 .claude/
 ml-box/.env
 ml-box/.venv/
-ml-box/silero_installed
+ml-box/.deps_ok
+ml-box/.deps_xtts_ok
+ml-box/reference.wav
+ml-box/reference.webm
+ml-box/test_output.*

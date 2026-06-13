@@ -2,7 +2,7 @@
 $ErrorActionPreference = "Stop"
 $Root = $PSScriptRoot
 
-# --- 1. Token ---
+# --- Token ---
 $EnvFile = Join-Path $Root ".env"
 $Token = $null
 if (Test-Path $EnvFile) {
@@ -11,86 +11,50 @@ if (Test-Path $EnvFile) {
     }
 }
 if (-not $Token) {
-    Write-Host ""
     Write-Host "Need ML_BOX_TOKEN from the server."
     Write-Host "Run: ssh root@186.246.11.239 grep ML_BOX_TOKEN /root/leaders/.env"
-    Write-Host ""
     $Token = Read-Host "Paste ML_BOX_TOKEN"
-    if (-not $Token) { Write-Error "No token. Exiting."; exit 1 }
+    if (-not $Token) { Write-Error "No token."; exit 1 }
     Set-Content $EnvFile "ML_BOX_TOKEN=$Token" -Encoding utf8
-    Write-Host "Token saved to $EnvFile"
+    Write-Host "Saved to $EnvFile"
 }
 
-# --- 2. reference.wav check ---
-$RefWav = Join-Path $Root "reference.wav"
-if (-not (Test-Path $RefWav)) {
-    Write-Host ""
-    Write-Host "================================================================"
-    Write-Host "  MISSING: ml-box\reference.wav"
-    Write-Host ""
-    Write-Host "  Download 15-30 seconds of a Russian TV anchor voice:"
-    Write-Host "  Option A (yt-dlp):"
-    Write-Host "    yt-dlp -x --audio-format wav -o reference.wav <YouTube URL>"
-    Write-Host "  Option B: download any news clip, rename audio to reference.wav"
-    Write-Host ""
-    Write-Host "  Then trim to 15-30s (Audacity or ffmpeg):"
-    Write-Host "    ffmpeg -i reference.wav -ss 10 -t 25 -ar 22050 ref2.wav"
-    Write-Host "    rename ref2.wav reference.wav"
-    Write-Host ""
-    Write-Host "  Put the file in: $Root"
-    Write-Host "================================================================"
-    Write-Host ""
-    Read-Host "Press Enter after placing reference.wav"
-}
-
-# --- 3. Python (3.9-3.12 recommended; 3.13 may have TTS package issues) ---
+# --- Python ---
 $Py = $null
-foreach ($cmd in @("python3.12", "python3.11", "python3.10", "python", "python3", "py")) {
+foreach ($cmd in @("python", "python3", "py")) {
     try {
         $ver = & $cmd --version 2>&1
-        if ($ver -match "Python 3\.(9|10|11|12|13)\.") { $Py = $cmd; break }
+        if ($ver -match "Python 3\.") { $Py = $cmd; break }
     } catch { }
 }
-if (-not $Py) {
-    Write-Error "Python 3.9+ not found. Install from https://python.org"
-    exit 1
-}
-$pyver = & $Py --version
-Write-Host "Python: $pyver"
-if ($pyver -match "Python 3\.13") {
-    Write-Host "  Note: Python 3.13 is very new. If TTS install fails, try 3.11 or 3.12."
-}
+if (-not $Py) { Write-Error "Python 3 not found."; exit 1 }
+Write-Host "Python: $(& $Py --version)"
 
-# --- 4. Venv ---
-$Venv    = Join-Path $Root ".venv"
-$VenvPy  = Join-Path $Venv "Scripts\python.exe"
+# --- Venv ---
+$Venv   = Join-Path $Root ".venv"
+$VenvPy = Join-Path $Venv "Scripts\python.exe"
 $VenvPip = Join-Path $Venv "Scripts\pip.exe"
 if (-not (Test-Path $VenvPy)) {
     Write-Host "Creating venv..."
     & $Py -m venv $Venv
 }
 
-# --- 5. Dependencies ---
-$Marker = Join-Path $Root ".deps_xtts_ok"
+# --- Dependencies (edge-tts + requests, installs in seconds) ---
+$Marker = Join-Path $Root ".deps_ok"
 if (-not (Test-Path $Marker)) {
-    Write-Host ""
-    Write-Host "Installing Coqui TTS + XTTS v2 dependencies..."
-    Write-Host "(~500 MB packages; model ~1.8 GB downloads on first synthesis)"
-    Write-Host ""
-    & $VenvPip install --upgrade pip setuptools wheel -q
-    & $VenvPip install TTS requests
+    Write-Host "Installing dependencies..."
+    & $VenvPip install --upgrade pip -q 2>$null
+    & $VenvPip install edge-tts requests -q
     Set-Content $Marker "ok" -Encoding utf8
-    Write-Host "Dependencies installed."
 }
 
-# --- 6. Run with auto-restart ---
+# --- Run ---
 Write-Host ""
-Write-Host "========================================================"
-Write-Host "  XTTS v2 anchor running (voice cloning)."
-Write-Host "  Keep this window open during the game."
-Write-Host "  First synthesis downloads model (~1.8 GB) — wait once."
-Write-Host "  Ctrl+C to stop."
-Write-Host "========================================================"
+Write-Host "====================================================="
+Write-Host "  TTS anchor running  (Edge Neural ru-RU-DmitryNeural)"
+Write-Host "  Speed: ~0.5s per news item"
+Write-Host "  Keep window open during game.  Ctrl+C to stop."
+Write-Host "====================================================="
 Write-Host ""
 
 $Script = Join-Path $Root "ml-box.py"
@@ -99,6 +63,6 @@ while ($true) {
     & $VenvPy $Script
     $code = $LASTEXITCODE
     if ($code -eq 0) { break }
-    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Crashed ($code), restarting in 10s..."
-    Start-Sleep 10
+    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Crashed ($code), restarting in 5s..."
+    Start-Sleep 5
 }
