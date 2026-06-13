@@ -34,10 +34,15 @@ const COUNTRY_NAMES: Record<string, string> = {
   israel: 'Израиль',
 };
 
-export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuses: StatusEntry[] }) {
+import { CustomCardNode } from './nodes/CustomCardNode';
+import { CustomStatusNode } from './nodes/CustomStatusNode';
+
+export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry[]; statuses: StatusEntry[]; onRefresh: () => void }) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
+
+  const nodeTypes = useMemo(() => ({ customCard: CustomCardNode, customStatus: CustomStatusNode }), []);
 
   useEffect(() => {
     const newNodes: Node[] = [];
@@ -72,47 +77,32 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
     visibleStatuses.forEach((s) => {
       newNodes.push({
         id: `status_${s.id}`,
+        type: 'customStatus',
         position: { x: statusX, y: statusY },
-        data: { label: s.name },
-        style: { 
-          backgroundColor: STATUS_COLORS[s.type] || STATUS_COLORS.state, 
-          color: '#f8fafc', 
-          border: '1px solid #475569', 
-          borderRadius: '8px',
-          padding: '10px',
-          fontWeight: 'bold',
-          fontSize: '12px'
-        },
+        data: { status: s },
       });
-      statusX += 200;
-      if (statusX > 1200) {
+      statusX += 250;
+      if (statusX > 1400) {
         statusX = 100;
-        statusY += 150;
+        statusY += 200;
       }
     });
 
     let cardX = 100;
-    let cardY = statusY + 200;
+    let cardY = statusY + 250;
 
     visibleCards.forEach((c) => {
       const cardNodeId = `card_${c.cardId}`;
       newNodes.push({
         id: cardNodeId,
+        type: 'customCard',
         position: { x: cardX, y: cardY },
-        data: { label: c.cardId },
-        style: {
-          backgroundColor: '#1e293b',
-          color: '#fbbf24',
-          border: '1px solid #fbbf24',
-          borderRadius: '4px',
-          padding: '10px',
-          fontSize: '12px'
-        }
+        data: { card: c, onRefresh },
       });
-      cardX += 180;
-      if (cardX > 1200) {
+      cardX += 300;
+      if (cardX > 1400) {
         cardX = 100;
-        cardY += 100;
+        cardY += 250;
       }
 
       // Edges for requires
@@ -124,6 +114,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
             id: `e_${sid}_${c.cardId}`,
             source: `status_${sid}`,
             target: cardNodeId,
+            targetHandle: `req_${sid}`,
             animated: true,
             style: { stroke: '#94a3b8', strokeWidth: 2 }
           });
@@ -139,6 +130,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
             newEdges.push({
               id: `e_${c.cardId}_${sid}_${idx}`,
               source: cardNodeId,
+              sourceHandle: `add_${sid}`,
               target: `status_${sid}`,
               animated: true,
               style: { stroke: '#10b981', strokeWidth: 2 }
@@ -153,6 +145,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
             newEdges.push({
               id: `e_rm_${c.cardId}_${sid}_${idx}`,
               source: cardNodeId,
+              sourceHandle: `rem_${sid}`,
               target: `status_${sid}`,
               animated: true,
               style: { stroke: '#ef4444', strokeWidth: 2 }
@@ -181,7 +174,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [cards, statuses, countryFilter]);
+  }, [cards, statuses, countryFilter, onRefresh]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -234,6 +227,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          nodeTypes={nodeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           fitView

@@ -177,7 +177,7 @@ export function AdminPage() {
         )}
 
         {!loading && tab === 'schema' && (
-          <ContentSchema cards={cards} statuses={statuses} />
+          <ContentSchema cards={cards} statuses={statuses} onRefresh={() => void loadCards()} />
         )}
 
         {!loading && tab === 'analysis' && analysis && (
