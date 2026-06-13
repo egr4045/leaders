@@ -32,8 +32,12 @@ export const adminApi = {
     apiFetch('/api/admin/cards/' + id, { method: 'PUT', body: JSON.stringify(data) }),
   updateCardChoice: (cardId: string, choiceIdx: number, data: Partial<ChoiceEntry>) =>
     apiFetch(`/api/admin/cards/${cardId}/choices/${choiceIdx}`, { method: 'PUT', body: JSON.stringify(data) }),
-  createCard: (data: CardEntry & { deckCountry?: string | null }) =>
+  createCard: (data: Record<string, unknown> & { deckCountry?: string | null }) =>
     apiFetch('/api/admin/cards', { method: 'POST', body: JSON.stringify(data) }),
+  replaceCard: (id: string, raw: Record<string, unknown>) =>
+    apiFetch('/api/admin/cards/' + id + '/raw', { method: 'PUT', body: JSON.stringify(raw) }),
+  deleteCard: (id: string) =>
+    apiFetch('/api/admin/cards/' + id, { method: 'DELETE' }),
   updateStatus: (id: string, data: Partial<StatusEntry>) =>
     apiFetch('/api/admin/statuses/' + id, { method: 'PUT', body: JSON.stringify(data) }),
   createStatus: (data: StatusEntry) =>
@@ -83,6 +87,7 @@ export interface CardEntry {
   choices: ChoiceEntry[];
   maxScore: number;
   imageUrl: string | null;
+  raw: Record<string, unknown>;
 }
 
 export interface StatusEntry {

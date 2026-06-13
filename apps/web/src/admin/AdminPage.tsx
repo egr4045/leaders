@@ -58,6 +58,18 @@ export function AdminPage() {
     }
   };
 
+  const [applyMsg, setApplyMsg] = useState('');
+  const handleApply = async () => {
+    setApplyMsg('Применяю…');
+    try {
+      await adminApi.reload();
+      setApplyMsg('✓ применено в игре');
+    } catch (e) {
+      setApplyMsg('Ошибка: ' + (e as Error).message);
+    }
+    setTimeout(() => setApplyMsg(''), 4000);
+  };
+
   const handleLogin = async () => {
     saveSecret(input);
     setSecret(input);
@@ -101,14 +113,24 @@ export function AdminPage() {
   return (
     <div className="min-h-dvh bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-4xl p-4">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between gap-2">
           <h1 className="text-xl font-black text-amber-400">Админка Leaders</h1>
-          <button
-            onClick={() => { saveSecret(''); setAuthed(false); setSecret(''); }}
-            className="text-xs text-slate-500 underline"
-          >
-            Выйти
-          </button>
+          <div className="flex items-center gap-3">
+            {applyMsg && <span className="text-xs text-emerald-300">{applyMsg}</span>}
+            <button
+              onClick={() => void handleApply()}
+              title="Применить правки контента (карточки/статусы/страны) в игре без рестарта"
+              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-500"
+            >
+              🔄 Применить
+            </button>
+            <button
+              onClick={() => { saveSecret(''); setAuthed(false); setSecret(''); }}
+              className="text-xs text-slate-500 underline"
+            >
+              Выйти
+            </button>
+          </div>
         </div>
 
         {/* Вкладки */}

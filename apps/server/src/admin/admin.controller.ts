@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Param,
   Body,
   UseGuards,
@@ -52,6 +53,8 @@ interface EffectScore {
   }[];
   maxScore: number;
   imageUrl: string | null;
+  /** сырой объект карточки из JSON — для полноценного редактора */
+  raw: Record<string, unknown>;
 }
 
 function scoreChoice(choice: Record<string, unknown>): { score: number; tags: string[] } {
@@ -189,6 +192,7 @@ export class AdminController {
           choices,
           maxScore: Math.max(...choices.map((c) => c.score)),
           imageUrl,
+          raw: card,
         });
       }
     }
@@ -303,18 +307,74 @@ export class AdminController {
     throw new HttpException('Карточка не найдена', HttpStatus.NOT_FOUND);
   }
 
+  /** Полная замена карточки сырым объектом (для JSON-редактора и структурного requires). */
+  @Put('cards/:id/raw')
+  replaceCard(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+    if (!body || typeof body !== 'object' || !Array.isArray(body.choices)) {
+      throw new HttpException('Нужен объект карточки с choices', HttpStatus.BAD_REQUEST);
+    }
+    const advisorsDir = path.join(this.contentDir, 'advisors');
+    for (const file of fs.readdirSync(advisorsDir).filter((f) => f.endsWith('.json'))) {
+      const filePath = path.join(advisorsDir, file);
+      const deck = JSON.parse(fs.readFileSync(filePath, 'utf8')) as {
+        country: string | null;
+        cards: Record<string, unknown>[];
+      };
+      const idx = deck.cards.findIndex((c) => c.id === id);
+      if (idx >= 0) {
+        deck.cards[idx] = { ...body, id };
+        fs.writeFileSync(filePath, JSON.stringify(deck, null, 2), 'utf8');
+        return { ok: true };
+      }
+    }
+    throw new HttpException('Карточка не найдена', HttpStatus.NOT_FOUND);
+  }
+
+  @Delete('cards/:id')
+  deleteCard(@Param('id') id: string) {
+    const advisorsDir = path.join(this.contentDir, 'advisors');
+    for (const file of fs.readdirSync(advisorsDir).filter((f) => f.endsWith('.json'))) {
+      const filePath = path.join(advisorsDir, file);
+      const deck = JSON.parse(fs.readFileSync(filePath, 'utf8')) as {
+        country: string | null;
+        cards: Record<string, unknown>[];
+      };
+      const idx = deck.cards.findIndex((c) => c.id === id);
+      if (idx >= 0) {
+        deck.cards.splice(idx, 1);
+        fs.writeFileSync(filePath, JSON.stringify(deck, null, 2), 'utf8');
+        return { ok: true };
+      }
+    }
+    throw new HttpException('Карточка не найдена', HttpStatus.NOT_FOUND);
+  }
+
   @Post('cards')
   createCard(@Body() body: Record<string, unknown>) {
     if (!body.id) throw new HttpException('id обязателен', HttpStatus.BAD_REQUEST);
     const deckCountry = (body.deckCountry as string | null) ?? null;
     const fileName = deckCountry ? `${deckCountry}.json` : 'common_deck.json';
     const filePath = path.join(this.contentDir, 'advisors', fileName);
-    if (!fs.existsSync(filePath)) throw new HttpException(`Файл ${fileName} не найден`, HttpStatus.NOT_FOUND);
-    const deck = JSON.parse(fs.readFileSync(filePath, 'utf8')) as { country: string | null; cards: Record<string, unknown>[] };
+    // персональная колода страны может ещё не существовать — создаём
+    const deck: { country: string | null; cards: Record<string, unknown>[] } = fs.existsSync(filePath)
+      ? JSON.parse(fs.readFileSync(filePath, 'utf8'))
+      : { country: deckCountry, cards: [] };
     if (deck.cards.some((c) => c.id === body.id)) throw new HttpException('Карточка с таким id уже есть', HttpStatus.CONFLICT);
     const { deckCountry: _, ...cardData } = body;
     deck.cards.push(cardData);
     fs.writeFileSync(filePath, JSON.stringify(deck, null, 2), 'utf8');
+    // привязать персональную колоду к стране, иначе карты не попадут в её пул
+    if (deckCountry) {
+      const countryPath = path.join(this.contentDir, 'countries', `${deckCountry}.json`);
+      if (fs.existsSync(countryPath)) {
+        const c = JSON.parse(fs.readFileSync(countryPath, 'utf8')) as Record<string, unknown>;
+        const ref = `advisors/${fileName}`;
+        if (c.advisorsRef !== ref) {
+          c.advisorsRef = ref;
+          fs.writeFileSync(countryPath, JSON.stringify(c, null, 2), 'utf8');
+        }
+      }
+    }
     return { ok: true };
   }
 

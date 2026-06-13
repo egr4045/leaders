@@ -154,6 +154,212 @@ function ChoiceNewsEditor({
   );
 }
 
+const SECTORS: { key: string; label: string }[] = [
+  { key: 'economy', label: 'Эконом.' },
+  { key: 'science', label: 'Наука' },
+  { key: 'army', label: 'Армия' },
+  { key: 'smi', label: 'СМИ' },
+  { key: 'intel', label: 'Разведка' },
+];
+
+/** Структурный редактор условия появления карточки (requires). */
+function RequiresEditor({ card, onSaved }: { card: CardEntry; onSaved: () => void }) {
+  const req = (card.raw.requires ?? {}) as {
+    statuses?: string[];
+    conditions?: string[];
+    minSectors?: Record<string, number>;
+  };
+  const [statuses, setStatuses] = useState((req.statuses ?? []).join(', '));
+  const [conditions, setConditions] = useState((req.conditions ?? []).join(', '));
+  const [minSectors, setMinSectors] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      SECTORS.map((s) => [s.key, req.minSectors?.[s.key] != null ? String(req.minSectors![s.key]) : '']),
+    ),
+  );
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const save = async () => {
+    setSaving(true);
+    setMsg('');
+    try {
+      const requires: Record<string, unknown> = {};
+      const st = statuses.split(',').map((x) => x.trim()).filter(Boolean);
+      if (st.length) requires.statuses = st;
+      const cond = conditions.split(',').map((x) => x.trim()).filter(Boolean);
+      if (cond.length) requires.conditions = cond;
+      const ms: Record<string, number> = {};
+      for (const s of SECTORS) {
+        const v = minSectors[s.key];
+        const n = Number(v);
+        if (v !== '' && !Number.isNaN(n)) ms[s.key] = n;
+      }
+      if (Object.keys(ms).length) requires.minSectors = ms;
+      const raw: Record<string, unknown> = { ...card.raw };
+      if (Object.keys(requires).length) raw.requires = requires;
+      else delete raw.requires;
+      await adminApi.replaceCard(card.cardId, raw);
+      setMsg('✓ сохранено');
+      onSaved();
+    } catch (e) {
+      setMsg('Ошибка: ' + (e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2 rounded bg-slate-800 p-2 text-xs">
+      <label className="flex flex-col gap-0.5">
+        <span className="text-slate-400">Нужны статусы (id через запятую)</span>
+        <input
+          value={statuses}
+          onChange={(e) => setStatuses(e.target.value)}
+          placeholder="напр. regime_kommunizm"
+          className="rounded bg-slate-900 px-1.5 py-1 font-mono text-slate-200 focus:outline-none"
+        />
+      </label>
+      <label className="flex flex-col gap-0.5">
+        <span className="text-slate-400">Условия движка (id через запятую)</span>
+        <input
+          value={conditions}
+          onChange={(e) => setConditions(e.target.value)}
+          placeholder="напр. no_rich"
+          className="rounded bg-slate-900 px-1.5 py-1 font-mono text-slate-200 focus:outline-none"
+        />
+      </label>
+      <div>
+        <div className="mb-1 text-slate-400">Минимальные уровни секторов (пусто = не важно)</div>
+        <div className="grid grid-cols-5 gap-1">
+          {SECTORS.map((s) => (
+            <label key={s.key} className="flex flex-col items-center gap-0.5">
+              <span className="text-[10px] text-slate-500">{s.label}</span>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                value={minSectors[s.key]}
+                onChange={(e) => setMinSectors({ ...minSectors, [s.key]: e.target.value })}
+                className="w-full rounded bg-slate-900 px-1 py-1 text-center text-slate-200 focus:outline-none"
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => void save()}
+          disabled={saving}
+          className="rounded bg-amber-600 px-3 py-1 font-bold text-white disabled:opacity-40"
+        >
+          {saving ? 'Сохраняю…' : 'Сохранить условие'}
+        </button>
+        {msg && <span className="text-amber-400">{msg}</span>}
+      </div>
+    </div>
+  );
+}
+
+/** Форма создания карточки (в т.ч. персональной для любой страны). */
+function CreateCardForm({ onCreated }: { onCreated: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [id, setId] = useState('');
+  const [deck, setDeck] = useState(''); // '' = общая колода
+  const [speaker, setSpeaker] = useState('');
+  const [situation, setSituation] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const create = async () => {
+    if (!id.trim()) {
+      setMsg('Нужен id');
+      return;
+    }
+    setSaving(true);
+    setMsg('');
+    try {
+      await adminApi.createCard({
+        id: id.trim(),
+        deckCountry: deck || null,
+        speaker: speaker || 'Советник',
+        situation: situation || '…',
+        weight: 1,
+        choices: [
+          { label: 'Вариант 1', effects: {} },
+          { label: 'Вариант 2', effects: {} },
+        ],
+      });
+      setMsg('✓ создано — раскрой карточку ниже, заполни эффекты и нажми «Применить» вверху');
+      setId('');
+      setSpeaker('');
+      setSituation('');
+      onCreated();
+    } catch (e) {
+      setMsg('Ошибка: ' + (e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-emerald-900/50 bg-emerald-950/10 p-3">
+      <button onClick={() => setOpen(!open)} className="text-sm font-bold text-emerald-300">
+        ➕ Создать карточку {open ? '▲' : '▼'}
+      </button>
+      {open && (
+        <div className="mt-2 flex flex-col gap-2 text-sm">
+          <div className="flex gap-2">
+            <input
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              placeholder="id (латиницей, уникальный)"
+              className="flex-1 rounded border border-slate-700 bg-slate-900 px-2 py-1.5 font-mono"
+            />
+            <select
+              value={deck}
+              onChange={(e) => setDeck(e.target.value)}
+              className="rounded border border-slate-700 bg-slate-900 px-2 py-1.5"
+            >
+              <option value="">Общая (всем)</option>
+              {Object.entries(COUNTRY_NAMES).map(([cid, name]) => (
+                <option key={cid} value={cid}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <input
+            value={speaker}
+            onChange={(e) => setSpeaker(e.target.value)}
+            placeholder="Советник (кто говорит)"
+            className="rounded border border-slate-700 bg-slate-900 px-2 py-1.5"
+          />
+          <textarea
+            value={situation}
+            onChange={(e) => setSituation(e.target.value)}
+            rows={2}
+            placeholder="Ситуация / текст карточки"
+            className="resize-none rounded border border-slate-700 bg-slate-900 px-2 py-1.5"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => void create()}
+              disabled={saving}
+              className="rounded bg-emerald-600 px-3 py-1.5 font-bold text-white disabled:opacity-40"
+            >
+              {saving ? 'Создаю…' : 'Создать'}
+            </button>
+            {msg && <span className="text-xs text-emerald-300">{msg}</span>}
+          </div>
+          <p className="text-xs text-slate-600">
+            Создаётся с 2 пустыми вариантами. Для страны без своей колоды она создастся и привяжется автоматически.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CardRow({ card, onUpdate }: { card: CardEntry; onUpdate: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const [editJson, setEditJson] = useState('');
@@ -162,20 +368,25 @@ function CardRow({ card, onUpdate }: { card: CardEntry; onUpdate: () => void }) 
   const [newsEditorIdx, setNewsEditorIdx] = useState<number | null>(null);
 
   const handleEdit = () => {
-    setEditJson(JSON.stringify({
-      weight: card.weight,
-      once: card.once,
-      speaker: card.speaker,
-      situation: card.situation,
-    }, null, 2));
+    setEditJson(JSON.stringify(card.raw, null, 2));
     setExpanded(true);
   };
 
   const handleSave = async () => {
     try {
       const data = JSON.parse(editJson) as Record<string, unknown>;
-      await adminApi.updateCard(card.cardId, data);
-      setMsg('Сохранено');
+      await adminApi.replaceCard(card.cardId, data);
+      setMsg('Сохранено — нажми «Применить» вверху, чтобы применить в игре');
+      onUpdate();
+    } catch (e) {
+      setMsg('Ошибка: ' + (e as Error).message);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Удалить карточку ${card.cardId}?`)) return;
+    try {
+      await adminApi.deleteCard(card.cardId);
       onUpdate();
     } catch (e) {
       setMsg('Ошибка: ' + (e as Error).message);
@@ -248,22 +459,21 @@ function CardRow({ card, onUpdate }: { card: CardEntry; onUpdate: () => void }) 
             ))}
           </div>
 
-          {/* Requires */}
-          {card.requires && (
-            <div>
-              <div className="mb-1 text-xs font-semibold uppercase text-slate-500">
-                Условие появления
-                <span className="ml-1 font-normal normal-case text-slate-400">(карточка выпадет только при выполнении)</span>
-              </div>
-              <pre className="rounded bg-slate-800 p-2 text-xs text-slate-300 overflow-x-auto">
-                {JSON.stringify(card.requires, null, 2)}
-              </pre>
-            </div>
-          )}
-
-          {/* Edit JSON */}
+          {/* Requires — структурный редактор условия появления */}
           <div>
-            <div className="mb-1 text-xs font-semibold uppercase text-slate-500">Редактировать</div>
+            <div className="mb-1 text-xs font-semibold uppercase text-slate-500">
+              Условие появления
+              <span className="ml-1 font-normal normal-case text-slate-400">(карточка выпадет только при выполнении)</span>
+            </div>
+            <RequiresEditor card={card} onSaved={onUpdate} />
+          </div>
+
+          {/* Edit JSON — вся карточка: эффекты, варианты, статусы, отложка */}
+          <div>
+            <div className="mb-1 text-xs font-semibold uppercase text-slate-500">
+              Редактировать всю карточку (JSON)
+              <span className="ml-1 font-normal normal-case text-slate-400">эффекты, варианты, addStatuses, delayed</span>
+            </div>
             <button onClick={handleEdit} className="mb-1 rounded border border-slate-700 px-2 py-1 text-xs hover:border-amber-400">
               Загрузить в редактор
             </button>
@@ -292,6 +502,16 @@ function CardRow({ card, onUpdate }: { card: CardEntry; onUpdate: () => void }) 
               {uploading ? 'Загружаю…' : 'Загрузить JPG/PNG'}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => void handleImageUpload(e)} />
             </label>
+          </div>
+
+          {/* Удаление */}
+          <div className="border-t border-slate-800 pt-2">
+            <button
+              onClick={() => void handleDelete()}
+              className="rounded border border-red-900 px-3 py-1 text-xs text-red-400 hover:bg-red-950/40"
+            >
+              🗑 Удалить карточку
+            </button>
           </div>
 
           {msg && <div className="text-xs text-amber-400">{msg}</div>}
@@ -361,6 +581,8 @@ export function CardEditor({ cards, onRefresh }: { cards: CardEntry[]; onRefresh
 
   return (
     <div className="flex flex-col gap-3">
+      <CreateCardForm onCreated={onRefresh} />
+
       {/* Text filter */}
       <input
         type="text"
