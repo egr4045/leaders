@@ -345,7 +345,7 @@ export function VideoGrid({
         <div className="hidden h-full gap-2 lg:flex">
           <div className="min-h-0 min-w-0 flex-1">{main && renderEntry(main, { fill: true })}</div>
           {rest.length > 0 && (
-            <div className="flex w-36 shrink-0 flex-col gap-2 overflow-y-auto">
+            <div className="flex w-44 shrink-0 flex-col gap-2 overflow-y-auto">
               {rest.map((e) => renderEntry(e, { strip: false }))}
             </div>
           )}
@@ -380,8 +380,8 @@ export function VideoGrid({
         : 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
     const isLobby = kind === 'lobby';
     tilesEl = (
-      <div className={`grid gap-2 ${cols} ${isLobby ? 'h-full place-content-center' : 'h-full w-full auto-rows-fr'}`}>
-        {sorted.map((e) => renderEntry(e, { fill: !isLobby }))}
+      <div className={`grid gap-2 ${cols} ${isLobby ? 'h-full place-content-center' : 'h-full w-full content-center'}`}>
+        {sorted.map((e) => renderEntry(e))}
       </div>
     );
   }

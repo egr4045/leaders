@@ -544,25 +544,25 @@ export function UnScreen() {
     <div className="flex h-dvh flex-col overflow-hidden bg-slate-950 md:flex-row">
       {newsFirst ? (
         <>
-          {/* NEWS-FIRST (un_summary): scrollable content on left/top, small video strip */}
+          {/* NEWS-FIRST (un_summary): scrollable content top, video strip at bottom */}
           <div className="flex min-h-0 flex-1 flex-col">
             {phaseHeader}
             <div className="min-h-0 flex-1 overflow-y-auto">
               <div className="px-4 py-3">{phaseContent}</div>
             </div>
-          </div>
-          {/* Video strip: horizontal on mobile (bottom), vertical on md+ (right) */}
-          <div className="h-32 shrink-0 border-t border-slate-800 md:h-auto md:w-44 md:border-l md:border-t-0">
-            <VideoGrid
-              kind="un"
-              players={snapshot.players}
-              layout="grid"
-              spotlightId={spotlightId}
-              duckOthers={duckOthers}
-              showControls={false}
-              showControlBar={true}
-              hostControls={barControls}
-            />
+            {/* Video strip: horizontal at bottom across full width */}
+            <div className="h-36 shrink-0 border-t border-slate-800">
+              <VideoGrid
+                kind="un"
+                players={snapshot.players}
+                layout="strip"
+                spotlightId={spotlightId}
+                duckOthers={duckOthers}
+                showControls={false}
+                showControlBar={true}
+                hostControls={barControls}
+              />
+            </div>
           </div>
         </>
       ) : (
