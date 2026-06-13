@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useVideoRoom, attachTrack, type VideoTile } from './useVideoRoom';
 import type { PlayerInfo } from '@leaders/shared';
 
@@ -127,6 +127,69 @@ function Tile({
   );
 }
 
+/** Детерминированный цвет по строке (hue 0-360). */
+function strHue(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) & 0xffff;
+  return h % 360;
+}
+
+/** Canvas-«вебкамера» для бота: цветной фон с лёгкой анимацией яркости. */
+function BotCanvas({ playerId, fill }: { playerId: string; fill?: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hue = strHue(playerId);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let t = Math.random() * Math.PI * 2; // random phase so bots don't pulse in sync
+
+    const draw = () => {
+      const { width: w, height: h } = canvas;
+      t += 0.018;
+      const bright = 18 + Math.sin(t) * 4; // 14-22% lightness
+
+      // gradient: darker at edges, brighter center
+      const grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) * 0.7);
+      grad.addColorStop(0, `hsl(${hue},30%,${bright + 8}%)`);
+      grad.addColorStop(1, `hsl(${hue},25%,${bright - 4}%)`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // subtle scanline every 4px
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      for (let y = 0; y < h; y += 4) ctx.fillRect(0, y, w, 1);
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    // fit canvas to display size
+    const ro = new ResizeObserver(() => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    });
+    ro.observe(canvas);
+    canvas.width = canvas.offsetWidth || 320;
+    canvas.height = canvas.offsetHeight || 240;
+
+    rafRef.current = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      ro.disconnect();
+    };
+  }, [hue]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={`absolute inset-0 ${fill ? 'h-full w-full' : 'h-full w-full'}`}
+    />
+  );
+}
+
 function PlaceholderTile({
   player,
   stripMode,
@@ -143,15 +206,24 @@ function PlaceholderTile({
   const ring = speaking ? 'ring-2 ring-emerald-400' : '';
   return (
     <div
-      className={`relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-slate-800 ${ring} ${tileSizeClass({ fill, stripMode, large })}`}
+      className={`relative overflow-hidden rounded-xl bg-slate-900 ${ring} ${tileSizeClass({ fill, stripMode, large })}`}
     >
-      <div className={fill ? 'text-6xl' : 'text-3xl'}>{player.isBot ? '🤖' : '👤'}</div>
-      <div className="mt-1 px-1 text-center">
-        <div className={`font-semibold text-slate-300 ${fill ? 'text-base' : 'text-xs'}`}>{player.name}</div>
+      {player.isBot && <BotCanvas playerId={player.playerId} fill={fill} />}
+
+      {/* Avatar / emoji centred */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className={fill ? 'text-7xl drop-shadow-lg' : 'text-4xl'}>{player.isBot ? '🤖' : '👤'}</div>
+      </div>
+
+      {/* Name overlay at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2 py-2">
+        <div className={`font-semibold leading-tight text-white drop-shadow ${fill ? 'text-sm' : 'text-xs'}`}>
+          {speaking && <span className="mr-1 inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" />}
+          {player.name}
+        </div>
         {player.countryName && (
-          <div className={`text-amber-300 ${fill ? 'text-sm' : 'text-[10px]'}`}>{player.countryName}</div>
+          <div className={`text-amber-300 drop-shadow ${fill ? 'text-xs' : 'text-[10px]'}`}>{player.countryName}</div>
         )}
-        {player.isBot && <div className="text-[10px] text-slate-600">AI</div>}
       </div>
     </div>
   );
