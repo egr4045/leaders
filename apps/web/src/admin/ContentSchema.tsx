@@ -21,19 +21,55 @@ const STATUS_COLORS: Record<string, string> = {
   wonder: '#78350f',  // amber-900
 };
 
+const COUNTRY_NAMES: Record<string, string> = {
+  russia: 'Россия',
+  usa: 'США',
+  china: 'Китай',
+  dprk: 'КНДР',
+  uk: 'Великобритания',
+  germany: 'Германия',
+  india: 'Индия',
+  japan: 'Япония',
+  armenia: 'Армения',
+  israel: 'Израиль',
+};
+
 export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuses: StatusEntry[] }) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [countryFilter, setCountryFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const newNodes: Node[] = [];
     const newEdges: Edge[] = [];
     
+    const visibleCards = countryFilter === null
+      ? cards
+      : countryFilter === '__common__'
+      ? cards.filter(c => c.deckCountry === null)
+      : cards.filter(c => c.deckCountry === countryFilter);
+
+    const relatedStatusIds = new Set<string>();
+    visibleCards.forEach(c => {
+      const reqStatuses = (c.raw?.requires as any)?.statuses as string[];
+      reqStatuses?.forEach(s => relatedStatusIds.add(s));
+      c.choices.forEach(ch => {
+        const addSt = (ch.effects as any)?.addStatuses as string[];
+        addSt?.forEach(s => relatedStatusIds.add(s));
+        const remSt = (ch.effects as any)?.removeStatuses as string[];
+        remSt?.forEach(s => relatedStatusIds.add(s));
+      });
+    });
+
+    const visibleStatuses = countryFilter === null
+      ? statuses
+      : statuses.filter(s => relatedStatusIds.has(s.id));
+
     // Auto layout initial positions
     let statusX = 100;
     let statusY = 100;
 
-    statuses.forEach((s) => {
+    visibleStatuses.forEach((s) => {
       newNodes.push({
         id: `status_${s.id}`,
         position: { x: statusX, y: statusY },
@@ -58,7 +94,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
     let cardX = 100;
     let cardY = statusY + 200;
 
-    cards.forEach((c) => {
+    visibleCards.forEach((c) => {
       const cardNodeId = `card_${c.cardId}`;
       newNodes.push({
         id: cardNodeId,
@@ -83,6 +119,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
       const reqStatuses = (c.raw?.requires as any)?.statuses as string[];
       if (reqStatuses) {
         reqStatuses.forEach((sid) => {
+          if (!visibleStatuses.some(vs => vs.id === sid)) return;
           newEdges.push({
             id: `e_${sid}_${c.cardId}`,
             source: `status_${sid}`,
@@ -98,6 +135,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
         const addSt = (choice.effects as any)?.addStatuses as string[];
         if (addSt) {
           addSt.forEach((sid) => {
+            if (!visibleStatuses.some(vs => vs.id === sid)) return;
             newEdges.push({
               id: `e_${c.cardId}_${sid}_${idx}`,
               source: cardNodeId,
@@ -111,6 +149,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
         const remSt = (choice.effects as any)?.removeStatuses as string[];
         if (remSt) {
           remSt.forEach((sid) => {
+            if (!visibleStatuses.some(vs => vs.id === sid)) return;
             newEdges.push({
               id: `e_rm_${c.cardId}_${sid}_${idx}`,
               source: cardNodeId,
@@ -124,10 +163,11 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
     });
 
     // Edges for status -> status (unlocks / requires)
-    statuses.forEach((s) => {
+    visibleStatuses.forEach((s) => {
         const reqSt = (s.requires as any)?.statuses as string[];
         if (reqSt) {
             reqSt.forEach(sid => {
+                if (!visibleStatuses.some(vs => vs.id === sid)) return;
                 newEdges.push({
                     id: `e_st_${sid}_${s.id}`,
                     source: `status_${sid}`,
@@ -141,7 +181,7 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [cards, statuses]);
+  }, [cards, statuses, countryFilter]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -152,8 +192,41 @@ export function ContentSchema({ cards, statuses }: { cards: CardEntry[]; statuse
     []
   );
 
+  const countries = Array.from(new Set(cards.filter((c) => c.deckCountry).map((c) => c.deckCountry as string))).sort();
+
   return (
     <div className="flex flex-col gap-3">
+      {/* Country filter buttons */}
+      <div className="flex flex-wrap gap-1 bg-slate-900 p-2 rounded-xl">
+        <button
+          onClick={() => setCountryFilter(null)}
+          className={`rounded-lg px-2 py-1 text-xs font-semibold transition-colors ${
+            countryFilter === null ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Все (очень много нод)
+        </button>
+        <button
+          onClick={() => setCountryFilter('__common__')}
+          className={`rounded-lg px-2 py-1 text-xs font-semibold transition-colors ${
+            countryFilter === '__common__' ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Общие
+        </button>
+        {countries.map((id) => (
+          <button
+            key={id}
+            onClick={() => setCountryFilter(id)}
+            className={`rounded-lg px-2 py-1 text-xs font-semibold transition-colors ${
+              countryFilter === id ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            {COUNTRY_NAMES[id] ?? id}
+          </button>
+        ))}
+      </div>
+
       <div className="text-xs text-slate-400">
         Схема связей карточек и статусов. Зеленые стрелки: карточка выдает статус. Красные: забирает. Серые: статус нужен для карточки. Синие: статус нужен для статуса.
       </div>
