@@ -97,6 +97,7 @@ export class RoomsService {
       calls: [],
       callLog: [],
       promises: [],
+      wiretaps: [],
       lastTickEvents: null,
       speakerOrder: [],
       speakerIdx: 0,
@@ -231,6 +232,7 @@ export class RoomsService {
     if (phase === 'cabinet') {
       room.cardsChosenThisYear = {};
       room.readyPlayerIds = [];
+      room.wiretaps = []; // прослушки действуют только в течение года
       // новый год: лимиты, первая карта каждому
       for (const p of room.players) {
         if (!p.countryId || !room.world) continue;
@@ -951,6 +953,12 @@ export class RoomsService {
         calls,
       });
     }
+    // успешная прослушка: право скрыто слушать активные созвоны цели в этом году (фича 12)
+    if (kind === 'wiretap' && outcome.success) {
+      if (!room.wiretaps.some((w) => w.spyPlayerId === playerId && w.targetCountryId === targetCountryId)) {
+        room.wiretaps.push({ spyPlayerId: playerId, targetCountryId, year: room.world.year });
+      }
+    }
 
     this.persist(room);
     this.broadcast(room);
@@ -1466,6 +1474,20 @@ export class RoomsService {
     return `call-${room.code}-${call.id}`;
   }
 
+  /** Право шпиона скрыто слушать конкретный активный созвон цели (фича 12). */
+  wiretapRoomFor(code: string, playerId: string, callId: string): string {
+    const room = this.mustRoom(code);
+    const call = room.calls.find((c) => c.id === callId);
+    if (!call || call.status !== 'active') throw new Error('Созвон не активен');
+    const tapped = room.wiretaps.some(
+      (w) =>
+        w.spyPlayerId === playerId &&
+        (w.targetCountryId === call.fromCountryId || w.targetCountryId === call.toCountryId),
+    );
+    if (!tapped) throw new Error('Нет действующей прослушки на этот созвон');
+    return `call-${room.code}-${call.id}`;
+  }
+
   // ---------- реконнект и пауза (раздел 13) ----------
 
   attachSocket(code: string, playerId: string, socketId: string) {
@@ -1583,6 +1605,7 @@ export class RoomsService {
           calls: data.calls ?? [],
           callLog: data.callLog ?? [],
           promises: data.promises ?? [],
+          wiretaps: data.wiretaps ?? [],
           lastTickEvents: data.lastTickEvents ?? null,
           manualPause: data.manualPause ?? false,
           unLayout: data.unLayout ?? 'auto',

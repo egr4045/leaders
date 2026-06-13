@@ -6,6 +6,7 @@ import type { Rng } from './rng.js';
 export type SpyActionKind =
   | 'reveal'
   | 'reveal_calls'
+  | 'wiretap'
   | 'steal_science'
   | 'wreck_wonder'
   | 'steal_money'

@@ -323,11 +323,28 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage(SocketEvents.VideoToken)
   async videoToken(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { kind: 'lobby' | 'un' | 'call'; callId?: string },
+    @MessageBody() body: { kind: 'lobby' | 'un' | 'call' | 'wiretap'; callId?: string },
   ) {
     const session = this.sessions.get(socket.id);
     if (!session) return { ok: false, error: 'Сначала войдите в комнату' };
     try {
+      const key = process.env.LIVEKIT_KEY;
+      const secret = process.env.LIVEKIT_SECRET;
+      const url = process.env.LIVEKIT_URL;
+      if (!key || !secret || !url) throw new Error('LiveKit не настроен на сервере');
+
+      // прослушка (фича 12): скрытый слушатель чужого созвона — не публикует, не виден
+      if (body?.kind === 'wiretap') {
+        const roomName = this.rooms.wiretapRoomFor(session.roomCode, session.playerId, body?.callId ?? '');
+        const at = new AccessToken(key, secret, {
+          identity: `spy-${session.playerId}`,
+          name: 'Прослушка',
+          ttl: '2h',
+        });
+        at.addGrant({ roomJoin: true, room: roomName, canPublish: false, canSubscribe: true, hidden: true });
+        return { ok: true, data: { url, token: await at.toJwt(), room: roomName } };
+      }
+
       const kind = body?.kind === 'call' ? 'call' : body?.kind === 'lobby' ? 'lobby' : 'un';
       const roomName = this.rooms.videoRoomFor(
         session.roomCode,
@@ -338,11 +355,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const found = this.rooms.getRoomBySocket(socket.id);
       const playerName =
         found?.room.players.find((p) => p.playerId === session.playerId)?.name ?? 'Игрок';
-
-      const key = process.env.LIVEKIT_KEY;
-      const secret = process.env.LIVEKIT_SECRET;
-      const url = process.env.LIVEKIT_URL;
-      if (!key || !secret || !url) throw new Error('LiveKit не настроен на сервере');
 
       const at = new AccessToken(key, secret, {
         identity: session.playerId,

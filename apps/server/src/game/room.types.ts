@@ -83,6 +83,8 @@ export interface RoomState {
   callLog: CallLogEntry[];
   /** реестр обещаний из сделок (фича 11) */
   promises: PromiseRecord[];
+  /** активные шпионские прослушки (фича 12): кто кого слушает в этом году */
+  wiretaps: { spyPlayerId: string; targetCountryId: string; year: number }[];
   /** публичные события последнего tick — для фазы Итогов */
   lastTickEvents: Record<string, string[]> | null;
   /** порядок выступающих в ООН (playerId) и текущий индекс */

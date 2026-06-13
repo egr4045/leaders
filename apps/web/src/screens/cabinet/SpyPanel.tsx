@@ -26,6 +26,13 @@ const ACTIONS: SpyAction[] = [
     color: 'border-indigo-700 bg-indigo-950/30 hover:border-indigo-500',
   },
   {
+    kind: 'wiretap',
+    label: 'Внедрить жучок',
+    description: 'Скрытно слушать живой созвон цели в этом году',
+    icon: '🎧',
+    color: 'border-violet-700 bg-violet-950/30 hover:border-violet-500',
+  },
+  {
     kind: 'steal_money',
     label: 'Похитить деньги',
     description: 'Украсть 15% казны цели',

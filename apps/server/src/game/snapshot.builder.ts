@@ -206,6 +206,23 @@ export function buildSnapshot(
         ongoing: c.ongoing,
       })),
     })),
+    // активная прослушка: цель сейчас на связи → клиент скрыто подключится (фича 12)
+    wiretap: (() => {
+      for (const w of room.wiretaps ?? []) {
+        if (w.spyPlayerId !== forPlayerId) continue;
+        const call = room.calls.find(
+          (c) => c.status === 'active' && (c.fromCountryId === w.targetCountryId || c.toCountryId === w.targetCountryId),
+        );
+        if (!call) continue;
+        const withId = call.fromCountryId === w.targetCountryId ? call.toCountryId : call.fromCountryId;
+        return {
+          callId: call.id,
+          targetCountryName: content.countries.get(w.targetCountryId)?.name ?? w.targetCountryId,
+          withCountryName: content.countries.get(withId)?.name ?? withId,
+        };
+      }
+      return null;
+    })(),
     news:
       room.news && room.phase.startsWith('un_')
         ? Object.entries(room.news).map(([countryId, lines]) => ({

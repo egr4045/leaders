@@ -3,12 +3,44 @@ import {
   Room,
   RoomEvent,
   Track,
+  VideoPresets,
   type RemoteTrack,
   type RemoteParticipant,
 } from 'livekit-client';
 import { SocketEvents } from '@leaders/shared';
 import { useGame } from '../lib/useGame';
 import { socket } from '../socket';
+
+/** Мобильный клиент — режем разрешение/битрейт, чтобы пинг и нагрузка не зашкаливали. */
+const isMobile =
+  typeof navigator !== 'undefined' &&
+  (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (typeof window !== 'undefined' && window.innerWidth < 768));
+
+/**
+ * Конфиг LiveKit под слабую/мобильную сеть:
+ * - simulcast — зритель, у которого тайл маленький, тянет низкий слой (меньше трафика);
+ * - h264 — аппаратный декодер на телефонах тянет легче VP8/VP9;
+ * - capped resolution/encoding — не шлём 1080p в соту;
+ * - adaptiveStream + dynacast — авто-подбор качества и подписка только на видимое.
+ */
+function buildRoom(): Room {
+  return new Room({
+    adaptiveStream: true,
+    dynacast: true,
+    videoCaptureDefaults: {
+      resolution: isMobile ? VideoPresets.h360.resolution : VideoPresets.h540.resolution,
+    },
+    publishDefaults: {
+      simulcast: true,
+      videoCodec: 'h264',
+      videoEncoding: isMobile ? VideoPresets.h360.encoding : VideoPresets.h540.encoding,
+      videoSimulcastLayers: isMobile
+        ? [VideoPresets.h180, VideoPresets.h360]
+        : [VideoPresets.h180, VideoPresets.h360, VideoPresets.h540],
+    },
+  });
+}
 
 export interface VideoTile {
   identity: string;
@@ -33,7 +65,7 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    const room = new Room({ adaptiveStream: true, dynacast: true });
+    const room = buildRoom();
     roomRef.current = room;
 
     const rebuild = () => {

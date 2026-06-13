@@ -8,6 +8,7 @@ import { SpyPanel } from './cabinet/SpyPanel';
 import { TradePanel } from './cabinet/TradePanel';
 import { WarPanel } from './cabinet/WarPanel';
 import { CallPanel } from '../video/CallPanel';
+import { WiretapListener } from '../video/WiretapListener';
 import { BudgetPanel } from './cabinet/BudgetPanel';
 import type { AdvisorCard } from '@leaders/shared';
 
@@ -54,6 +55,7 @@ export function CabinetScreen() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col p-4">
+      <WiretapListener />
       {/* Шапка */}
       <header className="mb-3 flex items-center justify-between">
         <div>

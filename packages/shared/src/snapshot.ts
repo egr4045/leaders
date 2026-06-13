@@ -183,6 +183,8 @@ export interface RoomSnapshot {
   promises: PromiseRecord[];
   /** ваши разведдонесения (reveal + прослушка звонков) */
   spyIntel: SpyIntelReport[];
+  /** активная прослушка чужого созвона (фича 12): цель сейчас на связи — клиент скрыто подключается */
+  wiretap: { callId: string; targetCountryName: string; withCountryName: string } | null;
   /** сводка новостей этого года по странам (уже с искажениями шпионажа) */
   news:
     | {
