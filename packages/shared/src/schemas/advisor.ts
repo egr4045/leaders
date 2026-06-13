@@ -45,6 +45,7 @@ export const AdvisorCardSchema = z
           })
           .partial()
           .strict(),
+        conditions: z.array(z.string()).optional(),
       })
       .partial()
       .strict()

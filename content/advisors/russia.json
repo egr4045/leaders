@@ -14,10 +14,10 @@
       "choices": [
         {
           "label": "Применим Смекалочку! Пересоберем из стиральных машин",
+          "addStatuses": [
+            "ru_washing_planes"
+          ],
           "effects": {
-            "addStatuses": [
-              "ru_washing_planes"
-            ],
             "dovolstvo": 5
           },
           "newsLines": {
@@ -90,10 +90,10 @@
       "choices": [
         {
           "label": "Замедлить до скорости диалапа! Развиваем свой аналог",
+          "addStatuses": [
+            "ru_slow_internet"
+          ],
           "effects": {
-            "addStatuses": [
-              "ru_slow_internet"
-            ],
             "sectors": {
               "smi": 2,
               "science": -1
@@ -249,13 +249,13 @@
       "choices": [
         {
           "label": "Начать мега-стройку! Будущее за Востоком",
+          "addStatuses": [
+            "ru_eastern_partner"
+          ],
           "effects": {
             "resources": {
               "money": -1500
-            },
-            "addStatuses": [
-              "ru_eastern_partner"
-            ]
+            }
           },
           "newsLines": {
             "state": "Грандиозная стройка века стартовала",
@@ -336,16 +336,16 @@
         },
         {
           "label": "Отдайте конвейер китайцам для сборки их машин",
+          "addStatuses": [
+            "ru_eastern_partner"
+          ],
           "effects": {
             "resources": {
               "money": 200
             },
             "sectors": {
               "economy": 2
-            },
-            "addStatuses": [
-              "ru_eastern_partner"
-            ]
+            }
           },
           "newsLines": {
             "state": "Новое дыхание завода под руководством партнеров",
@@ -400,14 +400,14 @@
       "choices": [
         {
           "label": "Выдать всем по 6 соток и лопаты!",
+          "addStatuses": [
+            "ru_dacha_boom"
+          ],
           "effects": {
             "resources": {
               "food": 500
             },
-            "dovolstvo": 15,
-            "addStatuses": [
-              "ru_dacha_boom"
-            ]
+            "dovolstvo": 15
           },
           "newsLines": {
             "state": "Агропромышленный бум на дачах",

@@ -14,7 +14,8 @@ const decks = {
       choices: [
         {
           label: "Применим Смекалочку! Пересоберем из стиральных машин",
-          effects: { addStatuses: ["ru_washing_planes"], dovolstvo: 5 },
+          addStatuses: ["ru_washing_planes"],
+          effects: { dovolstvo: 5 },
           newsLines: { state: "Отечественный авиапром совершил прорыв", liberal: "Пилоты молятся перед каждым взлетом" }
         },
         {
@@ -51,7 +52,8 @@ const decks = {
       choices: [
         {
           label: "Замедлить до скорости диалапа! Развиваем свой аналог",
-          effects: { addStatuses: ["ru_slow_internet"], sectors: { smi: 2, science: -1 }, dovolstvo: -10 },
+          addStatuses: ["ru_slow_internet"],
+          effects: { sectors: { smi: 2, science: -1 }, dovolstvo: -10 },
           newsLines: { state: "Отечественные платформы бьют рекорды посещаемости", liberal: "YouTube грузится в 144p. Мы отрезаны от мира" }
         },
         {
@@ -124,7 +126,8 @@ const decks = {
       choices: [
         {
           label: "Начать мега-стройку! Будущее за Востоком",
-          effects: { resources: { money: -1500 }, addStatuses: ["ru_eastern_partner"] },
+          addStatuses: ["ru_eastern_partner"],
+          effects: { resources: { money: -1500 } },
           newsLines: { state: "Грандиозная стройка века стартовала", liberal: "Мы продаем ресурсы Китаю за бесценок" }
         },
         {
@@ -164,7 +167,8 @@ const decks = {
         },
         {
           label: "Отдайте конвейер китайцам для сборки их машин",
-          effects: { resources: { money: 200 }, sectors: { economy: 2 }, addStatuses: ["ru_eastern_partner"] },
+          addStatuses: ["ru_eastern_partner"],
+          effects: { resources: { money: 200 }, sectors: { economy: 2 } },
           newsLines: { state: "Новое дыхание завода под руководством партнеров", liberal: "АвтоВАЗ окончательно стал филиалом Китая" }
         }
       ]
@@ -195,7 +199,8 @@ const decks = {
       choices: [
         {
           label: "Выдать всем по 6 соток и лопаты!",
-          effects: { resources: { food: 500 }, dovolstvo: 15, addStatuses: ["ru_dacha_boom"] },
+          addStatuses: ["ru_dacha_boom"],
+          effects: { resources: { food: 500 }, dovolstvo: 15 },
           newsLines: { state: "Агропромышленный бум на дачах", liberal: "Люди вынуждены сами сажать еду от бедности" }
         },
         {
