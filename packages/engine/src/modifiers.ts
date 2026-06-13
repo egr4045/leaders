@@ -16,6 +16,7 @@ export interface EffectiveModifiers {
   outputMult: Record<PopulationKey, number>; // произведение
   emigration: Record<PopulationKey, number>; // сумма долей
   foodPerCapitaMult: number; // произведение
+  populationMult: number; // сумма долей (-0.05 = −5%/год ко всем классам)
   forbesLegacy: number; // сумма
   special: Record<string, number | boolean | string>;
   /** временные добавки к секторам от активных статусов */
@@ -30,6 +31,7 @@ function emptyEffective(): EffectiveModifiers {
     outputMult: { rabotyagi: 1, umniki: 1, siloviki: 1, mediyshchiki: 1, ministry: 1 },
     emigration: { rabotyagi: 0, umniki: 0, siloviki: 0, mediyshchiki: 0, ministry: 0 },
     foodPerCapitaMult: 1,
+    populationMult: 0,
     forbesLegacy: 0,
     special: {},
     sectorAdds: { economy: 0, science: 0, army: 0, smi: 0, intel: 0 },
@@ -41,6 +43,7 @@ function foldModifiers(into: EffectiveModifiers, m: Modifiers): void {
   into.inflationDelta += m.inflationDelta ?? 0;
   into.dovolstvoDrift += m.dovolstvoDrift ?? 0;
   into.foodPerCapitaMult *= m.foodPerCapitaMult ?? 1;
+  into.populationMult += m.populationMult ?? 0;
   into.forbesLegacy += m.forbesLegacy ?? 0;
   for (const k of POPULATION_KEYS) {
     if (m.outputMult?.[k] !== undefined) into.outputMult[k] *= m.outputMult[k]!;

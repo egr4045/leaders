@@ -71,6 +71,8 @@ export const ModifiersSchema = z
     emigration: PopulationDeltasSchema,
     /** множитель потребления еды на душу */
     foodPerCapitaMult: z.number(),
+    /** ± к годовому приросту всех классов населения (доля, -0.05 = −5%/год) */
+    populationMult: z.number(),
     /** минорный «легаси»-вклад в Форбс (намеренно крошечный) */
     forbesLegacy: z.number(),
     /**

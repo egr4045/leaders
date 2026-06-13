@@ -212,6 +212,8 @@ function applyPopulationChanges(
     }
     // эмиграция от статусов/режимов
     n *= 1 - Math.min(0.9, eff.emigration[key]);
+    // глобальный популяционный модификатор (голод, болезни и т.п.)
+    if (eff.populationMult !== 0) n *= 1 + eff.populationMult;
     s.population[key] = Math.max(0, n);
   }
 
