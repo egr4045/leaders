@@ -38,6 +38,17 @@ export const adminApi = {
     apiFetch('/api/admin/statuses/' + id, { method: 'PUT', body: JSON.stringify(data) }),
   createStatus: (data: StatusEntry) =>
     apiFetch('/api/admin/statuses', { method: 'POST', body: JSON.stringify(data) }),
+  // сессии
+  getRooms: () => apiFetch<RoomSummary[]>('/api/admin/rooms'),
+  killRoom: (code: string) => apiFetch<{ ok: boolean }>(`/api/admin/rooms/${code}/kill`, { method: 'POST' }),
+  // контент / tunables
+  reload: () => apiFetch<{ ok: boolean }>('/api/admin/reload', { method: 'POST' }),
+  getTunables: () => apiFetch<TunablesView>('/api/admin/tunables'),
+  updateTunables: (patch: Record<string, unknown>) =>
+    apiFetch<{ ok: boolean; tunables: TunablesView }>('/api/admin/tunables', {
+      method: 'PUT',
+      body: JSON.stringify(patch),
+    }),
   uploadImage: async (id: string, file: File) => {
     const fd = new FormData();
     fd.append('image', file);
@@ -92,4 +103,32 @@ export interface AnalysisReport {
   delayedCards: string[];
   onceCards: string[];
   notes: string[];
+}
+
+export interface RoomSummary {
+  code: string;
+  phase: string;
+  year: number | null;
+  paused: boolean;
+  phaseEndsAt: number | null;
+  humanCount: number;
+  botCount: number;
+  players: { name: string; isHost: boolean; isBot: boolean; connected: boolean; country: string | null }[];
+}
+
+export interface TunablesTimers {
+  cabinetSeconds: number;
+  unSummarySeconds: number;
+  unCommentSecondsPerPlayer: number;
+  unDebateSeconds: number;
+  unVoteSeconds: number;
+  resultsSeconds: number;
+  yearSummarySeconds: number;
+  reconnectPauseSecondsMax: number;
+}
+
+export interface TunablesView {
+  game: { years: number; playersMin: number; playersMax: number };
+  timers: TunablesTimers;
+  [k: string]: unknown;
 }

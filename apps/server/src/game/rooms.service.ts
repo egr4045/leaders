@@ -1546,6 +1546,41 @@ export class RoomsService {
     this.redis.client.del(`room:${code}`).catch(() => undefined);
   }
 
+  // ---------- админка ----------
+
+  /** Список активных комнат для админ-панели (чтобы не висели и не жрали ресурсы). */
+  listRoomsForAdmin() {
+    return [...this.rooms.values()].map((r) => ({
+      code: r.code,
+      phase: r.phase,
+      year: r.world?.year ?? null,
+      paused: r.paused,
+      phaseEndsAt: r.phaseEndsAt,
+      humanCount: r.players.filter((p) => !p.isBot).length,
+      botCount: r.players.filter((p) => p.isBot).length,
+      players: r.players.map((p) => ({
+        name: p.name,
+        isHost: p.isHost,
+        isBot: p.isBot ?? false,
+        connected: p.connected,
+        country: p.countryId ? (this.content.countries.get(p.countryId)?.name ?? null) : null,
+      })),
+    }));
+  }
+
+  /** Принудительно закрыть комнату: уведомить участников и снести из памяти/Redis. */
+  killRoomForAdmin(code: string): boolean {
+    const room = this.rooms.get(code.toUpperCase());
+    if (!room) return false;
+    this.server?.to(room.code).emit('game:announcement', {
+      title: 'Сессия закрыта',
+      text: 'Администратор завершил эту комнату.',
+    });
+    this.dropRoom(room.code);
+    this.logger.log(`[${room.code}] закрыта администратором`);
+    return true;
+  }
+
   private assertPhase(room: RoomState, phase: GamePhase) {
     if (room.phase !== phase) throw new Error(`Действие доступно только в фазе ${phase}`);
     if (room.paused) throw new Error('Игра на паузе');

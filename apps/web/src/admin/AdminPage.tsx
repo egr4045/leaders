@@ -3,8 +3,10 @@ import { adminApi, getSecret, saveSecret, type CardEntry, type AnalysisReport, t
 import { CardEditor } from './CardEditor';
 import { BalanceReport } from './BalanceReport';
 import { StatusEditor } from './StatusEditor';
+import { SessionsPanel } from './SessionsPanel';
+import { TimersPanel } from './TimersPanel';
 
-type Tab = 'cards' | 'statuses' | 'analysis';
+type Tab = 'cards' | 'statuses' | 'analysis' | 'sessions' | 'timers';
 
 export function AdminPage() {
   const [secret, setSecret] = useState(getSecret);
@@ -66,7 +68,8 @@ export function AdminPage() {
     if (!authed) return;
     if (tab === 'cards') void loadCards();
     else if (tab === 'statuses') void loadStatuses();
-    else void loadAnalysis();
+    else if (tab === 'analysis') void loadAnalysis();
+    // sessions / timers — самозагружаемые панели
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed, tab]);
 
@@ -114,6 +117,8 @@ export function AdminPage() {
             ['cards', 'Карточки'],
             ['statuses', 'Статусы'],
             ['analysis', 'Баланс'],
+            ['sessions', 'Сессии'],
+            ['timers', 'Тест-режим'],
           ] as const).map(([id, label]) => (
             <button
               key={id}
@@ -148,6 +153,10 @@ export function AdminPage() {
         {!loading && tab === 'analysis' && analysis && (
           <BalanceReport report={analysis} />
         )}
+
+        {tab === 'sessions' && <SessionsPanel />}
+
+        {tab === 'timers' && <TimersPanel />}
       </div>
     </div>
   );

@@ -16,7 +16,22 @@ import { diskStorage } from 'multer';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { ContentService } from '../content.service.js';
+import { RoomsService } from '../game/rooms.service.js';
 import { AdminGuard } from './admin.guard.js';
+
+/** Глубокий мёрж простых JSON-объектов (для патча tunables). */
+function deepMerge(base: Record<string, unknown>, patch: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...base };
+  for (const [k, v] of Object.entries(patch)) {
+    const cur = out[k];
+    if (v && typeof v === 'object' && !Array.isArray(v) && cur && typeof cur === 'object' && !Array.isArray(cur)) {
+      out[k] = deepMerge(cur as Record<string, unknown>, v as Record<string, unknown>);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
 
 interface EffectScore {
   cardId: string;
@@ -78,9 +93,62 @@ export class AdminController {
   private readonly contentDir: string;
   private readonly assetDir: string;
 
-  constructor(private readonly contentService: ContentService) {
+  constructor(
+    private readonly contentService: ContentService,
+    private readonly rooms: RoomsService,
+  ) {
     this.contentDir = process.env.CONTENT_DIR ?? path.resolve(process.cwd(), '../../content');
     this.assetDir = process.env.ASSET_DIR ?? path.resolve(process.cwd(), '../../assets-cache');
+  }
+
+  // ---------- сессии (комнаты) ----------
+
+  @Get('rooms')
+  getRooms() {
+    return this.rooms.listRoomsForAdmin();
+  }
+
+  @Post('rooms/:code/kill')
+  killRoom(@Param('code') code: string) {
+    const ok = this.rooms.killRoomForAdmin(code);
+    if (!ok) throw new HttpException('Комната не найдена', HttpStatus.NOT_FOUND);
+    return { ok: true };
+  }
+
+  // ---------- контент: горячая перезагрузка + tunables ----------
+
+  /** Применить правки контента без рестарта (фича 4). */
+  @Post('reload')
+  reload() {
+    const res = this.contentService.reloadContent();
+    if (!res.ok) throw new HttpException(res.error ?? 'Ошибка валидации контента', HttpStatus.BAD_REQUEST);
+    return { ok: true };
+  }
+
+  /** Текущие tunables (для редактора таймеров и т.п.). */
+  @Get('tunables')
+  getTunables() {
+    return this.contentService.content.tunables;
+  }
+
+  /**
+   * Патч tunables: глубокий мёрж в content/tunables.json + reload.
+   * Если контент после правки не валиден — откатываем файл и возвращаем ошибку.
+   */
+  @Put('tunables')
+  updateTunables(@Body() patch: Record<string, unknown>) {
+    const filePath = path.join(this.contentDir, 'tunables.json');
+    const original = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '{}';
+    const current = JSON.parse(original) as Record<string, unknown>;
+    const merged = deepMerge(current, patch ?? {});
+    fs.writeFileSync(filePath, JSON.stringify(merged, null, 2), 'utf8');
+    const res = this.contentService.reloadContent();
+    if (!res.ok) {
+      fs.writeFileSync(filePath, original, 'utf8'); // откат
+      this.contentService.reloadContent();
+      throw new HttpException(res.error ?? 'Невалидные tunables', HttpStatus.BAD_REQUEST);
+    }
+    return { ok: true, tunables: this.contentService.content.tunables };
   }
 
   @Get('cards')
