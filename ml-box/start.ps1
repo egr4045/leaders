@@ -1,15 +1,8 @@
 #Requires -Version 5.1
-<#
-.SYNOPSIS
-  Запустить локальный TTS-диктор для Leaders.
-  Первый запуск: создаёт venv, ставит зависимости, сохраняет токен.
-  Последующие: просто стартует ml-box.py (токен читается из .env).
-#>
-
 $ErrorActionPreference = "Stop"
 $Root = $PSScriptRoot
 
-# ---------- 1. Читаем / спрашиваем токен ----------
+# --- 1. Token ---
 $EnvFile = Join-Path $Root ".env"
 $Token = $null
 if (Test-Path $EnvFile) {
@@ -19,59 +12,55 @@ if (Test-Path $EnvFile) {
 }
 if (-not $Token) {
     Write-Host ""
-    Write-Host "┌─────────────────────────────────────────────────────────┐"
-    Write-Host "│  Нужен ML_BOX_TOKEN — он записан в /root/leaders/.env   │"
-    Write-Host "│  на сервере 186.246.11.239.                              │"
-    Write-Host "│  Посмотреть: ssh root@186.246.11.239 grep ML_BOX_TOKEN /root/leaders/.env"
-    Write-Host "└─────────────────────────────────────────────────────────┘"
+    Write-Host "Need ML_BOX_TOKEN from the server."
+    Write-Host "Run: ssh root@186.246.11.239 grep ML_BOX_TOKEN /root/leaders/.env"
     Write-Host ""
-    $Token = Read-Host "Вставьте ML_BOX_TOKEN"
-    if (-not $Token) { Write-Error "Токен не введён. Выход."; exit 1 }
-    "ML_BOX_TOKEN=$Token" | Out-File $EnvFile -Encoding utf8
-    Write-Host "✓ Токен сохранён в $EnvFile (не попадёт в git)"
+    $Token = Read-Host "Paste ML_BOX_TOKEN"
+    if (-not $Token) { Write-Error "No token. Exiting."; exit 1 }
+    Set-Content $EnvFile "ML_BOX_TOKEN=$Token" -Encoding utf8
+    Write-Host "Token saved to $EnvFile (gitignored)"
 }
 
-# ---------- 2. Python ----------
+# --- 2. Python ---
 $Py = $null
 foreach ($cmd in @("python", "python3", "py")) {
     try {
         $ver = & $cmd --version 2>&1
         if ($ver -match "Python 3\.") { $Py = $cmd; break }
-    } catch {}
+    } catch { }
 }
 if (-not $Py) {
-    Write-Error "Python 3 не найден. Установите с https://python.org (добавьте в PATH)."
+    Write-Error "Python 3 not found. Install from https://python.org and add to PATH."
     exit 1
 }
-Write-Host "✓ Python: $(& $Py --version)"
+Write-Host "Python: $(& $Py --version)"
 
-# ---------- 3. Виртуальное окружение ----------
+# --- 3. Venv ---
 $Venv = Join-Path $Root ".venv"
-if (-not (Test-Path (Join-Path $Venv "Scripts\python.exe"))) {
-    Write-Host "Создаю venv..."
+$VenvPy  = Join-Path $Venv "Scripts\python.exe"
+$VenvPip = Join-Path $Venv "Scripts\pip.exe"
+if (-not (Test-Path $VenvPy)) {
+    Write-Host "Creating venv..."
     & $Py -m venv $Venv
 }
-$VenvPy = Join-Path $Venv "Scripts\python.exe"
-$VenvPip = Join-Path $Venv "Scripts\pip.exe"
 
-# ---------- 4. Зависимости ----------
-$SileroMarker = Join-Path $Venv "silero_installed"
-if (-not (Test-Path $SileroMarker)) {
-    Write-Host "Устанавливаю зависимости (первый раз ~5 мин, скачивает PyTorch ~2 GB)..."
+# --- 4. Dependencies ---
+$Marker = Join-Path $Root ".deps_ok"
+if (-not (Test-Path $Marker)) {
+    Write-Host "Installing PyTorch (CPU) + torchaudio (~2 GB, one-time)..."
     & $VenvPip install --upgrade pip -q
     & $VenvPip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-    & $VenvPip install requests
-    # silero загружается через torch.hub при первом запуске (~60 MB) — pip не нужен
-    "ok" | Out-File $SileroMarker -Encoding utf8
-    Write-Host "✓ Зависимости установлены"
+    & $VenvPip install requests -q
+    Set-Content $Marker "ok" -Encoding utf8
+    Write-Host "Dependencies installed."
 }
 
-# ---------- 5. Запуск ml-box (авторестарт при краше) ----------
+# --- 5. Run with auto-restart ---
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-Write-Host "  Диктор запущен. Оставьте окно открытым."
-Write-Host "  Ctrl+C — остановить."
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "============================================"
+Write-Host "  Anchor TTS running. Keep this window open."
+Write-Host "  Ctrl+C to stop."
+Write-Host "============================================"
 Write-Host ""
 
 $Script = Join-Path $Root "ml-box.py"
@@ -79,7 +68,7 @@ while ($true) {
     $env:ML_BOX_TOKEN = $Token
     & $VenvPy $Script
     $code = $LASTEXITCODE
-    if ($code -eq 0) { break }   # штатный выход (Ctrl+C)
-    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Краш ($code), перезапуск через 10 с..."
+    if ($code -eq 0) { break }
+    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] Crashed ($code), restarting in 10s..."
     Start-Sleep 10
 }
