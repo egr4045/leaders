@@ -6,8 +6,9 @@ import { StatusEditor } from './StatusEditor';
 import { SessionsPanel } from './SessionsPanel';
 import { TimersPanel } from './TimersPanel';
 import { CountryEditor } from './CountryEditor';
+import { ContentSchema } from './ContentSchema';
 
-type Tab = 'cards' | 'statuses' | 'countries' | 'analysis' | 'sessions' | 'timers';
+type Tab = 'cards' | 'statuses' | 'countries' | 'schema' | 'analysis' | 'sessions' | 'timers';
 
 export function AdminPage() {
   const [secret, setSecret] = useState(getSecret);
@@ -79,9 +80,9 @@ export function AdminPage() {
 
   useEffect(() => {
     if (!authed) return;
-    if (tab === 'cards') void loadCards();
-    else if (tab === 'statuses') void loadStatuses();
-    else if (tab === 'analysis') void loadAnalysis();
+    if (tab === 'cards' || tab === 'schema') void loadCards();
+    if (tab === 'statuses' || tab === 'schema') void loadStatuses();
+    if (tab === 'analysis') void loadAnalysis();
     // sessions / timers — самозагружаемые панели
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed, tab]);
@@ -140,6 +141,7 @@ export function AdminPage() {
             ['cards', 'Карточки'],
             ['statuses', 'Статусы'],
             ['countries', 'Страны'],
+            ['schema', 'Схема (Граф)'],
             ['analysis', 'Баланс'],
             ['sessions', 'Сессии'],
             ['timers', 'Тест-режим'],
@@ -172,6 +174,10 @@ export function AdminPage() {
 
         {!loading && tab === 'statuses' && (
           <StatusEditor statuses={statuses} onRefresh={() => void loadStatuses()} />
+        )}
+
+        {!loading && tab === 'schema' && (
+          <ContentSchema cards={cards} statuses={statuses} />
         )}
 
         {!loading && tab === 'analysis' && analysis && (

@@ -3,16 +3,16 @@ import type { CardEntry } from './api';
 import { adminApi } from './api';
 
 const COUNTRY_NAMES: Record<string, string> = {
-  amerika: 'Америка',
-  bananovaya_respublika: 'Банановая Республика',
-  drakoniya: 'Дракония',
-  evrosad: 'Евросад',
-  gornaya_derzhava: 'Горная Держава',
-  imperiya: 'Империя',
-  neftyanoe_khanstvo: 'Нефтяное Ханство',
-  ostrov_kreditov: 'Остров Кредитов',
-  severnaya_tverdynia: 'Северная Твердыня',
-  velikiy_bazar: 'Великий Базар',
+  russia: 'Россия',
+  usa: 'США',
+  china: 'Китай',
+  dprk: 'КНДР',
+  uk: 'Великобритания',
+  germany: 'Германия',
+  india: 'Индия',
+  japan: 'Япония',
+  armenia: 'Армения',
+  israel: 'Израиль',
 };
 
 const TAG_TIPS: Record<string, string> = {
@@ -361,7 +361,7 @@ function CreateCardForm({ onCreated }: { onCreated: () => void }) {
 }
 
 function CardRow({ card, onUpdate }: { card: CardEntry; onUpdate: () => void }) {
-  const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [editJson, setEditJson] = useState('');
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState('');
@@ -369,14 +369,13 @@ function CardRow({ card, onUpdate }: { card: CardEntry; onUpdate: () => void }) 
 
   const handleEdit = () => {
     setEditJson(JSON.stringify(card.raw, null, 2));
-    setExpanded(true);
   };
 
   const handleSave = async () => {
     try {
       const data = JSON.parse(editJson) as Record<string, unknown>;
       await adminApi.replaceCard(card.cardId, data);
-      setMsg('Сохранено — нажми «Применить» вверху, чтобы применить в игре');
+      setMsg('Сохранено — нажми «Применить» вверху');
       onUpdate();
     } catch (e) {
       setMsg('Ошибка: ' + (e as Error).message);
@@ -409,49 +408,74 @@ function CardRow({ card, onUpdate }: { card: CardEntry; onUpdate: () => void }) 
   };
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-start justify-between gap-3 p-3 text-left hover:bg-slate-800/50"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs text-slate-500">{card.cardId}</span>
-            {card.once && <span className="rounded bg-purple-900/50 px-1 py-0.5 text-xs text-purple-300">однораз.</span>}
-            <span className="text-xs text-slate-600">вес:{card.weight}</span>
-            <ScoreBadge score={card.maxScore} />
-          </div>
-          <div className="mt-0.5 truncate text-sm">{card.speaker}: {card.situation.slice(0, 80)}…</div>
+    <div className="flex flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-xl relative group">
+      {card.imageUrl && (
+        <div className="h-32 w-full shrink-0">
+          <img src={card.imageUrl} alt="" className="h-full w-full object-cover" />
         </div>
-        {card.imageUrl && <img src={card.imageUrl} alt="" className="h-12 w-16 rounded object-cover shrink-0" />}
-        <span className="text-slate-500 shrink-0">{expanded ? '▲' : '▼'}</span>
-      </button>
+      )}
+      <div className="p-3 flex flex-col gap-2 flex-1">
+        {/* Шапка карточки */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col">
+            <span className="font-bold text-amber-500 text-sm">{card.speaker}</span>
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <span className="font-mono text-[10px] text-slate-400 bg-slate-900 px-1 rounded">{card.cardId}</span>
+              {card.once && <span className="rounded bg-purple-900/50 px-1 py-0.5 text-[10px] text-purple-300">однораз.</span>}
+              <span className="text-[10px] text-slate-500">вес: {card.weight}</span>
+              <ScoreBadge score={card.maxScore} />
+            </div>
+          </div>
+          <button 
+            onClick={() => setEditing(!editing)}
+            className="text-slate-400 hover:text-amber-400 transition-colors p-1"
+            title="Настройки"
+          >
+            ⚙️
+          </button>
+        </div>
 
-      {expanded && (
-        <div className="border-t border-slate-800 p-3 flex flex-col gap-3">
-          {/* Choices */}
-          <div>
-            <div className="mb-1 text-xs font-semibold uppercase text-slate-500">Варианты</div>
+        {/* Текст ситуации */}
+        <div className="text-sm text-slate-200 mt-1 italic border-l-2 border-slate-600 pl-2">
+          «{card.situation}»
+        </div>
+        <div className="flex flex-col gap-2 mt-2">
+          {/* Choices (Always visible but compact) */}
+          <div className="flex flex-col gap-1.5">
             {card.choices.map((c, i) => (
-              <div key={i} className="mb-2 rounded bg-slate-800 px-2 py-1 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>
-                    <span className="mr-2 text-slate-500">{i === 0 ? '←' : i === 1 ? '→' : '↑'}</span>
-                    <span>{c.label}</span>
-                    <span className="ml-2"><ScoreBadge score={c.score} /></span>
+              <div key={i} className="rounded bg-slate-900/50 p-2 text-xs border border-slate-700/50">
+                <div className="flex items-start justify-between gap-1">
+                  <span className="font-semibold text-sky-200">
+                    <span className="mr-1 text-slate-500">{i === 0 ? '①' : i === 1 ? '②' : '③'}</span>
+                    {c.label}
                   </span>
-                  <button
-                    onClick={() => setNewsEditorIdx(newsEditorIdx === i ? null : i)}
-                    className="ml-2 rounded border border-slate-600 px-1.5 py-0.5 text-xs text-slate-400 hover:border-amber-400"
-                  >
-                    {c.newsLines ? '✏ новости' : '+ новости'}
-                  </button>
+                  <div className="shrink-0"><ScoreBadge score={c.score} /></div>
                 </div>
-                <div className="mt-0.5 flex flex-wrap gap-1">
+                <div className="mt-1 flex flex-wrap gap-1">
                   {c.tags.map((t, j) => <EffectTag key={j} tag={t} />)}
-                  {c.newsLines && <span className="rounded bg-sky-900/40 px-1 py-0.5 text-[10px] text-sky-300">СМИ ✓</span>}
-                  {c.wonderFallbackName && <span className="rounded bg-purple-900/40 px-1 py-0.5 text-[10px] text-purple-300">fallback: {c.wonderFallbackName}</span>}
+                  {c.newsLines && <span className="rounded bg-sky-900/40 px-1 py-0.5 text-[9px] text-sky-300 border border-sky-800/50">СМИ ✓</span>}
+                  {c.wonderFallbackName && <span className="rounded bg-purple-900/40 px-1 py-0.5 text-[9px] text-purple-300">fallback</span>}
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {editing && (
+        <div className="border-t border-slate-700 bg-slate-900/80 p-3 flex flex-col gap-3">
+          {/* Choices editor */}
+          <div>
+            <div className="mb-1 text-xs font-semibold uppercase text-slate-500">Редактор СМИ вариантов</div>
+            {card.choices.map((c, i) => (
+              <div key={i} className="mb-1">
+                <button
+                  onClick={() => setNewsEditorIdx(newsEditorIdx === i ? null : i)}
+                  className="rounded border border-slate-600 px-2 py-1 text-xs text-slate-300 hover:border-amber-400 w-full text-left flex justify-between"
+                >
+                  <span>Вариант {i+1} СМИ</span>
+                  <span>{c.newsLines ? '✏' : '+'}</span>
+                </button>
                 {newsEditorIdx === i && (
                   <ChoiceNewsEditor card={card} choiceIdx={i} choice={c} onSaved={onUpdate} />
                 )}
@@ -532,19 +556,21 @@ function CountrySection({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   return (
-    <div className="mb-4">
+    <div className="mb-6">
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="mb-2 flex w-full items-center gap-2 text-left"
+        className="mb-3 flex w-full items-center gap-2 text-left"
       >
-        <span className="font-bold text-amber-400">{title}</span>
-        <span className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-400">{cards.length} карт</span>
+        <span className="font-bold text-amber-400 text-lg uppercase tracking-wider">{title}</span>
+        <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-400 font-mono">{cards.length}</span>
         <span className="ml-auto text-slate-500 text-xs">{collapsed ? '▼ развернуть' : '▲ свернуть'}</span>
       </button>
       {!collapsed && (
-        <div className="flex flex-col gap-2">
+        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
           {cards.map((c) => (
-            <CardRow key={c.cardId} card={c} onUpdate={onUpdate} />
+            <div key={c.cardId} className="break-inside-avoid mb-4">
+              <CardRow card={c} onUpdate={onUpdate} />
+            </div>
           ))}
         </div>
       )}
@@ -555,6 +581,7 @@ function CountrySection({
 export function CardEditor({ cards, onRefresh }: { cards: CardEntry[]; onRefresh: () => void }) {
   const [filter, setFilter] = useState('');
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
+  const [effectFilter, setEffectFilter] = useState<string | null>(null);
 
   const textFiltered = cards.filter(
     (c) =>
@@ -564,11 +591,22 @@ export function CardEditor({ cards, onRefresh }: { cards: CardEntry[]; onRefresh
       c.situation.toLowerCase().includes(filter.toLowerCase()),
   );
 
+  const effectFiltered = effectFilter === null 
+    ? textFiltered 
+    : textFiltered.filter((c) => {
+        if (effectFilter === 'money') return c.choices.some(ch => ch.tags.includes('ден.'));
+        if (effectFilter === 'food') return c.choices.some(ch => ch.tags.includes('ед.'));
+        if (effectFilter === 'status') return c.choices.some(ch => ch.tags.some(t => t.includes('статус')));
+        if (effectFilter === 'influence') return c.choices.some(ch => ch.tags.includes('влин.'));
+        if (effectFilter === 'delayed') return c.choices.some(ch => ch.tags.includes('откл.эфф'));
+        return true;
+      });
+
   const displayed = countryFilter === null
-    ? textFiltered
+    ? effectFiltered
     : countryFilter === '__common__'
-    ? textFiltered.filter((c) => c.deckCountry === null)
-    : textFiltered.filter((c) => c.deckCountry === countryFilter);
+    ? effectFiltered.filter((c) => c.deckCountry === null)
+    : effectFiltered.filter((c) => c.deckCountry === countryFilter);
 
   // Collect unique countries present in full card list
   const countries = Array.from(new Set(cards.filter((c) => c.deckCountry).map((c) => c.deckCountry as string))).sort();
@@ -623,16 +661,41 @@ export function CardEditor({ cards, onRefresh }: { cards: CardEntry[]; onRefresh
         ))}
       </div>
 
+      {/* Effect filters */}
+      <div className="flex flex-wrap gap-1 mt-1">
+        <span className="text-xs text-slate-500 py-1 mr-2">Эффекты:</span>
+        {[
+          { key: null, label: 'Все' },
+          { key: 'money', label: '💰 Деньги' },
+          { key: 'food', label: '🌾 Еда' },
+          { key: 'influence', label: '🤝 Влияние' },
+          { key: 'status', label: '✨ Дает статус' },
+          { key: 'delayed', label: '⏳ Отложенный' },
+        ].map(({ key, label }) => (
+          <button
+            key={key ?? 'all'}
+            onClick={() => setEffectFilter(key)}
+            className={`rounded-lg px-2 py-1 text-xs font-semibold transition-colors ${
+              effectFilter === key ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div className="text-xs text-slate-500">
-        {displayed.length} карточек · красный балл = сильные, синий = слабые · наводи на тег для подсказки
+        {displayed.length} карточек · красный балл = сильные, синий = слабые
       </div>
 
       {/* Grouped output */}
       {countryFilter !== null ? (
         // Flat list when a specific country is selected
-        <div className="flex flex-col gap-2">
+        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
           {displayed.map((c) => (
-            <CardRow key={c.cardId} card={c} onUpdate={onRefresh} />
+            <div key={c.cardId} className="break-inside-avoid mb-4">
+              <CardRow card={c} onUpdate={onRefresh} />
+            </div>
           ))}
         </div>
       ) : (

@@ -496,6 +496,7 @@ function TypeSection({
 export function StatusEditor({ statuses, onRefresh }: { statuses: StatusEntry[]; onRefresh: () => void }) {
   const [filter, setFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [effectFilter, setEffectFilter] = useState<string | null>(null);
 
   const textFiltered = statuses.filter(
     (s) =>
@@ -505,7 +506,21 @@ export function StatusEditor({ statuses, onRefresh }: { statuses: StatusEntry[];
       (s.description ?? '').toLowerCase().includes(filter.toLowerCase()),
   );
 
-  const displayed = typeFilter ? textFiltered.filter((s) => s.type === typeFilter) : textFiltered;
+  const effectFiltered = effectFilter === null 
+    ? textFiltered 
+    : textFiltered.filter((s) => {
+        // Проверяем сырой JSON на наличие сектора в effects.sectors
+        const sectors = (s as unknown as Record<string, any>).effects?.sectors ?? {};
+        if (effectFilter === 'economy') return typeof sectors.economy === 'number';
+        if (effectFilter === 'science') return typeof sectors.science === 'number';
+        if (effectFilter === 'army') return typeof sectors.army === 'number';
+        if (effectFilter === 'smi') return typeof sectors.smi === 'number';
+        if (effectFilter === 'intel') return typeof sectors.intel === 'number';
+        if (effectFilter === 'dovolstvo') return typeof (s as unknown as Record<string, any>).effects?.dovolstvo === 'number' || typeof (s as unknown as Record<string, any>).effects?.modifiers?.dovolstvoDrift === 'number';
+        return true;
+      });
+
+  const displayed = typeFilter ? effectFiltered.filter((s) => s.type === typeFilter) : effectFiltered;
 
   const knownTypes = TYPE_ORDER.filter((t) => statuses.some((s) => s.type === t));
   const extraTypes = Array.from(new Set(statuses.filter((s) => !TYPE_ORDER.includes(s.type)).map((s) => s.type)));
@@ -550,6 +565,29 @@ export function StatusEditor({ statuses, onRefresh }: { statuses: StatusEntry[];
             </button>
           );
         })}
+      </div>
+
+      <div className="flex flex-wrap gap-1 mt-1">
+        <span className="text-xs text-slate-500 py-1 mr-2">Влияет на:</span>
+        {[
+          { key: null, label: 'Все' },
+          { key: 'economy', label: '💰 Экономика' },
+          { key: 'science', label: '🔬 Наука' },
+          { key: 'army', label: '⚔️ Армия' },
+          { key: 'smi', label: '📺 СМИ' },
+          { key: 'intel', label: '🕵️ Разведка' },
+          { key: 'dovolstvo', label: '😊 Довольство' },
+        ].map(({ key, label }) => (
+          <button
+            key={key ?? 'all'}
+            onClick={() => setEffectFilter(key)}
+            className={`rounded-lg px-2 py-1 text-xs font-semibold transition-colors ${
+              effectFilter === key ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div className="text-xs text-slate-500">{displayed.length} статусов · разверни статус для структурного редактора</div>
