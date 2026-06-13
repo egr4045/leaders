@@ -971,7 +971,7 @@ export class RoomsService {
     const s = room.world.countries.get(countryId)!;
     const def = this.content.countries.get(countryId)!;
     const rng = makeRng(room.world.seed + room.rngNonce++);
-    room.currentCards[countryId] = drawCard(s, def, this.content, rng);
+    room.currentCards[countryId] = drawCard(s, def, this.content, rng, room.world.year);
   }
 
   chooseCard(code: string, playerId: string, cardId: string, choiceIndex: number) {

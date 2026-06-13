@@ -55,6 +55,10 @@ export const AdvisorCardSchema = z
     weight: z.number().positive().optional(),
     /** карта одноразовая: выпадает не больше одного раза за партию */
     once: z.boolean().optional(),
+    /** появляется не раньше этого года */
+    yearMin: z.number().int().min(1).optional(),
+    /** появляется не позже этого года (включительно) */
+    yearMax: z.number().int().min(1).optional(),
   })
   .strict();
 export type AdvisorCard = z.infer<typeof AdvisorCardSchema>;

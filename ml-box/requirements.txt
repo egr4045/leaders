@@ -1,0 +1,4 @@
+torch>=2.0
+torchaudio>=2.0
+silero>=0.4
+requests>=2.28

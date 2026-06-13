@@ -6,11 +6,12 @@ import { applyEffectsOnce } from './effects.js';
 import { recomputeStatuses, type ComboEvent } from './combo.js';
 import { pick, type Rng } from './rng.js';
 
-/** Карты, доступные стране прямо сейчас (requires, locks, once). */
+/** Карты, доступные стране прямо сейчас (requires, locks, повторы, year). */
 export function availableCards(
   s: CountryState,
   country: Country,
   content: GameContent,
+  year = 1,
 ): AdvisorCard[] {
   // общие колоды (country: null) + уникальная колода страны
   const pool: AdvisorCard[] = [];
@@ -32,7 +33,9 @@ export function availableCards(
 
   return pool.filter((card) => {
     if (lockedCards.has(card.id)) return false;
-    if (card.once && s.usedCards.includes(card.id)) return false;
+    if (s.usedCards.includes(card.id)) return false;
+    if (card.yearMin && year < card.yearMin) return false;
+    if (card.yearMax && year > card.yearMax) return false;
     for (const reqStatus of card.requires?.statuses ?? []) {
       if (!s.activeStatuses.includes(reqStatus)) return false;
     }
@@ -52,8 +55,9 @@ export function drawCard(
   country: Country,
   content: GameContent,
   rng: Rng,
+  year = 1,
 ): AdvisorCard | null {
-  const cards = availableCards(s, country, content);
+  const cards = availableCards(s, country, content, year);
   if (cards.length === 0) return null;
   const weighted: AdvisorCard[] = [];
   for (const c of cards) {
