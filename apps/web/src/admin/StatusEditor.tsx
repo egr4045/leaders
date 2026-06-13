@@ -52,7 +52,9 @@ function getIn(obj: Raw, path: string[]): unknown {
   return cur;
 }
 function setIn(obj: Raw, path: string[], value: unknown): Raw {
-  const [head, ...rest] = path;
+  const head = path[0];
+  if (head === undefined) return obj;
+  const rest = path.slice(1);
   const next: Raw = { ...obj };
   if (rest.length === 0) {
     if (value === undefined || value === '' || (typeof value === 'number' && Number.isNaN(value))) delete next[head];
