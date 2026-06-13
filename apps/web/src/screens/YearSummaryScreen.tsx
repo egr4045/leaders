@@ -1,6 +1,7 @@
 import { useGame } from '../lib/useGame';
 import { Timer } from '../ui/Timer';
 import type { YearReport } from '@leaders/shared';
+import { ForbesLeaderboard } from './UnScreen';
 
 const RES_LABELS: Record<string, string> = {
   money: '💰 Деньги',
@@ -128,6 +129,8 @@ function ReportBody({ report }: { report: YearReport }) {
         <DeltaTable title="Население" labels={POP_LABELS} rows={report.population} />
         <DeltaTable title="Сектора" labels={SECTOR_LABELS} rows={report.sectors} />
       </div>
+
+      <ForbesLeaderboard />
     </div>
   );
 }

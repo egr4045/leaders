@@ -40,6 +40,8 @@ export interface PublicCountryView {
   /** активные санкции ООН — публичный факт */
   sanctions: number;
   wonders: string[];
+  /** шанс успеха шпионской операции против этой страны (для текущего игрока, %) */
+  spyChance?: number;
 }
 
 /** Полная картина своей страны (только владельцу). */
@@ -64,12 +66,16 @@ export interface PrivateCountryView {
   callsLeft: number;
   /** сколько карточек осталось взять в этом раунде */
   cardsLeft: number;
+  /** сколько шпионских операций осталось в этом году */
+  spyOrdersLeft: number;
   /** true = активный режим имеет независимые (частные) СМИ */
   smiIsLiberal: boolean;
   /** чужие глобальные ауры (чудеса), действующие на вашу страну */
   auras: { statusId: string; name: string; ownerCountryName: string; description?: string }[];
   /** прогноз на следующий тик (без ООН-эффектов) */
   projection: YearProjection;
+  /** Законы, доступные для принятия (не принятые и не отклонённые) */
+  availableLaws?: { id: string; name: string; description?: string; cost?: { money?: number; influence?: number } }[];
 }
 
 export interface YearProjection {

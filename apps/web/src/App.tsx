@@ -14,6 +14,10 @@ function Router() {
 
   if (!session || !snapshot) return <JoinScreen />;
 
+  if (snapshot.phase !== 'lobby' && !snapshot.you) {
+    return <LobbyScreen />;
+  }
+
   switch (snapshot.phase) {
     case 'lobby':
       return <LobbyScreen />;

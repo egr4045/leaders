@@ -15,6 +15,7 @@ import {
   questCompleted,
   sideOf,
   sideStrength,
+  spySuccessChance,
   type GameContent,
   type WarState,
   type WorldState,
@@ -101,6 +102,7 @@ export function buildSnapshot(
           declaredForbes: s.declaredForbes,
           currentCard: room.currentCards[p.countryId] ?? null,
           callsLeft: room.callsLeft[p.countryId] ?? 0,
+          spyOrdersLeft: room.spyOrdersLeft[p.countryId] ?? 0,
           cardsLeft: Math.max(0, (content.tunables.cabinet?.cardsPerTurn ?? 5) - (room.cardsChosenThisYear?.[p.countryId] ?? 0)),
           smiIsLiberal,
           auras: (s.externalAuras ?? []).map((a) => ({
@@ -111,6 +113,14 @@ export function buildSnapshot(
             description: content.statuses.get(a.statusId)?.description,
           })),
           projection: computeProjection(s, content),
+          availableLaws: Array.from(content.statuses.values())
+            .filter((st) => st.type === 'law' && !s.activeStatuses.includes(st.id) && !(me?.rejectedLaws ?? []).includes(st.id))
+            .map((st) => ({
+              id: st.id,
+              name: st.name,
+              description: st.description,
+              cost: st.cost,
+            })),
         };
       } else {
         others.push({
@@ -125,6 +135,9 @@ export function buildSnapshot(
           declaredForbes: s.declaredForbes,
           sanctions: s.sanctions,
           wonders: s.wondersBuilt,
+          spyChance: room.world && myCountryId && room.world.countries.has(myCountryId)
+            ? Math.round(spySuccessChance(room.world.countries.get(myCountryId)!, s, content) * 100)
+            : 0,
         });
       }
     }

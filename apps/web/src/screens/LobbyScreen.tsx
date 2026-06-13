@@ -29,6 +29,8 @@ export function LobbyScreen() {
         name: p.countryName!,
         description: undefined,
         takenBy: p.name,
+        connected: p.connected,
+        isBot: p.isBot,
         isMine: p.playerId === session.playerId,
       })),
   ].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
@@ -119,11 +121,12 @@ export function LobbyScreen() {
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {allCountries.map((c) => {
-                const taken = takenById.get(c.id) || (c.takenBy ? { name: c.takenBy, playerId: '' } : null);
+                const taken = takenById.get(c.id) || (c.takenBy ? { name: c.takenBy, playerId: '', connected: Boolean(c.connected), isBot: Boolean(c.isBot) } : null);
                 const isMine = c.isMine || myCountryId === c.id;
                 const isPicking = pickingId === c.id;
                 const isError = pickError === c.id;
-                const isAvailable = !taken;
+                const isAvailable = snapshot.phase === 'lobby' ? !taken : (taken && (!taken.connected || taken.isBot));
+                const showAsTaken = taken && (!isAvailable || snapshot.phase === 'lobby');
 
                 return (
                   <div
@@ -135,7 +138,7 @@ export function LobbyScreen() {
                         ? 'border-red-500 bg-red-950/20'
                         : isPicking
                         ? 'border-amber-400/60 bg-amber-950/20'
-                        : taken
+                        : showAsTaken
                         ? 'border-slate-700 bg-slate-800/50 opacity-60'
                         : 'border-slate-700 bg-slate-800 hover:border-amber-400/60'
                     }`}
@@ -144,7 +147,9 @@ export function LobbyScreen() {
                       <span className="font-semibold">{c.name}</span>
                       {isMine && <span className="text-xs text-amber-400">Ваша</span>}
                       {taken && !isMine && (
-                        <span className="text-xs text-slate-500">{taken.name}</span>
+                        <span className={`text-xs ${!taken.connected || taken.isBot ? 'text-amber-400/80' : 'text-slate-500'}`}>
+                          {taken.name} {!taken.connected && !taken.isBot && '(отключен)'} {taken.isBot && '(бот)'}
+                        </span>
                       )}
                     </div>
                     {c.description && (

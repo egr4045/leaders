@@ -71,12 +71,21 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
     const rebuild = () => {
       if (cancelled) return;
       const list: VideoTile[] = [];
+      const getCam = (p: any) => {
+        const pub = p.getTrackPublication(Track.Source.Camera);
+        return pub && !pub.isMuted ? pub.track?.mediaStreamTrack ?? null : null;
+      };
+      const getMic = (p: any) => {
+        const pub = p.getTrackPublication(Track.Source.Microphone);
+        return pub && !pub.isMuted ? pub.track?.mediaStreamTrack ?? null : null;
+      };
+
       const lp = room.localParticipant;
       list.push({
         identity: lp.identity,
         name: lp.name || 'Я',
         isLocal: true,
-        videoTrack: lp.getTrackPublication(Track.Source.Camera)?.track?.mediaStreamTrack ?? null,
+        videoTrack: getCam(lp),
         audioTrack: null,
       });
       for (const p of room.remoteParticipants.values()) {
@@ -84,9 +93,8 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
           identity: p.identity,
           name: p.name || p.identity,
           isLocal: false,
-          videoTrack: p.getTrackPublication(Track.Source.Camera)?.track?.mediaStreamTrack ?? null,
-          audioTrack:
-            p.getTrackPublication(Track.Source.Microphone)?.track?.mediaStreamTrack ?? null,
+          videoTrack: getCam(p),
+          audioTrack: getMic(p),
         });
       }
       setTiles(list);
@@ -99,6 +107,8 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
       RoomEvent.TrackUnsubscribed,
       RoomEvent.LocalTrackPublished,
       RoomEvent.LocalTrackUnpublished,
+      RoomEvent.TrackMuted,
+      RoomEvent.TrackUnmuted,
     ];
     for (const e of events) room.on(e, rebuild);
 

@@ -118,9 +118,10 @@ export function SpyPanel({
     <div className="w-full">
       <button
         onClick={() => { setOpen(!open); setSelectedKind(null); setResult(null); }}
-        className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:border-slate-500"
+        className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:border-slate-500 flex justify-between"
       >
-        🕵️ Разведка {open ? '▲' : '▼'}
+        <span>🕵️ Разведка {open ? '▲' : '▼'}</span>
+        <span className="text-amber-400">Доступно операций: {snapshot?.you?.spyOrdersLeft ?? 0}</span>
       </button>
 
       {open && (
@@ -216,14 +217,19 @@ export function SpyPanel({
                   <button
                     key={o.countryId}
                     onClick={() => setTargetId(o.countryId)}
-                    className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+                    className={`flex justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
                       targetId === o.countryId
                         ? 'border-amber-500 bg-amber-950/30'
                         : 'border-slate-700 hover:border-slate-500'
                     }`}
                   >
-                    <span className="font-medium">{o.countryName}</span>
-                    <span className="ml-2 text-xs text-slate-400">{o.playerName}</span>
+                    <div>
+                      <span className="font-medium">{o.countryName}</span>
+                      <span className="ml-2 text-xs text-slate-400">{o.playerName}</span>
+                    </div>
+                    <div className={`text-xs ${o.spyChance && o.spyChance > 50 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      Шанс: {o.spyChance ?? 0}%
+                    </div>
                   </button>
                 ))}
               </div>

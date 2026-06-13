@@ -46,6 +46,8 @@ export const SocketEvents = {
   CabinetChoose: 'cabinet:choose',
   CabinetReady: 'cabinet:ready',
   CabinetSetBudget: 'cabinet:set_budget',
+  CabinetAdoptLaw: 'cabinet:adopt_law',
+  CabinetRejectLaw: 'cabinet:reject_law',
   SpyOrder: 'spy:order',
 
   // дипломатия (Э5)

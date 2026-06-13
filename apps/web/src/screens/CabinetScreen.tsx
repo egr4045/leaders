@@ -10,9 +10,11 @@ import { WarPanel } from './cabinet/WarPanel';
 import { CallPanel } from '../video/CallPanel';
 import { WiretapListener } from '../video/WiretapListener';
 import { BudgetPanel } from './cabinet/BudgetPanel';
+import { LawsPanel } from './cabinet/LawsPanel';
+import { OthersPanel } from './cabinet/OthersPanel';
 import type { AdvisorCard } from '@leaders/shared';
 
-type Tab = 'advisor' | 'country' | 'diplomacy';
+type Tab = 'advisor' | 'country' | 'diplomacy' | 'others';
 
 interface PendingResult {
   card: AdvisorCard;
@@ -48,9 +50,10 @@ export function CabinetScreen() {
   };
 
   const TABS: { id: Tab; label: string }[] = [
-    { id: 'advisor', label: '🃏 Советник' },
+    { id: 'advisor', label: '🃏 Совет' },
     { id: 'country', label: '🌍 Страна' },
-    { id: 'diplomacy', label: '🤝 Дипломатия' },
+    { id: 'diplomacy', label: '🤝 Дип' },
+    { id: 'others', label: '🌐 Мир' },
   ];
 
   return (
@@ -130,6 +133,7 @@ export function CabinetScreen() {
           <div className="flex flex-col gap-3">
             <ResourcePanel you={you} />
             <BudgetPanel you={you} />
+            <LawsPanel you={you} />
           </div>
         )}
 
@@ -137,8 +141,13 @@ export function CabinetScreen() {
           <div className="flex flex-col gap-2">
             <CallPanel you={you} others={snapshot.others} />
             <TradePanel you={you} others={snapshot.others} />
-            <SpyPanel others={snapshot.others} myCountryId={you.countryId} />
             <WarPanel others={snapshot.others} />
+          </div>
+        )}
+
+        {tab === 'others' && (
+          <div className="flex flex-col gap-2">
+            <OthersPanel others={snapshot.others} myCountryId={you.countryId} />
           </div>
         )}
       </div>

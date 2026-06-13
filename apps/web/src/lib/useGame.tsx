@@ -62,6 +62,8 @@ interface GameApi {
   ) => Promise<{ success: boolean } | null>;
   declareForbes: (value: number) => Promise<void>;
   commentDone: () => Promise<void>;
+  adoptLaw: (lawId: string) => Promise<void>;
+  rejectLaw: (lawId: string) => Promise<void>;
   emitRaw: <T>(event: string, body?: unknown) => Promise<Ack<T>>;
 }
 
@@ -187,6 +189,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       },
       declareForbes: async (value) => void (await guard(emitRaw(SocketEvents.ForbesDeclare, { value }))),
       commentDone: async () => void (await guard(emitRaw(SocketEvents.UnCommentDone))),
+      adoptLaw: async (lawId) => void (await guard(emitRaw(SocketEvents.CabinetAdoptLaw, { lawId }))),
+      rejectLaw: async (lawId) => void (await guard(emitRaw(SocketEvents.CabinetRejectLaw, { lawId }))),
       emitRaw,
     }),
     [connected, snapshot, session, error, announcements, emitRaw, guard, saveSession],

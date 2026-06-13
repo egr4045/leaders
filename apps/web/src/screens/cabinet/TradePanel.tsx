@@ -116,13 +116,17 @@ const STATUS_LABELS: Record<TradeOfferView['status'], string> = {
 export function TradePanel({
   you,
   others,
+  defaultTargetCountryId,
+  forceOpen,
 }: {
   you: PrivateCountryView;
   others: PublicCountryView[];
+  defaultTargetCountryId?: string;
+  forceOpen?: boolean;
 }) {
   const { snapshot, emitRaw } = useGame();
-  const [open, setOpen] = useState(false);
-  const [target, setTarget] = useState('');
+  const [open, setOpen] = useState(forceOpen ?? false);
+  const [target, setTarget] = useState(defaultTargetCountryId ?? '');
   const [give, setGive] = useState<TradeSidePayload>({});
   const [take, setTake] = useState<TradeSidePayload>({});
   const [withPeace, setWithPeace] = useState(false);
@@ -165,21 +169,23 @@ export function TradePanel({
 
   return (
     <div className="w-full max-w-sm">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300"
-      >
-        🤝 Дипломатия и торговля
-        {incoming.length > 0 && (
-          <span className="ml-2 rounded-full bg-amber-500 px-2 text-xs font-bold text-slate-950">
-            {incoming.length}
-          </span>
-        )}{' '}
-        {open ? '▲' : '▼'}
-      </button>
+      {!forceOpen && (
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300"
+        >
+          🤝 Дипломатия и торговля
+          {incoming.length > 0 && (
+            <span className="ml-2 rounded-full bg-amber-500 px-2 text-xs font-bold text-slate-950">
+              {incoming.length}
+            </span>
+          )}{' '}
+          {open ? '▲' : '▼'}
+        </button>
+      )}
 
-      {open && (
-        <div className="mt-2 flex flex-col gap-3 rounded-xl bg-slate-900 p-3 text-sm">
+      {(open || forceOpen) && (
+        <div className={`mt-2 flex flex-col gap-3 rounded-xl bg-slate-900 p-3 text-sm ${forceOpen ? 'border border-slate-700' : ''}`}>
           {incoming.length > 0 && (
             <div>
               <div className="mb-1 text-xs font-semibold uppercase text-amber-400">Вам предлагают</div>

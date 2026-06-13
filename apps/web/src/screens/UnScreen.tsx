@@ -55,6 +55,37 @@ function DeclareForbes() {
   );
 }
 
+export function ForbesLeaderboard() {
+  const { snapshot, session } = useGame();
+  if (!snapshot) return null;
+  const list = [];
+  if (snapshot.you && snapshot.you.declaredForbes !== null) {
+    list.push({ countryName: snapshot.you.countryName, playerName: snapshot.you.playerName ?? 'Вы', declared: snapshot.you.declaredForbes, isMe: true });
+  }
+  for (const o of snapshot.others) {
+    if (o.declaredForbes !== null) {
+      list.push({ countryName: o.countryName, playerName: o.playerName, declared: o.declaredForbes, isMe: false });
+    }
+  }
+  if (list.length === 0) return null;
+
+  list.sort((a, b) => b.declared - a.declared);
+
+  return (
+    <div className="rounded-xl bg-slate-900 p-3">
+      <div className="mb-2 text-xs font-semibold uppercase text-slate-500">🏆 Заявленный рейтинг Форбс</div>
+      <div className="flex flex-col gap-1">
+        {list.map((item, i) => (
+          <div key={i} className={`flex justify-between items-center text-sm ${item.isMe ? 'text-amber-400 font-bold' : 'text-slate-300'}`}>
+            <span>#{i + 1} {item.countryName} <span className="text-xs text-slate-500">({item.playerName})</span></span>
+            <span>{item.declared}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function NewsFeed() {
   const { snapshot } = useGame();
   if (!snapshot?.news) return null;
@@ -385,6 +416,7 @@ export function UnScreen() {
       {phase === 'un_summary' && (
         <div className="flex flex-col gap-3">
           {snapshot.you && <DeclareForbes />}
+          <ForbesLeaderboard />
           {snapshot.news ? <NewsPlayer news={snapshot.news} /> : <NewsFeed />}
         </div>
       )}

@@ -126,7 +126,16 @@ export class RoomsService {
       const existing = room.players.find((p) => p.token === token);
       if (existing) return { room, player: existing };
     }
-    if (room.phase !== 'lobby') throw new Error('Партия уже идёт — входить поздно');
+
+    if (room.phase !== 'lobby') {
+      const hasFree = room.players.some(p => p.countryId && (!p.connected || p.isBot));
+      if (!hasFree) throw new Error('Партия уже идёт и нет свободных мест (никто не отключился)');
+      const player = this.makePlayer(name, false);
+      room.players.push(player);
+      this.persist(room);
+      return { room, player };
+    }
+
     if (room.players.length >= this.content.tunables.game.playersMax) {
       throw new Error('Комната полна');
     }
@@ -140,8 +149,22 @@ export class RoomsService {
 
   pickCountry(code: string, playerId: string, countryId: string) {
     const room = this.mustRoom(code);
-    if (room.phase !== 'lobby') throw new Error('Страну можно выбрать только в лобби');
     if (!this.content.countries.has(countryId)) throw new Error('Нет такой страны');
+
+    if (room.phase !== 'lobby') {
+      const target = room.players.find((p) => p.countryId === countryId);
+      if (!target) throw new Error('Эта страна не участвует в игре');
+      if (target.connected && !target.isBot) throw new Error('Страна занята активным игроком');
+
+      const me = this.mustPlayer(room, playerId);
+      room.players = room.players.filter((p) => p.playerId !== target.playerId);
+      me.countryId = countryId;
+      if (target.isHost) me.isHost = true;
+      this.persist(room);
+      this.broadcast(room);
+      return;
+    }
+
     if (room.players.some((p) => p.countryId === countryId && p.playerId !== playerId)) {
       throw new Error('Страна занята');
     }
@@ -426,6 +449,44 @@ export class RoomsService {
     // бюджет хранится per countryId
     room.sectorBudget[player.countryId] = budget;
     this.persist(room);
+    return { ok: true };
+  }
+
+  adoptLaw(code: string, playerId: string, lawId: string) {
+    const room = this.mustRoom(code);
+    this.assertPhase(room, 'cabinet');
+    const player = this.mustPlayer(room, playerId);
+    if (!player.countryId || !room.world) return { ok: false, error: 'Нет страны' };
+    const s = room.world.countries.get(player.countryId);
+    if (!s) return { ok: false, error: 'Нет страны' };
+    
+    const law = this.content.statuses.get(lawId);
+    if (!law || law.type !== 'law') return { ok: false, error: 'Неизвестный закон' };
+
+    if (s.activeStatuses.includes(lawId)) return { ok: false, error: 'Уже принят' };
+
+    if (law.cost?.money && s.resources.money < law.cost.money) return { ok: false, error: 'Не хватает денег' };
+    if (law.cost?.influence && s.resources.influence < law.cost.influence) return { ok: false, error: 'Не хватает влияния' };
+    if (law.minMinistry && s.population.ministry < law.minMinistry) return { ok: false, error: 'Не хватает министров' };
+
+    if (law.cost?.money) s.resources.money -= law.cost.money;
+    if (law.cost?.influence) s.resources.influence -= law.cost.influence;
+
+    s.activeStatuses.push(lawId);
+    this.persist(room);
+    this.broadcast(room);
+    return { ok: true };
+  }
+
+  rejectLaw(code: string, playerId: string, lawId: string) {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    player.rejectedLaws = player.rejectedLaws ?? [];
+    if (!player.rejectedLaws.includes(lawId)) {
+      player.rejectedLaws.push(lawId);
+      this.persist(room);
+      this.broadcast(room);
+    }
     return { ok: true };
   }
 
@@ -1401,6 +1462,26 @@ export class RoomsService {
         fromCountryName: this.content.countries.get(player.countryId)!.name,
       });
     }
+
+    setTimeout(() => {
+      try {
+        const r = this.rooms.get(code.toUpperCase());
+        if (!r) return;
+        const c = r.calls.find((x) => x.id === call.id);
+        if (c && c.status === 'ringing') {
+          c.status = 'ended';
+          const fromSocket = this.socketOfCountry(r, c.fromCountryId);
+          if (fromSocket && this.server) this.server.to(fromSocket).emit(SocketEvents.CallEnded, { callId: c.id });
+          const toSocket = this.socketOfCountry(r, c.toCountryId);
+          if (toSocket && this.server) this.server.to(toSocket).emit(SocketEvents.CallEnded, { callId: c.id });
+          this.persist(r);
+          this.broadcast(r);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 30000);
+
     this.persist(room);
     this.broadcast(room);
     return { callId: call.id };

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { PrivateCountryView } from '@leaders/shared';
 import { SocketEvents } from '@leaders/shared';
 import { useGame } from '../../lib/useGame';
@@ -13,11 +13,13 @@ const SECTOR_NAMES: Record<string, string> = {
 const SECTOR_KEYS = ['economy', 'science', 'army', 'smi', 'intel'] as const;
 
 export function BudgetPanel({ you }: { you: PrivateCountryView }) {
-  const { emitRaw } = useGame();
-  const [alloc, setAlloc] = useState<Record<string, number>>(() =>
-    Object.fromEntries(SECTOR_KEYS.map((k) => [k, 0])),
-  );
-  const [saved, setSaved] = useState(false);
+  const { emitRaw, snapshot } = useGame();
+  const [alloc, setAlloc] = useState<Record<string, number>>(() => {
+    // Инициализация из snapshot, если там есть уже сохранённый бюджет.
+    // Если нет, то нули.
+    const savedBudget = snapshot?.sectorBudget?.[you.countryId] ?? {};
+    return Object.fromEntries(SECTOR_KEYS.map((k) => [k, savedBudget[k] ?? 0]));
+  });
   const [saving, setSaving] = useState(false);
 
   const income = you.projection?.moneyIncome ?? 0;
@@ -41,15 +43,15 @@ export function BudgetPanel({ you }: { you: PrivateCountryView }) {
       }
       return next;
     });
-    setSaved(false);
   }, []);
 
-  const save = async () => {
-    setSaving(true);
-    await emitRaw(SocketEvents.CabinetSetBudget, { budget: alloc });
-    setSaved(true);
-    setSaving(false);
-  };
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setSaving(true);
+      emitRaw(SocketEvents.CabinetSetBudget, { budget: alloc }).then(() => setSaving(false));
+    }, 400);
+    return () => clearTimeout(t);
+  }, [alloc, emitRaw]);
 
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-900 p-3">
@@ -78,10 +80,10 @@ export function BudgetPanel({ you }: { you: PrivateCountryView }) {
                 type="range"
                 min={0}
                 max={100}
-                step={5}
+                step={1}
                 value={pct}
                 onChange={(e) => setSlider(key, Number(e.target.value))}
-                className="h-1.5 w-full cursor-pointer accent-amber-500"
+                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-700 accent-amber-500 hover:accent-amber-400"
               />
             </div>
           );
@@ -97,17 +99,9 @@ export function BudgetPanel({ you }: { you: PrivateCountryView }) {
         </span>
       </div>
 
-      <button
-        onClick={() => void save()}
-        disabled={saving}
-        className={`w-full rounded-xl py-2 text-sm font-bold transition-colors ${
-          saved
-            ? 'bg-emerald-700 text-white'
-            : 'bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-50'
-        }`}
-      >
-        {saving ? 'Сохраняю…' : saved ? '✓ Сохранено' : 'Сохранить распределение'}
-      </button>
+      <div className="mt-2 text-center text-xs text-slate-500">
+        {saving ? 'Сохранение...' : '✓ Изменения сохранены'}
+      </div>
       <p className="mt-1.5 text-xs text-slate-600">
         Инвестиции накапливаются; при достижении порога сектор вырастет на уровень.
       </p>

@@ -4,9 +4,11 @@ import { SocketEvents } from '@leaders/shared';
 import { socket } from '../socket';
 import { useGame } from '../lib/useGame';
 import { VideoGrid } from './VideoGrid';
+import { TradePanel } from '../screens/cabinet/TradePanel';
 
 interface IncomingCall {
   callId: string;
+  fromCountryId: string;
   fromName: string;
   fromCountryName: string;
 }
@@ -23,6 +25,8 @@ export function CallPanel({
   const [open, setOpen] = useState(false);
   const [incoming, setIncoming] = useState<IncomingCall | null>(null);
   const [activeCallId, setActiveCallId] = useState<string | null>(null);
+  const [activeCallWithCountryId, setActiveCallWithCountryId] = useState<string | null>(null);
+  const [invitingCountryId, setInvitingCountryId] = useState<string | null>(null);
   const [outgoingId, setOutgoingId] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -31,9 +35,16 @@ export function CallPanel({
     const onStarted = (d: { callId: string }) => {
       setOutgoingId(null);
       setActiveCallId(d.callId);
+      setInvitingCountryId((prev) => {
+        if (prev) setActiveCallWithCountryId(prev);
+        return null;
+      });
     };
     const onEnded = (d: { callId: string }) => {
-      setActiveCallId((cur) => (cur === d.callId ? null : cur));
+      setActiveCallId((cur) => {
+        if (cur === d.callId) setActiveCallWithCountryId(null);
+        return cur === d.callId ? null : cur;
+      });
       setOutgoingId((cur) => (cur === d.callId ? null : cur));
       setIncoming((cur) => (cur?.callId === d.callId ? null : cur));
     };
@@ -49,17 +60,24 @@ export function CallPanel({
 
   const invite = async (toCountryId: string) => {
     setMsg(null);
+    setInvitingCountryId(toCountryId);
     const res = await emitRaw<{ callId: string }>(SocketEvents.CallInvite, { toCountryId });
     if (res.ok && res.data) {
       setOutgoingId(res.data.callId);
       setMsg('📞 Звоним…');
-    } else setMsg(res.error ?? 'Ошибка');
+    } else {
+      setMsg(res.error ?? 'Ошибка');
+      setInvitingCountryId(null);
+    }
   };
 
   const accept = async () => {
     if (!incoming) return;
     const res = await emitRaw(SocketEvents.CallAccept, { callId: incoming.callId });
-    if (res.ok) setActiveCallId(incoming.callId);
+    if (res.ok) {
+      setActiveCallId(incoming.callId);
+      setActiveCallWithCountryId(incoming.fromCountryId);
+    }
     setIncoming(null);
   };
 
@@ -97,10 +115,24 @@ export function CallPanel({
 
       {/* активный звонок */}
       {activeCallId && (
-        <div className="fixed inset-0 z-50 flex flex-col gap-3 bg-slate-950/95 p-4">
-          <div className="text-center text-sm text-slate-400">Приватный звонок — никто не слышит</div>
-          <VideoGrid kind="call" callId={activeCallId} />
-          <button onClick={() => void hangup()} className="mx-auto rounded-xl bg-red-700 px-8 py-3 font-bold">
+        <div className="fixed inset-0 z-50 flex flex-col gap-3 bg-slate-950/95 p-4 overflow-y-auto">
+          <div className="text-center text-sm text-slate-400 shrink-0">Приватный звонок — никто не слышит</div>
+          <div className="shrink-0">
+            <VideoGrid kind="call" callId={activeCallId} />
+          </div>
+          
+          {activeCallWithCountryId && (
+            <div className="mx-auto w-full max-w-md shrink-0">
+              <TradePanel 
+                you={you} 
+                others={others.filter(o => o.countryId === activeCallWithCountryId)} 
+                defaultTargetCountryId={activeCallWithCountryId}
+                forceOpen={true}
+              />
+            </div>
+          )}
+
+          <button onClick={() => void hangup()} className="mx-auto mt-auto rounded-xl bg-red-700 px-8 py-3 font-bold shrink-0">
             Положить трубку
           </button>
         </div>

@@ -69,18 +69,19 @@ journalctl -u leaders -n 50
 ## Фазы игры
 
 ```
-lobby → cabinet → un_summary → un_comments → un_debate → un_vote → results
-         ↑___________________________ × N лет ___________________________↑
-                                                                    → final
+lobby → cabinet → un_summary → un_comments → un_debate → un_vote → results → year_summary
+         ↑___________________________ × N лет _____________________________________↑
+                                                                              → final
 ```
 
 - `lobby` — выбор страны, видеозвонок
-- `cabinet` — карточки советника, торговля, шпионаж, звонки 1-на-1
+- `cabinet` — карточки советника, торговля, шпионаж, звонки 1-на-1, война (WarPanel)
 - `un_summary` — сводка новостей года
 - `un_comments` — круговые комментарии (каждый по таймеру)
 - `un_debate` — свободные дебаты (хост управляет таймером)
-- `un_vote` — санкции/поддержка (10 влияния за голос)
+- `un_vote` — санкции/поддержка (10 влияния за голос) + суд ООН по войнам (бесплатно, не-участники)
 - `results` — пересчёт тика, события года
+- `year_summary` — личная сводка изменений (дельты, отложенные эффекты, ауры, война); «В кабинет» через readyPlayerIds; первый год пропускается
 - `final` — финальная таблица Форбс
 
 ---
@@ -88,10 +89,12 @@ lobby → cabinet → un_summary → un_comments → un_debate → un_vote → r
 ## `@leaders/engine` — игровая логика
 
 **Файлы:**
-- `state.ts` — `CountryState`, `WorldState`, `createCountryState()`
-- `tick.ts` — годовой пересчёт (производство → еда → инфляция → довольство → население → delayed → комбо → переворот)
+- `state.ts` — `CountryState`, `WorldState`, `createCountryState()`; `WarState`, `ExternalAura`, `TimedStatus`
+- `tick.ts` — годовой пересчёт (шаг 0: ауры/timed-статусы/битвы войн → производство → еда → инфляция → довольство → население → delayed → комбо → переворот); опциональный rng-параметр
 - `effects.ts` — `applyEffectsOnce()`, `applyChoice()`
-- `modifiers.ts` — `aggregateModifiers()`, `effectiveSector()`
+- `modifiers.ts` — `aggregateModifiers()` (включая фолдинг `externalAuras`), `effectiveSector()`
+- `auras.ts` — `recomputeAuras(world)` — материализует globalEffects чужих статусов в `externalAuras`; звать после buildWonder/wreck_wonder (в tick зовётся сам)
+- `war.ts` — `declareWar`, `joinWar` (коалиции), `investInWar` (секретно), `sideStrength({hidden,invest})`, `battleWinChance`, `resolveWarBattles`, `endWarByPeace`, `applyVictorReward('loot'|'kontributsiya')`, `expireTimedStatuses`; `WarError`
 - `spy.ts` — `resolveSpyAction()`, `spySuccessChance()`
 - `combo.ts` — `recomputeStatuses()` (авто-присвоение режимов/технологий)
 - `wonders.ts` — `buildWonder()`, бросает `WonderError` если чудо занято

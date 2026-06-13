@@ -12,6 +12,8 @@ export interface RoomPlayer {
   isHost: boolean;
   /** тест-режим: ботом управляет сервер, socketId всегда null, connected всегда true */
   isBot?: boolean;
+  /** Законы, которые игрок решил скрыть из предложений */
+  rejectedLaws?: string[];
 }
 
 export interface SpyOrderRec {

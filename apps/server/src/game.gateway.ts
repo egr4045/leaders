@@ -144,6 +144,22 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     );
   }
 
+  @SubscribeMessage(SocketEvents.CabinetAdoptLaw)
+  cabinetAdoptLaw(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { lawId: string },
+  ) {
+    return this.withSession(socket, (s) => this.rooms.adoptLaw(s.roomCode, s.playerId, body?.lawId ?? ''));
+  }
+
+  @SubscribeMessage(SocketEvents.CabinetRejectLaw)
+  cabinetRejectLaw(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { lawId: string },
+  ) {
+    return this.withSession(socket, (s) => this.rooms.rejectLaw(s.roomCode, s.playerId, body?.lawId ?? ''));
+  }
+
   @SubscribeMessage(SocketEvents.RoomHostContinue)
   hostContinue(@ConnectedSocket() socket: Socket) {
     return this.withSession(socket, (s) => this.rooms.hostContinue(s.roomCode, s.playerId));
