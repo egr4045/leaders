@@ -1,0 +1,14 @@
+{
+  "id": "uk_royal_scandal",
+  "name": "Королевский Скандал",
+  "type": "state",
+  "description": "Таблоиды разрывают монархию на части из-за нового интервью.",
+  "effects": {
+    "sectors": {
+      "smi": 2
+    },
+    "modifiers": {
+      "dovolstvoDrift": -5
+    }
+  }
+}

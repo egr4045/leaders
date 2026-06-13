@@ -1,0 +1,14 @@
+{
+  "id": "uk_scottish_independence",
+  "name": "Шотландский Сепаратизм",
+  "type": "state",
+  "description": "Эдинбург требует нового референдума о независимости.",
+  "effects": {
+    "sectors": {
+      "intel": -1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -10
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "uk_immigration_tensions",
+  "name": "Миграционные Бунты",
+  "type": "state",
+  "description": "Лодки пересекают Ла-Манш, местные протестуют.",
+  "effects": {
+    "sectors": {
+      "intel": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -15
+    }
+  }
+}

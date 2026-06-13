@@ -1,0 +1,12 @@
+{
+  "id": "uk_nhs_collapse",
+  "name": "Кризис NHS",
+  "type": "state",
+  "description": "Национальная служба здравоохранения парализована забастовками.",
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": -20,
+      "populationMult": -0.05
+    }
+  }
+}

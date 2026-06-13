@@ -6,6 +6,12 @@ if (!fs.existsSync(statusesDir)) fs.mkdirSync(statusesDir, { recursive: true });
 
 const statuses = [
   // Глобальные мемы
+  { id: 'uk_scottish_independence', name: 'Шотландский Сепаратизм', type: 'state', description: 'Эдинбург требует нового референдума о независимости.', effects: { sectors: { intel: -1 }, modifiers: { dovolstvoDrift: -10 } } },
+  { id: 'uk_royal_scandal', name: 'Королевский Скандал', type: 'state', description: 'Таблоиды разрывают монархию на части из-за нового интервью.', effects: { sectors: { smi: 2 }, modifiers: { dovolstvoDrift: -5 } } },
+  { id: 'uk_energy_crisis', name: 'Энергетический Кризис', type: 'state', description: 'Цены на газ бьют рекорды. Пабы закрываются из-за счетов за отопление.', effects: { sectors: { economy: -2 }, modifiers: { outputMult: { rabotyagi: 0.8 }, dovolstvoDrift: -15 } } },
+  { id: 'uk_nhs_collapse', name: 'Кризис NHS', type: 'state', description: 'Национальная служба здравоохранения парализована забастовками.', effects: { modifiers: { dovolstvoDrift: -20, populationMult: -0.05 } } },
+  { id: 'uk_immigration_tensions', name: 'Миграционные Бунты', type: 'state', description: 'Лодки пересекают Ла-Манш, местные протестуют.', effects: { sectors: { intel: 1 }, modifiers: { dovolstvoDrift: -15 } } },
+  { id: 'uk_tech_hub', name: 'Кремниевая Долина Европы', type: 'state', description: 'Лондон стал центром финтеха и ИИ после Брексита.', effects: { sectors: { science: 2, economy: 1 }, modifiers: { outputMult: { umniki: 1.3 } } } },
   { id: 'kp_famine', name: 'Голодомор', type: 'state', description: 'Трава закончилась. Люди едят кору деревьев.', effects: { modifiers: { outputMult: { rabotyagi: 0.5, umniki: 0.5 }, dovolstvoDrift: -20, populationMult: -0.05 } } },
   { id: 'kp_smuggling', name: 'Китайская Контрабанда', type: 'state', description: 'Серый рынок процветает на границе.', effects: { sectors: { economy: 1, intel: -1 }, modifiers: { dovolstvoDrift: 5 } } },
   { id: 'kp_kpop_influence', name: 'Южное Влияние', type: 'state', description: 'Молодежь тайно слушает K-pop и смотрит дорамы.', effects: { sectors: { smi: -2 }, modifiers: { dovolstvoDrift: -10 } } },

@@ -1,0 +1,17 @@
+{
+  "id": "uk_energy_crisis",
+  "name": "Энергетический Кризис",
+  "type": "state",
+  "description": "Цены на газ бьют рекорды. Пабы закрываются из-за счетов за отопление.",
+  "effects": {
+    "sectors": {
+      "economy": -2
+    },
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 0.8
+      },
+      "dovolstvoDrift": -15
+    }
+  }
+}
