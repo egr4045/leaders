@@ -1426,8 +1426,9 @@ export class RoomsService {
     if (!room.world.countries.has(toCountryId)) throw new Error('Нет такой страны');
     const left = room.callsLeft[player.countryId] ?? 0;
     if (left <= 0) throw new Error('Лимит звонков на этот год исчерпан');
-    if (room.calls.some((c) => c.status !== 'ended' && (c.fromCountryId === player.countryId || c.toCountryId === player.countryId))) {
-      throw new Error('У вас уже есть активный звонок');
+    // Оставляем только проверку, что мы сами не звоним кому-то еще.
+    if (room.calls.some((c) => c.status !== 'ended' && c.fromCountryId === player.countryId)) {
+      throw new Error('Вы уже совершаете исходящий звонок');
     }
 
     room.callsLeft[player.countryId] = left - 1;
@@ -1484,6 +1485,8 @@ export class RoomsService {
 
     this.persist(room);
     this.broadcast(room);
+    // broadcast чтобы обновить очереди
+    this.broadcastState(room.code);
     return { callId: call.id };
   }
 
@@ -1513,6 +1516,8 @@ export class RoomsService {
         .emit(accept ? SocketEvents.CallStarted : SocketEvents.CallEnded, { callId });
     }
     this.persist(room);
+    // broadcast чтобы обновить очереди
+    this.broadcastState(room.code);
     return { callId, accepted: accept };
   }
 
@@ -1532,6 +1537,8 @@ export class RoomsService {
       if (sid && this.server) this.server.to(sid).emit(SocketEvents.CallEnded, { callId });
     }
     this.persist(room);
+    // broadcast чтобы обновить очереди
+    this.broadcastState(room.code);
   }
 
   /** Проверка прав на видеокомнату: лобби/ООН — все; звонок — только участники. */

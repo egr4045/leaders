@@ -23,17 +23,44 @@ export function CallPanel({
 }) {
   const { emitRaw } = useGame();
   const [open, setOpen] = useState(false);
-  const [incoming, setIncoming] = useState<IncomingCall | null>(null);
   const [activeCallId, setActiveCallId] = useState<string | null>(null);
   const [activeCallWithCountryId, setActiveCallWithCountryId] = useState<string | null>(null);
   const [invitingCountryId, setInvitingCountryId] = useState<string | null>(null);
-  const [outgoingId, setOutgoingId] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
+  const incomingCalls = you.incomingCalls ?? [];
+  const outgoingCall = you.outgoingCall;
+
   useEffect(() => {
-    const onIncoming = (c: IncomingCall) => setIncoming(c);
+    let osc: any;
+    let ctx: any;
+    let interval: any;
+    if (outgoingCall?.isBusy) {
+      try {
+        ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.value = 425; // busy tone frequency
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        
+        let on = true;
+        interval = setInterval(() => {
+          on = !on;
+          gain.gain.setValueAtTime(on ? 1 : 0, ctx.currentTime);
+        }, 500); // 0.5s on, 0.5s off
+      } catch (e) {}
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+      if (osc) { osc.stop(); osc.disconnect(); }
+      if (ctx) ctx.close().catch(() => {});
+    };
+  }, [outgoingCall?.isBusy]);
+
+  useEffect(() => {
     const onStarted = (d: { callId: string }) => {
-      setOutgoingId(null);
       setActiveCallId(d.callId);
       setInvitingCountryId((prev) => {
         if (prev) setActiveCallWithCountryId(prev);
@@ -45,14 +72,10 @@ export function CallPanel({
         if (cur === d.callId) setActiveCallWithCountryId(null);
         return cur === d.callId ? null : cur;
       });
-      setOutgoingId((cur) => (cur === d.callId ? null : cur));
-      setIncoming((cur) => (cur?.callId === d.callId ? null : cur));
     };
-    socket.on(SocketEvents.CallIncoming, onIncoming);
     socket.on(SocketEvents.CallStarted, onStarted);
     socket.on(SocketEvents.CallEnded, onEnded);
     return () => {
-      socket.off(SocketEvents.CallIncoming, onIncoming);
       socket.off(SocketEvents.CallStarted, onStarted);
       socket.off(SocketEvents.CallEnded, onEnded);
     };
@@ -62,29 +85,28 @@ export function CallPanel({
     setMsg(null);
     setInvitingCountryId(toCountryId);
     const res = await emitRaw<{ callId: string }>(SocketEvents.CallInvite, { toCountryId });
-    if (res.ok && res.data) {
-      setOutgoingId(res.data.callId);
-      setMsg('📞 Звоним…');
-    } else {
+    if (!res.ok) {
       setMsg(res.error ?? 'Ошибка');
       setInvitingCountryId(null);
     }
   };
 
-  const accept = async () => {
-    if (!incoming) return;
-    const res = await emitRaw(SocketEvents.CallAccept, { callId: incoming.callId });
-    if (res.ok) {
-      setActiveCallId(incoming.callId);
-      setActiveCallWithCountryId(incoming.fromCountryId);
+  const accept = async (callId: string, fromCountryId: string) => {
+    if (activeCallId) {
+      // Сбрасываем текущий звонок перед ответом
+      await emitRaw(SocketEvents.CallEnd, { callId: activeCallId });
+      setActiveCallId(null);
+      setActiveCallWithCountryId(null);
     }
-    setIncoming(null);
+    const res = await emitRaw(SocketEvents.CallAccept, { callId });
+    if (res.ok) {
+      setActiveCallId(callId);
+      setActiveCallWithCountryId(fromCountryId);
+    }
   };
 
-  const decline = async () => {
-    if (!incoming) return;
-    await emitRaw(SocketEvents.CallDecline, { callId: incoming.callId });
-    setIncoming(null);
+  const decline = async (callId: string) => {
+    await emitRaw(SocketEvents.CallDecline, { callId });
   };
 
   const hangup = async () => {
@@ -95,27 +117,57 @@ export function CallPanel({
   return (
     <>
       {/* входящий звонок */}
-      {incoming && !activeCallId && (
+      {incomingCalls.length > 0 && !activeCallId && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-slate-950/90 p-6 backdrop-blur">
           <div className="animate-bounce text-5xl">📞</div>
           <div className="text-center">
-            <b>{incoming.fromName}</b> ({incoming.fromCountryName})<br />
+            <b>{incomingCalls[0].fromCountryName}</b><br />
             предлагает поговорить тет-а-тет
           </div>
           <div className="flex gap-3">
-            <button onClick={() => void accept()} className="rounded-xl bg-emerald-600 px-6 py-3 font-bold">
+            <button onClick={() => void accept(incomingCalls[0].callId, incomingCalls[0].fromCountryId)} className="rounded-xl bg-emerald-600 px-6 py-3 font-bold">
               Принять
             </button>
-            <button onClick={() => void decline()} className="rounded-xl bg-red-700 px-6 py-3 font-bold">
+            <button onClick={() => void decline(incomingCalls[0].callId)} className="rounded-xl bg-red-700 px-6 py-3 font-bold">
               Отклонить
             </button>
           </div>
+          {incomingCalls.length > 1 && (
+            <div className="mt-4 text-sm text-slate-400">
+              Также звонят: {incomingCalls.slice(1).map(c => c.fromCountryName).join(', ')}
+            </div>
+          )}
         </div>
       )}
 
       {/* активный звонок */}
       {activeCallId && (
         <div className="fixed inset-0 z-50 flex flex-col gap-3 bg-slate-950/95 p-4 overflow-y-auto">
+          {/* Уведомления о входящих во время звонка */}
+          {incomingCalls.length > 0 && (
+            <div className="absolute top-4 right-4 flex flex-col gap-2 z-50">
+              {incomingCalls.map(c => (
+                <div key={c.callId} className="rounded-lg border border-amber-500/50 bg-slate-900/90 p-3 shadow-lg backdrop-blur">
+                  <div className="text-sm font-bold text-slate-200">📞 Звонит: {c.fromCountryName} (в очереди)</div>
+                  <div className="mt-2 flex gap-2">
+                    <button 
+                      onClick={() => void accept(c.callId, c.fromCountryId)} 
+                      className="rounded bg-emerald-700 px-3 py-1 text-xs text-white hover:bg-emerald-600"
+                    >
+                      Ответить (сбросив текущий)
+                    </button>
+                    <button 
+                      onClick={() => void decline(c.callId)} 
+                      className="rounded bg-red-800 px-3 py-1 text-xs text-white hover:bg-red-700"
+                    >
+                      Отклонить
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="text-center text-sm text-slate-400 shrink-0">Приватный звонок — никто не слышит</div>
           <div className="shrink-0">
             <VideoGrid kind="call" callId={activeCallId} />
@@ -151,22 +203,31 @@ export function CallPanel({
             {others.map((o) => (
               <button
                 key={o.countryId}
-                disabled={you.callsLeft <= 0 || !!outgoingId}
+                disabled={you.callsLeft <= 0 || !!outgoingCall}
                 onClick={() => void invite(o.countryId)}
                 className="rounded-lg border border-slate-800 px-3 py-2 text-left hover:border-amber-400 disabled:opacity-40"
               >
                 {o.countryName} <span className="text-slate-500">({o.playerName})</span>
               </button>
             ))}
-            {outgoingId && (
+            {outgoingCall && (
+              <div className="rounded-lg bg-slate-800 px-3 py-2 text-center text-xs mt-2">
+                {outgoingCall.isBusy ? (
+                  <span className="text-amber-400 font-bold">⚠️ Абонент занят. Вы {outgoingCall.queuePosition}-й в очереди...</span>
+                ) : (
+                  <span className="text-emerald-400 font-bold">📞 Звоним...</span>
+                )}
+              </div>
+            )}
+            {outgoingCall && (
               <button
-                onClick={() => void emitRaw(SocketEvents.CallEnd, { callId: outgoingId }).then(() => setOutgoingId(null))}
-                className="rounded-lg bg-slate-700 px-3 py-2"
+                onClick={() => void emitRaw(SocketEvents.CallEnd, { callId: outgoingCall.callId })}
+                className="rounded-lg bg-slate-700 px-3 py-2 text-xs"
               >
                 Отменить вызов
               </button>
             )}
-            {msg && <div className="text-center text-xs">{msg}</div>}
+            {msg && <div className="text-center text-xs text-rose-400">{msg}</div>}
           </div>
         )}
       </div>

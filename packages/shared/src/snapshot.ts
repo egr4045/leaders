@@ -78,6 +78,10 @@ export interface PrivateCountryView {
   availableLaws?: { id: string; name: string; description?: string; cost?: { money?: number; influence?: number } }[];
   /** Установленный бюджет */
   budget?: Record<string, number>;
+  /** Очередь входящих звонков */
+  incomingCalls?: { callId: string; fromCountryId: string; fromCountryName: string; queuePosition: number }[];
+  /** Текущий исходящий звонок */
+  outgoingCall?: { callId: string; toCountryId: string; toCountryName: string; isBusy: boolean; queuePosition: number } | null;
 }
 
 export interface YearProjection {

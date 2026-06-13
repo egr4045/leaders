@@ -123,6 +123,8 @@ export function buildSnapshot(
               cost: st.cost,
             })),
           budget: (room.sectorBudget?.[s.id] as Record<string, number>) ?? {},
+          incomingCalls: [], // Заполним ниже
+          outgoingCall: null, // Заполним ниже
         };
       } else {
         others.push({
@@ -177,6 +179,32 @@ export function buildSnapshot(
   }
 
   const realPlayers = room.players.filter((p) => !p.isBot);
+
+  // Вычисляем очереди звонков для you, если он есть
+  if (you) {
+    const myRingingCalls = room.calls.filter(c => c.status === 'ringing' && c.toCountryId === you!.countryId);
+    you.incomingCalls = myRingingCalls.map((c, idx) => ({
+      callId: c.id,
+      fromCountryId: c.fromCountryId,
+      fromCountryName: content.countries.get(c.fromCountryId)?.name ?? c.fromCountryId,
+      queuePosition: idx + 1
+    }));
+
+    const myOutgoing = room.calls.find(c => c.status === 'ringing' && c.fromCountryId === you!.countryId);
+    if (myOutgoing) {
+      const allTargetCalls = room.calls.filter(c => c.status === 'ringing' && c.toCountryId === myOutgoing.toCountryId);
+      const queuePosition = allTargetCalls.findIndex(c => c.id === myOutgoing.id) + 1;
+      const isBusy = room.calls.some(c => c.status === 'active' && (c.fromCountryId === myOutgoing.toCountryId || c.toCountryId === myOutgoing.toCountryId));
+      you.outgoingCall = {
+        callId: myOutgoing.id,
+        toCountryId: myOutgoing.toCountryId,
+        toCountryName: content.countries.get(myOutgoing.toCountryId)?.name ?? myOutgoing.toCountryId,
+        isBusy,
+        queuePosition
+      };
+    }
+  }
+
   return {
     roomCode: room.code,
     phase: room.phase,
