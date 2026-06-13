@@ -113,22 +113,23 @@ export function CallPanel({
     if (activeCallId) await emitRaw(SocketEvents.CallEnd, { callId: activeCallId });
     setActiveCallId(null);
   };
+  const firstCall = incomingCalls[0];
 
   return (
     <>
       {/* входящий звонок */}
-      {incomingCalls.length > 0 && !activeCallId && (
+      {firstCall && !activeCallId && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-slate-950/90 p-6 backdrop-blur">
           <div className="animate-bounce text-5xl">📞</div>
           <div className="text-center">
-            <b>{incomingCalls[0].fromCountryName}</b><br />
+            <b>{firstCall.fromCountryName}</b><br />
             предлагает поговорить тет-а-тет
           </div>
           <div className="flex gap-3">
-            <button onClick={() => void accept(incomingCalls[0].callId, incomingCalls[0].fromCountryId)} className="rounded-xl bg-emerald-600 px-6 py-3 font-bold">
+            <button onClick={() => void accept(firstCall.callId, firstCall.fromCountryId)} className="rounded-xl bg-emerald-600 px-6 py-3 font-bold">
               Принять
             </button>
-            <button onClick={() => void decline(incomingCalls[0].callId)} className="rounded-xl bg-red-700 px-6 py-3 font-bold">
+            <button onClick={() => void decline(firstCall.callId)} className="rounded-xl bg-red-700 px-6 py-3 font-bold">
               Отклонить
             </button>
           </div>
