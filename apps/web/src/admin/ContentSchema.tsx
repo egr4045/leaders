@@ -11,6 +11,7 @@ import {
   EdgeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import dagre from 'dagre';
 import type { CardEntry, StatusEntry } from './api';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -58,11 +59,12 @@ export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry
     visibleCards.forEach(c => {
       const reqStatuses = (c.raw?.requires as any)?.statuses as string[];
       reqStatuses?.forEach(s => relatedStatusIds.add(s));
-      c.choices.forEach(ch => {
-        const addSt = (ch.effects as any)?.addStatuses as string[];
-        addSt?.forEach(s => relatedStatusIds.add(s));
-        const remSt = (ch.effects as any)?.removeStatuses as string[];
-        remSt?.forEach(s => relatedStatusIds.add(s));
+      c.choices.forEach((ch, idx) => {
+        const rawChoice = (c.raw.choices as any[])?.[idx];
+        const addSt = rawChoice?.addStatuses || (ch.effects as any)?.addStatuses as string[];
+        addSt?.forEach((s: string) => relatedStatusIds.add(s));
+        const remSt = rawChoice?.removeStatuses || (ch.effects as any)?.removeStatuses as string[];
+        remSt?.forEach((s: string) => relatedStatusIds.add(s));
       });
     });
 
@@ -70,40 +72,24 @@ export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry
       ? statuses
       : statuses.filter(s => relatedStatusIds.has(s.id));
 
-    // Auto layout initial positions
-    let statusX = 100;
-    let statusY = 100;
-
+    // We will use dagre for layout after defining nodes and edges
     visibleStatuses.forEach((s) => {
       newNodes.push({
         id: `status_${s.id}`,
         type: 'customStatus',
-        position: { x: statusX, y: statusY },
+        position: { x: 0, y: 0 },
         data: { status: s },
       });
-      statusX += 250;
-      if (statusX > 1400) {
-        statusX = 100;
-        statusY += 200;
-      }
     });
-
-    let cardX = 100;
-    let cardY = statusY + 250;
 
     visibleCards.forEach((c) => {
       const cardNodeId = `card_${c.cardId}`;
       newNodes.push({
         id: cardNodeId,
         type: 'customCard',
-        position: { x: cardX, y: cardY },
+        position: { x: 0, y: 0 },
         data: { card: c, onRefresh },
       });
-      cardX += 300;
-      if (cardX > 1400) {
-        cardX = 100;
-        cardY += 250;
-      }
 
       // Edges for requires
       const reqStatuses = (c.raw?.requires as any)?.statuses as string[];
@@ -123,9 +109,10 @@ export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry
 
       // Edges for choices adding statuses
       c.choices.forEach((choice, idx) => {
-        const addSt = (choice.effects as any)?.addStatuses as string[];
+        const rawChoice = (c.raw.choices as any[])?.[idx];
+        const addSt = rawChoice?.addStatuses || (choice.effects as any)?.addStatuses as string[];
         if (addSt) {
-          addSt.forEach((sid) => {
+          addSt.forEach((sid: string) => {
             if (!visibleStatuses.some(vs => vs.id === sid)) return;
             newEdges.push({
               id: `e_${c.cardId}_${sid}_${idx}`,
@@ -138,9 +125,9 @@ export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry
           });
         }
         
-        const remSt = (choice.effects as any)?.removeStatuses as string[];
+        const remSt = rawChoice?.removeStatuses || (choice.effects as any)?.removeStatuses as string[];
         if (remSt) {
-          remSt.forEach((sid) => {
+          remSt.forEach((sid: string) => {
             if (!visibleStatuses.some(vs => vs.id === sid)) return;
             newEdges.push({
               id: `e_rm_${c.cardId}_${sid}_${idx}`,
@@ -172,7 +159,36 @@ export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry
         }
     });
 
-    setNodes(newNodes);
+    // Apply Dagre layout
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+    dagreGraph.setGraph({ rankdir: 'LR', align: 'UL', nodesep: 50, ranksep: 200 });
+
+    newNodes.forEach((node) => {
+      // Approximate sizes: customCard is ~250px wide, customStatus is ~150px wide
+      const width = node.type === 'customCard' ? 250 : 150;
+      const height = node.type === 'customCard' ? 200 : 80;
+      dagreGraph.setNode(node.id, { width, height });
+    });
+
+    newEdges.forEach((edge) => {
+      dagreGraph.setEdge(edge.source, edge.target);
+    });
+
+    dagre.layout(dagreGraph);
+
+    const layoutedNodes = newNodes.map((node) => {
+      const nodeWithPosition = dagreGraph.node(node.id);
+      return {
+        ...node,
+        position: {
+          x: nodeWithPosition.x - nodeWithPosition.width / 2,
+          y: nodeWithPosition.y - nodeWithPosition.height / 2,
+        },
+      };
+    });
+
+    setNodes(layoutedNodes);
     setEdges(newEdges);
   }, [cards, statuses, countryFilter, onRefresh]);
 

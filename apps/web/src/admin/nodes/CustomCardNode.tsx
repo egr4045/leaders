@@ -157,23 +157,33 @@ export function CustomCardNode({ data }: { data: CustomCardNodeData }) {
             </button>
           )}
         </div>
-        <div className="flex flex-wrap gap-1">
-          {AVAILABLE_CONDITIONS.map(cond => {
-            const isActive = conditions.includes(cond.id);
+        <div className="flex flex-wrap gap-1 items-center">
+          {conditions.map(condId => {
+            const label = AVAILABLE_CONDITIONS.find(c => c.id === condId)?.label || condId;
             return (
               <button
-                key={cond.id}
-                onClick={() => toggleCondition(cond.id)}
-                className={`text-[9px] px-1.5 py-0.5 rounded border transition-colors ${
-                  isActive 
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/50' 
-                    : 'bg-slate-950 text-slate-500 border-slate-800 hover:border-slate-600'
-                }`}
+                key={condId}
+                onClick={() => toggleCondition(condId)}
+                title="Нажмите чтобы удалить"
+                className="text-[9px] px-1.5 py-0.5 rounded border transition-colors bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/50"
               >
-                {cond.label}
+                {label} &times;
               </button>
             );
           })}
+          
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) toggleCondition(e.target.value);
+            }}
+            className="text-[9px] px-1.5 py-0.5 rounded border bg-slate-950 text-slate-500 border-slate-800 hover:border-slate-600 outline-none"
+          >
+            <option value="">+ Добавить...</option>
+            {AVAILABLE_CONDITIONS.filter(c => !conditions.includes(c.id)).map(cond => (
+              <option key={cond.id} value={cond.id}>{cond.label}</option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
