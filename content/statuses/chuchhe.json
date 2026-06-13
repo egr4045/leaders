@@ -1,0 +1,14 @@
+{
+  "id": "chuchhe",
+  "name": "Идеология Чучхе",
+  "type": "state",
+  "description": "Опора на свои силы. Полная изоляция от инфляции, но еды вечно не хватает.",
+  "effects": {
+    "modifiers": {
+      "inflationDelta": -0.5,
+      "outputMult": {
+        "rabotyagi": 0.5
+      }
+    }
+  }
+}

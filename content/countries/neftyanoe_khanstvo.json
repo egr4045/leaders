@@ -1,8 +1,0 @@
-{
-  "id": "neftyanoe_khanstvo",
-  "name": "Нефтяное Ханство",
-  "startResources": { "money": 1200, "gold": 200, "food": 300, "influence": 60 },
-  "startPopulation": { "rabotyagi": 120, "umniki": 40, "siloviki": 80, "mediyshchiki": 40, "ministry": 30 },
-  "startSectors": { "economy": 6, "science": 3, "army": 5, "smi": 4, "intel": 5 },
-  "notes": "Денег море, еду импортирует, население маленькое. Заглушка."
-}

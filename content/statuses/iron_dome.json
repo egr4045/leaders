@@ -1,0 +1,13 @@
+{
+  "id": "iron_dome",
+  "name": "Железный Купол",
+  "type": "state",
+  "description": "Абсолютная безопасность воздушного пространства. Силовики работают эффективно.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "siloviki": 2
+      }
+    }
+  }
+}

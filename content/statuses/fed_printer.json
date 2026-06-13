@@ -1,0 +1,11 @@
+{
+  "id": "fed_printer",
+  "name": "Печатный Станок ФРС",
+  "type": "state",
+  "description": "Можно печатать деньги из воздуха, но базовая инфляция выше.",
+  "effects": {
+    "modifiers": {
+      "inflationDelta": 0.1
+    }
+  }
+}

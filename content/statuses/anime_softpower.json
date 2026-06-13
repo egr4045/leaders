@@ -1,0 +1,13 @@
+{
+  "id": "anime_softpower",
+  "name": "Сила Аниме",
+  "type": "state",
+  "description": "Кавай спасет мир. Мягкая сила дает колоссальный бонус к СМИ.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "mediyshchiki": 2.5
+      }
+    }
+  }
+}

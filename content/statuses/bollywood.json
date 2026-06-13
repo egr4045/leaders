@@ -1,0 +1,14 @@
+{
+  "id": "bollywood",
+  "name": "Болливуд",
+  "type": "state",
+  "description": "Танцуют все! Мощная генерация влияния через кино.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "mediyshchiki": 2
+      },
+      "dovolstvoDrift": 2
+    }
+  }
+}

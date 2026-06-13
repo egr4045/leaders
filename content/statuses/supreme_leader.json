@@ -1,0 +1,11 @@
+{
+  "id": "supreme_leader",
+  "name": "Солнцеподобный Вождь",
+  "type": "state",
+  "description": "Абсолютная стабильность элит. Довольство министров не падает.",
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": 2
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "red_button",
+  "name": "Ядерная Дубина",
+  "type": "state",
+  "description": "Армия генерирует влияние за счет страха соседей.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "siloviki": 2
+      }
+    }
+  }
+}

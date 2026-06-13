@@ -1,0 +1,31 @@
+{
+  "id": "israel",
+  "name": "Израиль",
+  "startResources": {
+    "money": 1500,
+    "gold": 20,
+    "food": 500,
+    "influence": 500
+  },
+  "startPopulation": {
+    "rabotyagi": 2000,
+    "umniki": 1500,
+    "siloviki": 1000,
+    "mediyshchiki": 800,
+    "ministry": 100
+  },
+  "startSectors": {
+    "economy": 7,
+    "science": 9,
+    "army": 8,
+    "smi": 6,
+    "intel": 10
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "iron_dome",
+    "shekeli",
+    "mossad"
+  ],
+  "advisorsRef": "advisors/israel.json"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "labubu_trend",
+  "name": "Мода на Лабубу",
+  "type": "state",
+  "description": "Все скупают бесполезный пластик. Экономика летит в космос, но наука падает до нуля.",
+  "effects": {
+    "sectors": {
+      "economy": 5,
+      "science": -5
+    },
+    "modifiers": {
+      "dovolstvoDrift": 10
+    }
+  },
+  "globalEffects": {
+    "sectors": {
+      "economy": 5,
+      "science": -5
+    },
+    "modifiers": {
+      "dovolstvoDrift": 10
+    }
+  }
+}

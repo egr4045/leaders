@@ -1,0 +1,13 @@
+{
+  "id": "great_firewall",
+  "name": "Великий Файрвол",
+  "type": "state",
+  "description": "Полная защита информационного поля. Внешнее влияние СМИ сведено к минимуму.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "mediyshchiki": 1.5
+      }
+    }
+  }
+}

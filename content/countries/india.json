@@ -1,0 +1,31 @@
+{
+  "id": "india",
+  "name": "Индия",
+  "startResources": {
+    "money": 800,
+    "gold": 30,
+    "food": 5000,
+    "influence": 400
+  },
+  "startPopulation": {
+    "rabotyagi": 25000,
+    "umniki": 3000,
+    "siloviki": 1500,
+    "mediyshchiki": 2000,
+    "ministry": 200
+  },
+  "startSectors": {
+    "economy": 6,
+    "science": 6,
+    "army": 5,
+    "smi": 7,
+    "intel": 4
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "it_kasty",
+    "bollywood",
+    "overpopulation"
+  ],
+  "advisorsRef": "advisors/india.json"
+}

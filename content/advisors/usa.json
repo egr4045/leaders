@@ -1,0 +1,103 @@
+{
+  "country": "usa",
+  "cards": [
+    {
+      "id": "us_fed",
+      "speaker": "Глава ФРС",
+      "situation": "Госдолг пробил очередной потолок, рынки в панике.",
+      "requires": {
+        "statuses": [
+          "fed_printer"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Включайте печатный станок! [СМИ: ФРС спасает экономику количественным смягчением]",
+          "effects": {
+            "resources": {
+              "money": 2000
+            },
+            "modifiers": {
+              "inflationDelta": 0.05
+            }
+          }
+        },
+        {
+          "label": "Урежем социалку [СМИ: Жесткие меры экономии возмутили общество]",
+          "effects": {
+            "resources": {
+              "money": 500
+            },
+            "dovolstvo": -20
+          }
+        }
+      ]
+    },
+    {
+      "id": "us_movie",
+      "speaker": "Голливудский Режиссер",
+      "situation": "Мы сняли новый супергеройский фильм про то, какие мы молодцы.",
+      "requires": {
+        "statuses": [
+          "hollywood_softpower"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Вложить миллионы в промо по всему миру [СМИ: Новый блокбастер бьет рекорды]",
+          "effects": {
+            "resources": {
+              "money": -500,
+              "influence": 200
+            },
+            "sectors": {
+              "smi": 1
+            }
+          }
+        },
+        {
+          "label": "Фильм провалился из-за повестки [СМИ: Зрители устали от однообразия]",
+          "effects": {
+            "dovolstvo": -5
+          }
+        }
+      ]
+    },
+    {
+      "id": "us_military",
+      "speaker": "Лоббист Пентагона",
+      "situation": "Где-то на Ближнем Востоке нашли нефть. Ой, то есть отсутствие демократии.",
+      "requires": {
+        "statuses": [
+          "military_industrial_complex"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Отправить авианосцы! (ВПК получит заказы) [СМИ: США несут свободу и демократию!]",
+          "effects": {
+            "resources": {
+              "money": 1000,
+              "influence": -100
+            },
+            "sectors": {
+              "army": 1
+            }
+          }
+        },
+        {
+          "label": "Ограничиться осуждением в Твиттере [СМИ: Слабая внешняя политика Президента]",
+          "effects": {
+            "resources": {
+              "influence": -50
+            },
+            "dovolstvo": -10
+          }
+        }
+      ]
+    }
+  ]
+}

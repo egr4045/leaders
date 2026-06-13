@@ -1,0 +1,18 @@
+{
+  "id": "pandemic",
+  "name": "Пандемия Ковид-26",
+  "type": "state",
+  "description": "Вирус гуляет по планете. Сидите дома, качайте медицину. Экономика падает.",
+  "effects": {
+    "sectors": {
+      "economy": -3,
+      "science": 3
+    }
+  },
+  "globalEffects": {
+    "sectors": {
+      "economy": -3,
+      "science": 3
+    }
+  }
+}

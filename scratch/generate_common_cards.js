@@ -1,0 +1,133 @@
+const fs = require('fs');
+const path = require('path');
+
+const advisorsDir = path.join(__dirname, '..', 'content', 'advisors');
+if (!fs.existsSync(advisorsDir)) fs.mkdirSync(advisorsDir, { recursive: true });
+
+const commonDeck = {
+  country: null, // Общая колода
+  cards: [
+    // 1. Карточка для глобального мема "Пандемия"
+    {
+      id: "com_trigger_pandemic",
+      speaker: "ВОЗ",
+      situation: "Обнаружена летучая мышь с подозрительным кашлем. Если мы объявим пандемию, мир изменится навсегда.",
+      once: true,
+      weight: 0.5,
+      choices: [
+        {
+          label: "Закрыть границы и ввести локдаун (Включить Пандемию) [СМИ: Новый вирус шагает по планете!]",
+          addStatuses: ["pandemic"],
+          effects: {
+            dovolstvo: -10,
+            resources: { influence: 50 }
+          }
+        },
+        {
+          label: "Это просто грипп, не будем паниковать [СМИ: Слухи о вирусе оказались уткой]",
+          effects: {
+            dovolstvo: 5
+          }
+        }
+      ]
+    },
+    // 2. Карточка для глобального мема "Лабубу"
+    {
+      id: "com_trigger_labubu",
+      speaker: "Маркетологи",
+      situation: "В сети появился тренд на странные плюшевые игрушки. Можно вкинуть денег в раскрутку на весь мир.",
+      once: true,
+      weight: 0.5,
+      choices: [
+        {
+          label: "Вложить бюджет в хайп (Запустить Моду на Лабубу) [СМИ: Весь мир скупает плюшевых монстров!]",
+          addStatuses: ["labubu_trend"],
+          effects: {
+            resources: { money: -500, influence: 100 }
+          }
+        },
+        {
+          label: "Запретить этот мусор [СМИ: Власти борются за умы молодежи]",
+          effects: {
+            dovolstvo: -5
+          }
+        }
+      ]
+    },
+    // 3. Карточка "Голод" (условие: статус golod)
+    {
+      id: "com_golod_lebeda",
+      speaker: "Министр Сельского Хозяйства",
+      situation: "В стране нечего есть! Народ варит похлебку из крапивы.",
+      requires: { statuses: ["golod"] },
+      weight: 2,
+      choices: [
+        {
+          label: "Ввести талоны на еду (Сэкономить еду) [СМИ: Новая диета для здоровья нации!]",
+          effects: {
+            modifiers: { foodPerCapitaMult: 0.5 },
+            dovolstvo: -20
+          }
+        },
+        {
+          label: "Купить еду за золото у соседей [СМИ: Гуманитарная закупка завершена]",
+          effects: {
+            resources: { gold: -10, food: 2000 }
+          }
+        }
+      ]
+    },
+    // 4. Дефолт (условие: статус krizis)
+    {
+      id: "com_krizis_default",
+      speaker: "Министр Финансов",
+      situation: "Казна пуста, милорд. Мы не можем платить по счетам. Нужно что-то делать.",
+      requires: { statuses: ["krizis"] },
+      weight: 2,
+      choices: [
+        {
+          label: "Урезать зарплаты (Ударит по работягам) [СМИ: Временные трудности сплачивают]",
+          effects: {
+            resources: { money: 1000 },
+            dovolstvo: -25
+          }
+        },
+        {
+          label: "Продать секреты за деньги (Минус разведка) [СМИ: Страна привлекает инвестиции]",
+          effects: {
+            resources: { money: 1500 },
+            sectors: { intel: -2 }
+          }
+        }
+      ]
+    },
+    // 5. Протесты
+    {
+      id: "com_protests_police",
+      speaker: "Глава МВД",
+      situation: "Народ вышел на площади! Требуют хлеба и зрелищ.",
+      requires: { statuses: ["protesty"] },
+      weight: 2,
+      choices: [
+        {
+          label: "Разогнать дубинками (Требует Армию) [СМИ: Наведен порядок на улицах]",
+          effects: {
+            dovolstvo: -10,
+            sectors: { army: -1 }
+          }
+        },
+        {
+          label: "Раздать денег (Популизм) [СМИ: Власть слышит народ!]",
+          effects: {
+            resources: { money: -1000 },
+            dovolstvo: 30
+          }
+        }
+      ]
+    }
+  ]
+};
+
+fs.writeFileSync(path.join(advisorsDir, 'common.json'), JSON.stringify(commonDeck, null, 2));
+
+console.log('Created common.json with ' + commonDeck.cards.length + ' cards.');

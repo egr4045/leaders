@@ -1,0 +1,13 @@
+{
+  "id": "world_factory",
+  "name": "Фабрика Мира",
+  "type": "state",
+  "description": "Огромная экономика, демпинг на рынке товаров. Работяги пашут за двоих.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.8
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "shekeli",
+  "name": "Стартап-Нация",
+  "type": "state",
+  "description": "Инновации приносят огромные деньги.",
+  "effects": {
+    "modifiers": {
+      "scienceMult": 1.5,
+      "outputMult": {
+        "umniki": 1.5
+      }
+    }
+  }
+}

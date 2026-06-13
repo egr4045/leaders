@@ -1,0 +1,103 @@
+{
+  "country": "germany",
+  "cards": [
+    {
+      "id": "de_green",
+      "speaker": "Министр Экологии",
+      "situation": "Угольные станции загрязняют воздух. Нужно закрыть их и поставить ветряки.",
+      "requires": {
+        "statuses": [
+          "eco_bureaucracy"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Закрыть заводы! Спасем экологию [СМИ: Зеленая революция в действии]",
+          "effects": {
+            "resources": {
+              "influence": 150
+            },
+            "sectors": {
+              "economy": -2,
+              "science": 1
+            }
+          }
+        },
+        {
+          "label": "Нам нужна дешевая энергия для заводов! [СМИ: Эко-активисты приклеили себя к асфальту]",
+          "effects": {
+            "sectors": {
+              "economy": 2
+            },
+            "dovolstvo": -15
+          }
+        }
+      ]
+    },
+    {
+      "id": "de_locomotive",
+      "speaker": "Еврокомиссар",
+      "situation": "Южные страны Союза снова в долгах. Просят скинуться им на помощь.",
+      "requires": {
+        "statuses": [
+          "eu_locomotive"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Мы же локомотив... Выделить кредиты. [СМИ: Мы снова спасаем Европу]",
+          "effects": {
+            "resources": {
+              "money": -1000,
+              "influence": 200
+            }
+          }
+        },
+        {
+          "label": "Пусть выкручиваются сами! [СМИ: Берлин показал зубы]",
+          "effects": {
+            "resources": {
+              "money": 1000,
+              "influence": -150
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "de_ordnung",
+      "speaker": "Главный Бюрократ",
+      "situation": "Орднунг мусс зайн. Нужно заполнить форму 38-Б для постройки завода.",
+      "requires": {
+        "statuses": [
+          "ordnung"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Заполнить по всем правилам (долго, но качественно) [СМИ: Немецкое качество!]",
+          "effects": {
+            "sectors": {
+              "science": 1
+            },
+            "resources": {
+              "money": -200
+            }
+          }
+        },
+        {
+          "label": "Упростить бюрократию [СМИ: Наконец-то реформы!]",
+          "effects": {
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 10
+          }
+        }
+      ]
+    }
+  ]
+}

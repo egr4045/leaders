@@ -1,0 +1,14 @@
+{
+  "id": "it_kasty",
+  "name": "IT-касты",
+  "type": "state",
+  "description": "Миллионы программистов на аутсорсе. Наука взлетает в небеса.",
+  "effects": {
+    "modifiers": {
+      "scienceMult": 1,
+      "outputMult": {
+        "umniki": 2
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "smekalochka",
+  "name": "Смекалочка",
+  "type": "state",
+  "description": "Умение выживать под любыми санкциями. Импортозамещение работает, но наука немного страдает.",
+  "effects": {
+    "modifiers": {
+      "inflationDelta": -0.05,
+      "scienceMult": -0.1
+    }
+  }
+}

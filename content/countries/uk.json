@@ -1,0 +1,31 @@
+{
+  "id": "uk",
+  "name": "Великобритания",
+  "startResources": {
+    "money": 2000,
+    "gold": 40,
+    "food": 800,
+    "influence": 700
+  },
+  "startPopulation": {
+    "rabotyagi": 4000,
+    "umniki": 2000,
+    "siloviki": 500,
+    "mediyshchiki": 1500,
+    "ministry": 150
+  },
+  "startSectors": {
+    "economy": 7,
+    "science": 8,
+    "army": 6,
+    "smi": 8,
+    "intel": 9
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "brexit_legacy",
+    "financial_hub",
+    "tea_5_oclock"
+  ],
+  "advisorsRef": "advisors/uk.json"
+}

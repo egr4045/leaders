@@ -1,0 +1,31 @@
+{
+  "id": "usa",
+  "name": "США",
+  "startResources": {
+    "money": 5000,
+    "gold": 100,
+    "food": 3000,
+    "influence": 1000
+  },
+  "startPopulation": {
+    "rabotyagi": 10000,
+    "umniki": 3000,
+    "siloviki": 1500,
+    "mediyshchiki": 2000,
+    "ministry": 200
+  },
+  "startSectors": {
+    "economy": 9,
+    "science": 9,
+    "army": 9,
+    "smi": 9,
+    "intel": 8
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "fed_printer",
+    "hollywood_softpower",
+    "military_industrial_complex"
+  ],
+  "advisorsRef": "advisors/usa.json"
+}

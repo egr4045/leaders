@@ -1,0 +1,14 @@
+{
+  "id": "workaholics",
+  "name": "Трудоголики (Кароси)",
+  "type": "state",
+  "description": "Сумасшедшая эффективность экономики, но высочайший стресс.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 2
+      },
+      "dovolstvoDrift": -5
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "overpopulation",
+  "name": "Перенаселение",
+  "type": "state",
+  "description": "Огромное количество работяг, но они съедают всю еду.",
+  "effects": {
+    "modifiers": {
+      "foodPerCapitaMult": 1.5,
+      "outputMult": {
+        "rabotyagi": 1.5
+      }
+    }
+  }
+}

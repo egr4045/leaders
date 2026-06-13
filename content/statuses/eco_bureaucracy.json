@@ -1,0 +1,14 @@
+{
+  "id": "eco_bureaucracy",
+  "name": "Эко-Бюрократия",
+  "type": "state",
+  "description": "Зеленая повестка. Наука на высоте, но экономика буксует.",
+  "effects": {
+    "modifiers": {
+      "scienceMult": 0.5,
+      "outputMult": {
+        "rabotyagi": 0.7
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "social_credit",
+  "name": "Социальный Рейтинг",
+  "type": "state",
+  "description": "Тотальный контроль. Довольство всегда стремится к норме, бунтовать сложно.",
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": 5
+    }
+  }
+}

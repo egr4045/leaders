@@ -1,0 +1,31 @@
+{
+  "id": "china",
+  "name": "Китай",
+  "startResources": {
+    "money": 4000,
+    "gold": 80,
+    "food": 4000,
+    "influence": 800
+  },
+  "startPopulation": {
+    "rabotyagi": 20000,
+    "umniki": 2500,
+    "siloviki": 3000,
+    "mediyshchiki": 1000,
+    "ministry": 300
+  },
+  "startSectors": {
+    "economy": 9,
+    "science": 7,
+    "army": 7,
+    "smi": 6,
+    "intel": 7
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "social_credit",
+    "world_factory",
+    "great_firewall"
+  ],
+  "advisorsRef": "advisors/china.json"
+}

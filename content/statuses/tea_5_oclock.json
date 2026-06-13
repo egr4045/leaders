@@ -1,0 +1,11 @@
+{
+  "id": "tea_5_oclock",
+  "name": "Традиция Чаепития",
+  "type": "state",
+  "description": "Железобетонная стабильность. Довольство понемногу растет каждый ход.",
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": 3
+    }
+  }
+}

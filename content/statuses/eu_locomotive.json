@@ -1,0 +1,16 @@
+{
+  "id": "eu_locomotive",
+  "name": "Локомотив Европы",
+  "type": "state",
+  "description": "Тянем всех за собой. Мощный буст к экономике.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.3
+      }
+    },
+    "sectors": {
+      "economy": 1
+    }
+  }
+}

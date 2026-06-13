@@ -1,0 +1,13 @@
+{
+  "id": "diaspora",
+  "name": "Мощная Диаспора",
+  "type": "state",
+  "description": "Земляки за рубежом всегда помогут деньгами.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.2
+      }
+    }
+  }
+}

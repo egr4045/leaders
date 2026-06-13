@@ -1,0 +1,14 @@
+{
+  "id": "ordnung",
+  "name": "Немецкий Орднунг",
+  "type": "state",
+  "description": "Строгая дисциплина. Силовики и Умники работают как часы.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "siloviki": 1.2,
+        "umniki": 1.2
+      }
+    }
+  }
+}

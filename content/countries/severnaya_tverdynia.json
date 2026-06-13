@@ -1,8 +1,0 @@
-{
-  "id": "severnaya_tverdynia",
-  "name": "Северная Твердыня",
-  "startResources": { "money": 150, "gold": 30, "food": 350, "influence": 30 },
-  "startPopulation": { "rabotyagi": 280, "umniki": 60, "siloviki": 250, "mediyshchiki": 120, "ministry": 35 },
-  "startSectors": { "economy": 2, "science": 4, "army": 8, "smi": 9, "intel": 8 },
-  "notes": "Закрытая крепость: силовиков и пропаганды в избытке, еды — впритык. Заглушка."
-}

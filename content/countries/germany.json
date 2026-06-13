@@ -1,0 +1,31 @@
+{
+  "id": "germany",
+  "name": "Германия",
+  "startResources": {
+    "money": 3000,
+    "gold": 60,
+    "food": 1200,
+    "influence": 600
+  },
+  "startPopulation": {
+    "rabotyagi": 5000,
+    "umniki": 2500,
+    "siloviki": 400,
+    "mediyshchiki": 1000,
+    "ministry": 100
+  },
+  "startSectors": {
+    "economy": 8,
+    "science": 8,
+    "army": 5,
+    "smi": 6,
+    "intel": 6
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "eco_bureaucracy",
+    "eu_locomotive",
+    "ordnung"
+  ],
+  "advisorsRef": "advisors/germany.json"
+}

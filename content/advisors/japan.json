@@ -1,0 +1,103 @@
+{
+  "country": "japan",
+  "cards": [
+    {
+      "id": "jp_overwork",
+      "speaker": "Директор Корпорации",
+      "situation": "Сотрудники спят прямо в метро, они не успевают домой из-за переработок.",
+      "requires": {
+        "statuses": [
+          "workaholics"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Поставить кровати прямо в офисе! (Кароси) [СМИ: Производительность бьет рекорды]",
+          "effects": {
+            "sectors": {
+              "economy": 2
+            },
+            "dovolstvo": -20
+          }
+        },
+        {
+          "label": "Заставить всех идти домой в 20:00 [СМИ: Невероятные реформы труда!]",
+          "effects": {
+            "dovolstvo": 20,
+            "sectors": {
+              "economy": -1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "jp_anime",
+      "speaker": "Аниматор",
+      "situation": "Новое аниме про девочек-волшебниц и гигантских роботов захватило мир.",
+      "requires": {
+        "statuses": [
+          "anime_softpower"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Спонсировать второй сезон! [СМИ: Иностранцы массово учат наш язык]",
+          "effects": {
+            "resources": {
+              "money": -200,
+              "influence": 200
+            },
+            "sectors": {
+              "smi": 1
+            }
+          }
+        },
+        {
+          "label": "Продать мерч [СМИ: Миллиарды йен на пластиковых фигурках]",
+          "effects": {
+            "resources": {
+              "money": 1000
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "jp_aging",
+      "speaker": "Министр Медицины",
+      "situation": "Молодежи нет, одни старики. Зато робототехника на высоте.",
+      "requires": {
+        "statuses": [
+          "aging_population"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Заменить работяг на роботов! [СМИ: Киберпанк уже наступил]",
+          "effects": {
+            "sectors": {
+              "science": 2,
+              "economy": 1
+            },
+            "resources": {
+              "money": -1000
+            }
+          }
+        },
+        {
+          "label": "Увеличить пенсионный возраст до 80 лет [СМИ: Старики недовольны]",
+          "effects": {
+            "resources": {
+              "money": 500
+            },
+            "dovolstvo": -15
+          }
+        }
+      ]
+    }
+  ]
+}

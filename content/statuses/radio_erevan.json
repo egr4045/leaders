@@ -1,0 +1,13 @@
+{
+  "id": "radio_erevan",
+  "name": "Армянское Радио",
+  "type": "state",
+  "description": "Любой скандал можно обратить в шутку. Неуязвимость к мелким кризисам.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "mediyshchiki": 1.5
+      }
+    }
+  }
+}

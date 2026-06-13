@@ -1,0 +1,31 @@
+{
+  "id": "dprk",
+  "name": "КНДР",
+  "startResources": {
+    "money": 100,
+    "gold": 10,
+    "food": 100,
+    "influence": 300
+  },
+  "startPopulation": {
+    "rabotyagi": 5000,
+    "umniki": 200,
+    "siloviki": 3000,
+    "mediyshchiki": 100,
+    "ministry": 50
+  },
+  "startSectors": {
+    "economy": 1,
+    "science": 3,
+    "army": 8,
+    "smi": 2,
+    "intel": 5
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "chuchhe",
+    "red_button",
+    "supreme_leader"
+  ],
+  "advisorsRef": "advisors/dprk.json"
+}

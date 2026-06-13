@@ -1,0 +1,31 @@
+{
+  "id": "russia",
+  "name": "Россия",
+  "startResources": {
+    "money": 1000,
+    "gold": 50,
+    "food": 2000,
+    "influence": 500
+  },
+  "startPopulation": {
+    "rabotyagi": 7000,
+    "umniki": 1500,
+    "siloviki": 2000,
+    "mediyshchiki": 500,
+    "ministry": 100
+  },
+  "startSectors": {
+    "economy": 4,
+    "science": 5,
+    "army": 8,
+    "smi": 5,
+    "intel": 7
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "smekalochka",
+    "gas_needle",
+    "dacha_culture"
+  ],
+  "advisorsRef": "advisors/russia.json"
+}

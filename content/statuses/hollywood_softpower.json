@@ -1,0 +1,13 @@
+{
+  "id": "hollywood_softpower",
+  "name": "Голливудская Гегемония",
+  "type": "state",
+  "description": "Культурное доминирование. СМИ работают невероятно эффективно.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "mediyshchiki": 2
+      }
+    }
+  }
+}

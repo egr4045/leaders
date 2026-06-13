@@ -1,0 +1,101 @@
+{
+  "country": "uk",
+  "cards": [
+    {
+      "id": "uk_brexit",
+      "speaker": "Премьер-Министр",
+      "situation": "Мы вышли из Союза, но теперь у нас нет водителей фур.",
+      "requires": {
+        "statuses": [
+          "brexit_legacy"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Привлечь армию для доставки бензина [СМИ: Армия спасает логистику страны]",
+          "effects": {
+            "sectors": {
+              "army": -1,
+              "economy": 1
+            },
+            "dovolstvo": -10
+          }
+        },
+        {
+          "label": "Выдать визы мигрантам (отмена принципов) [СМИ: Правительство дало заднюю]",
+          "effects": {
+            "resources": {
+              "money": 500
+            },
+            "dovolstvo": -20
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_oligarchs",
+      "speaker": "Мэр Лондона",
+      "situation": "Еще один олигарх с Востока хочет купить футбольный клуб и особняк.",
+      "requires": {
+        "statuses": [
+          "financial_hub"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Добро пожаловать в Лондонград! [СМИ: Инвестиции текут рекой]",
+          "effects": {
+            "resources": {
+              "money": 1000
+            },
+            "sectors": {
+              "economy": 1
+            }
+          }
+        },
+        {
+          "label": "Мы вводим санкции и забираем клуб! [СМИ: Борьба с грязными деньгами!]",
+          "effects": {
+            "resources": {
+              "money": 500,
+              "influence": 100
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_tea",
+      "speaker": "Секретарь Кабинета",
+      "situation": "Кризис или не кризис, а время 5 o'clock. Пора пить чай.",
+      "requires": {
+        "statuses": [
+          "tea_5_oclock"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Боже храни Корону! Пьем чай. [СМИ: Нация сохраняет спокойствие]",
+          "effects": {
+            "dovolstvo": 25,
+            "resources": {
+              "money": -100
+            }
+          }
+        },
+        {
+          "label": "Отменить чай, все работать! [СМИ: Правительство сошло с ума!]",
+          "effects": {
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": -30
+          }
+        }
+      ]
+    }
+  ]
+}

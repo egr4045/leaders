@@ -1,0 +1,13 @@
+{
+  "id": "military_industrial_complex",
+  "name": "ВПК",
+  "type": "state",
+  "description": "Армия приносит доход. Солдаты работают на экспорт демократии.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "siloviki": 1.5
+      }
+    }
+  }
+}

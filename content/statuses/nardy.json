@@ -1,0 +1,14 @@
+{
+  "id": "nardy",
+  "name": "Турниры по Нардам",
+  "type": "state",
+  "description": "Мирное разрешение конфликтов. Влияние генерируется броском кубиков.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "mediyshchiki": 1.5
+      },
+      "dovolstvoDrift": 2
+    }
+  }
+}

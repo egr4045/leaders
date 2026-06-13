@@ -1,0 +1,14 @@
+{
+  "id": "aging_population",
+  "name": "Стареющая Нация",
+  "type": "state",
+  "description": "Высокий уровень медицины и науки, но силовиков мало.",
+  "effects": {
+    "modifiers": {
+      "scienceMult": 0.5,
+      "outputMult": {
+        "siloviki": 0.5
+      }
+    }
+  }
+}

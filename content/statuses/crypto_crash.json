@@ -1,0 +1,22 @@
+{
+  "id": "crypto_crash",
+  "name": "Крах Тапалок",
+  "type": "state",
+  "description": "Хомяк сдох. Финансовые рынки обвалились, умники в депрессии.",
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": -15,
+      "outputMult": {
+        "umniki": 0.5
+      }
+    }
+  },
+  "globalEffects": {
+    "modifiers": {
+      "dovolstvoDrift": -15,
+      "outputMult": {
+        "umniki": 0.5
+      }
+    }
+  }
+}

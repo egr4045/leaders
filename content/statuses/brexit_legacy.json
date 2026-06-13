@@ -1,0 +1,14 @@
+{
+  "id": "brexit_legacy",
+  "name": "Гордое Одиночество",
+  "type": "state",
+  "description": "Отрезаны от континента. Инфляция выше, но сильное независимое СМИ.",
+  "effects": {
+    "modifiers": {
+      "inflationDelta": 0.05,
+      "outputMult": {
+        "mediyshchiki": 1.5
+      }
+    }
+  }
+}

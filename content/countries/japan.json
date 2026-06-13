@@ -1,0 +1,31 @@
+{
+  "id": "japan",
+  "name": "Япония",
+  "startResources": {
+    "money": 2500,
+    "gold": 50,
+    "food": 1000,
+    "influence": 600
+  },
+  "startPopulation": {
+    "rabotyagi": 6000,
+    "umniki": 3000,
+    "siloviki": 300,
+    "mediyshchiki": 1500,
+    "ministry": 100
+  },
+  "startSectors": {
+    "economy": 8,
+    "science": 9,
+    "army": 4,
+    "smi": 8,
+    "intel": 5
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "workaholics",
+    "anime_softpower",
+    "aging_population"
+  ],
+  "advisorsRef": "advisors/japan.json"
+}

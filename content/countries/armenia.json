@@ -1,0 +1,31 @@
+{
+  "id": "armenia",
+  "name": "Армения",
+  "startResources": {
+    "money": 300,
+    "gold": 5,
+    "food": 300,
+    "influence": 200
+  },
+  "startPopulation": {
+    "rabotyagi": 1000,
+    "umniki": 500,
+    "siloviki": 200,
+    "mediyshchiki": 300,
+    "ministry": 50
+  },
+  "startSectors": {
+    "economy": 3,
+    "science": 4,
+    "army": 4,
+    "smi": 5,
+    "intel": 4
+  },
+  "startStatuses": [],
+  "uniquePerks": [
+    "diaspora",
+    "nardy",
+    "radio_erevan"
+  ],
+  "advisorsRef": "advisors/armenia.json"
+}
