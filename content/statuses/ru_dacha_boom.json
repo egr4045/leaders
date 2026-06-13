@@ -1,0 +1,13 @@
+{
+  "id": "ru_dacha_boom",
+  "name": "Дачный Бум",
+  "type": "state",
+  "description": "Вся страна копает картошку на майские. Производство еды на пике.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.5
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "ru_eastern_partner",
+  "name": "Восточный Партнер",
+  "type": "state",
+  "description": "Экономика прочно завязана на Восток. Доллары больше не нужны.",
+  "effects": {
+    "sectors": {
+      "economy": 2
+    },
+    "modifiers": {
+      "inflationDelta": -0.05
+    }
+  }
+}

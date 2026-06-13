@@ -47,6 +47,26 @@ const statuses = [
     description: "Работяги сами выращивают картошку по выходным. Потребление еды снижено.",
     effects: { modifiers: { foodPerCapitaMult: 0.5 } }
   },
+  {
+    id: "ru_washing_planes", name: "Стиральные Авиалинии", type: "state",
+    description: "Наш авиапром перешел на чипы из стиралок. Смешно, но самолеты летают.",
+    effects: { sectors: { science: -1, economy: 1 } }
+  },
+  {
+    id: "ru_slow_internet", name: "Замедленный Интернет", type: "state",
+    description: "Забугорные видеосервисы еле грузятся, народ переходит на ТВ и Рутуб.",
+    effects: { sectors: { smi: 2, science: -2 } }
+  },
+  {
+    id: "ru_eastern_partner", name: "Восточный Партнер", type: "state",
+    description: "Экономика прочно завязана на Восток. Доллары больше не нужны.",
+    effects: { sectors: { economy: 2 }, modifiers: { inflationDelta: -0.05 } }
+  },
+  {
+    id: "ru_dacha_boom", name: "Дачный Бум", type: "state",
+    description: "Вся страна копает картошку на майские. Производство еды на пике.",
+    effects: { modifiers: { outputMult: { rabotyagi: 1.5 } } }
+  },
 
   // США
   {

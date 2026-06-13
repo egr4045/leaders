@@ -13,12 +13,86 @@ const decks = {
       weight: 1,
       choices: [
         {
-          label: "Применим Смекалочку! Пересоберем из стиральных машин [СМИ: Отечественный авиапром совершил прорыв]",
-          effects: { sectors: { science: -1, economy: 1 }, dovolstvo: 5 }
+          label: "Применим Смекалочку! Пересоберем из стиральных машин",
+          effects: { addStatuses: ["ru_washing_planes"], dovolstvo: 5 },
+          newsLines: { state: "Отечественный авиапром совершил прорыв", liberal: "Пилоты молятся перед каждым взлетом" }
         },
         {
-          label: "Купим втридорога через соседей [СМИ: Серый импорт спасает рынок]",
-          effects: { resources: { money: -500 }, sectors: { economy: 1 } }
+          label: "Купим втридорога через соседей",
+          effects: { resources: { money: -500 }, sectors: { economy: 1 } },
+          newsLines: { state: "Серый импорт работает как часы", liberal: "Мы переплачиваем за свои же ошибки" }
+        }
+      ]
+    },
+    {
+      id: "ru_washing_shortage",
+      speaker: "Глава РосПотребНадзора",
+      situation: "Из-за пересборки самолетов в стране кончились стиральные машины. Народ жалуется.",
+      requires: { statuses: ["ru_washing_planes"] },
+      weight: 1,
+      choices: [
+        {
+          label: "Пусть стирают на речке! Это наши скрепы",
+          effects: { dovolstvo: -15, sectors: { economy: -1 } },
+          newsLines: { state: "Возвращение к корням: польза стирки в проруби", liberal: "Мы официально в каменном веке" }
+        },
+        {
+          label: "Закупить партию «стиралок» в Китае",
+          effects: { resources: { money: -300, influence: -50 }, dovolstvo: 10 },
+          newsLines: { state: "Дружба народов решает бытовые проблемы", liberal: "Зависимость от Китая растет" }
+        }
+      ]
+    },
+    {
+      id: "ru_rutube",
+      speaker: "Министр Связи",
+      situation: "Иностранный видеохостинг работает слишком быстро и показывает плохие видео. Что делаем?",
+      weight: 1,
+      choices: [
+        {
+          label: "Замедлить до скорости диалапа! Развиваем свой аналог",
+          effects: { addStatuses: ["ru_slow_internet"], sectors: { smi: 2, science: -1 }, dovolstvo: -10 },
+          newsLines: { state: "Отечественные платформы бьют рекорды посещаемости", liberal: "YouTube грузится в 144p. Мы отрезаны от мира" }
+        },
+        {
+          label: "Оставить как есть, пусть смотрят котиков",
+          effects: { sectors: { intel: -1 }, dovolstvo: 5 },
+          newsLines: { state: "Государство не лезет в интернет", liberal: "Свобода слова пока еще жива" }
+        }
+      ]
+    },
+    {
+      id: "ru_cyber_cossacks",
+      speaker: "Атаман Кибер-Войска",
+      situation: "Интернет замедлили, но люди используют VPN. Мы готовы патрулировать сеть с цифровыми нагайками.",
+      requires: { statuses: ["ru_slow_internet"] },
+      weight: 1,
+      choices: [
+        {
+          label: "Выделить бюджет на кибер-казаков!",
+          effects: { resources: { money: -200 }, sectors: { intel: 1, smi: 1 }, dovolstvo: -10 },
+          newsLines: { state: "В сети стало безопаснее и чище", liberal: "Казаки бьют роутеры нагайками" }
+        },
+        {
+          label: "Это уже перебор, обойдемся без казаков",
+          effects: { resources: { influence: -20 } }
+        }
+      ]
+    },
+    {
+      id: "ru_bloggers",
+      speaker: "Глава Налоговой",
+      situation: "Блогеры и продавцы марафонов желаний зарабатывают миллиарды и не платят налоги.",
+      weight: 1,
+      choices: [
+        {
+          label: "Посадить парочку для острастки, остальных заставить платить",
+          effects: { resources: { money: 1000 }, sectors: { economy: 1 }, dovolstvo: 5 },
+          newsLines: { state: "Конец эпохи инфоцыган", liberal: "Давление на малый бизнес и лидеров мнений" }
+        },
+        {
+          label: "Не трогать их, они же смешные",
+          effects: { dovolstvo: 10, sectors: { economy: -1 } }
         }
       ]
     },
@@ -30,12 +104,85 @@ const decks = {
       weight: 1,
       choices: [
         {
-          label: "Перекрыть вентиль! Пусть померзнут [СМИ: Мы показали им кузькину мать!]",
-          effects: { resources: { influence: 100 }, dovolstvo: 10, sectors: { economy: -1 } }
+          label: "Перекрыть вентиль! Пусть померзнут",
+          effects: { resources: { influence: 100 }, dovolstvo: 10, sectors: { economy: -1 } },
+          newsLines: { state: "Европа готовится топить дровами", liberal: "Газпром теряет ключевой рынок" }
         },
         {
-          label: "Продать в Азию со скидкой [СМИ: Переориентация рынков прошла успешно]",
-          effects: { resources: { money: 1000 } }
+          label: "Продать, но только за рубли",
+          effects: { resources: { money: 500, influence: 50 }, sectors: { economy: 1 } },
+          newsLines: { state: "Рубль укрепляется на мировой арене", liberal: "Хитрая схема обхода санкций" }
+        }
+      ]
+    },
+    {
+      id: "ru_eastern_pipeline",
+      speaker: "Главный Строитель",
+      situation: "Европа не берет газ. Нужно срочно строить «Силу Сибири 3» на Восток, но это очень дорого.",
+      requires: { statuses: ["gas_needle"] },
+      weight: 1,
+      choices: [
+        {
+          label: "Начать мега-стройку! Будущее за Востоком",
+          effects: { resources: { money: -1500 }, addStatuses: ["ru_eastern_partner"] },
+          newsLines: { state: "Грандиозная стройка века стартовала", liberal: "Мы продаем ресурсы Китаю за бесценок" }
+        },
+        {
+          label: "Денег нет, пусть газ остается в земле",
+          effects: { sectors: { economy: -2 }, dovolstvo: -10 }
+        }
+      ]
+    },
+    {
+      id: "ru_digital_ruble",
+      speaker: "Глава Центробанка",
+      situation: "Запуск цифрового рубля! Но пенсионеры боятся, что их чипируют.",
+      weight: 1,
+      choices: [
+        {
+          label: "Внедрить принудительно (плюс к экономике, минус довольство)",
+          effects: { sectors: { economy: 2, intel: 1 }, dovolstvo: -20 },
+          newsLines: { state: "Финансовая система стала прозрачной", liberal: "Цифровой концлагерь построен" }
+        },
+        {
+          label: "Запустить добровольно и провести рекламу",
+          effects: { resources: { money: -300 }, sectors: { economy: 1 }, dovolstvo: 5 },
+          newsLines: { state: "Успешный запуск удобной валюты", liberal: "Никто не хочет пользоваться цифровым рублем" }
+        }
+      ]
+    },
+    {
+      id: "ru_avtovaz",
+      speaker: "Директор АвтоВАЗа",
+      situation: "Завод в кризисе. Мы можем выпустить 'Ладу Киберпанк' без АБС и подушек безопасности.",
+      weight: 1,
+      choices: [
+        {
+          label: "Выпускайте! Главное, чтобы ехала",
+          effects: { resources: { money: 500 }, sectors: { economy: 1, science: -1 }, dovolstvo: -10 },
+          newsLines: { state: "Отечественный автопром возрождается", liberal: "Машины без безопасности по цене крыла самолета" }
+        },
+        {
+          label: "Отдайте конвейер китайцам для сборки их машин",
+          effects: { resources: { money: 200 }, sectors: { economy: 2 }, addStatuses: ["ru_eastern_partner"] },
+          newsLines: { state: "Новое дыхание завода под руководством партнеров", liberal: "АвтоВАЗ окончательно стал филиалом Китая" }
+        }
+      ]
+    },
+    {
+      id: "ru_vodka_monopoly",
+      speaker: "Министр Финансов",
+      situation: "Бюджету нужны деньги. Предлагаю ввести жесткую госмонополию на алкоголь и поднять цены.",
+      weight: 1,
+      choices: [
+        {
+          label: "Утвердить! Пьянству бой, бюджету деньги",
+          effects: { resources: { money: 1000 }, sectors: { economy: 1 }, dovolstvo: -20 },
+          newsLines: { state: "Забота о здоровье нации пополнит казну", liberal: "Люди переходят на суррогат" }
+        },
+        {
+          label: "Народ не простит. Оставим как есть",
+          effects: { dovolstvo: 10, resources: { money: -200 } }
         }
       ]
     },
@@ -47,12 +194,86 @@ const decks = {
       weight: 1,
       choices: [
         {
-          label: "Выделить всем по 6 соток (Буст к еде) [СМИ: Агропромышленный бум на дачах]",
-          effects: { resources: { food: 500 }, dovolstvo: 15 }
+          label: "Выдать всем по 6 соток и лопаты!",
+          effects: { resources: { food: 500 }, dovolstvo: 15, addStatuses: ["ru_dacha_boom"] },
+          newsLines: { state: "Агропромышленный бум на дачах", liberal: "Люди вынуждены сами сажать еду от бедности" }
         },
         {
-          label: "Обложить налогами теплицы [СМИ: Очередная инициатива Минфина]",
-          effects: { resources: { money: 300 }, dovolstvo: -15 }
+          label: "Обложить налогами теплицы и бани",
+          effects: { resources: { money: 300 }, dovolstvo: -25 },
+          newsLines: { state: "Очередная инициатива по легализации построек", liberal: "Государство добралось до дачных туалетов" }
+        }
+      ]
+    },
+    {
+      id: "ru_harvest_battle",
+      speaker: "Министр Сельского Хозяйства",
+      situation: "Урожай гниет на полях, рабочих рук не хватает. Дачный бум не спас ситуацию.",
+      requires: { statuses: ["ru_dacha_boom"], conditions: ["golod"] },
+      weight: 1,
+      choices: [
+        {
+          label: "Отправить студентов и бюджетников на картошку!",
+          effects: { resources: { food: 1000 }, sectors: { science: -1, economy: -1 }, dovolstvo: -15 },
+          newsLines: { state: "Всенародная битва за урожай увенчалась успехом", liberal: "Принудительный труд возвращается" }
+        },
+        {
+          label: "Закупить зерно за границей",
+          effects: { resources: { money: -800, food: 1500 } },
+          newsLines: { state: "Запасы продовольствия обеспечены", liberal: "Великая аграрная держава не может прокормить себя" }
+        }
+      ]
+    },
+    {
+      id: "ru_demography",
+      speaker: "Министр Демографии",
+      situation: "Рождаемость падает. Предлагают давать гектар земли в Сибири за рождение третьего ребенка.",
+      weight: 1,
+      choices: [
+        {
+          label: "Утвердить 'Сибирский гектар'!",
+          effects: { resources: { money: -400 }, sectors: { economy: 1 }, dovolstvo: 10 },
+          newsLines: { state: "Беспрецедентная поддержка многодетных семей", liberal: "Дают кусок тайги без дорог и света" }
+        },
+        {
+          label: "Просто запретить идеологию 'чайлдфри'",
+          effects: { sectors: { smi: 1 }, dovolstvo: -10 },
+          newsLines: { state: "Защита традиционных ценностей в законе", liberal: "Очередной запрет вместо реальной помощи" }
+        }
+      ]
+    },
+    {
+      id: "ru_shaman",
+      speaker: "Министр Культуры",
+      situation: "Народу нужен патриотический подъем. Популярный певец готов выпустить новый хит 'Я — Гражданин'.",
+      weight: 1,
+      choices: [
+        {
+          label: "Включить во всех утюгах! Спонсируем тур по стране",
+          effects: { resources: { money: -300 }, sectors: { army: 1, smi: 1 }, dovolstvo: 15 },
+          newsLines: { state: "Новый хит бьет рекорды прослушиваний", liberal: "Кринж года: бюджетные миллионы на пропаганду" }
+        },
+        {
+          label: "Музыка вне политики. Отказать в бюджете",
+          effects: { resources: { influence: -20 }, dovolstvo: -5 }
+        }
+      ]
+    },
+    {
+      id: "ru_bear_cavalry",
+      speaker: "Безумный Генерал",
+      situation: "Мой фюре... то есть, господин Президент! Мы можем выпустить на поле боя Боевых Медведей!",
+      requires: { conditions: ["siloviki_dominate"] },
+      weight: 1,
+      choices: [
+        {
+          label: "Это безумие. Делайте! (Секретное оружие)",
+          effects: { resources: { money: -2000, influence: 500 }, sectors: { army: 3, science: 1 } },
+          newsLines: { state: "Наше новое оружие повергло мир в шок", liberal: "Они там окончательно сошли с ума" }
+        },
+        {
+          label: "Отправьте генерала в отставку",
+          effects: { sectors: { army: -1 }, dovolstvo: 5 }
         }
       ]
     }

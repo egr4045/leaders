@@ -18,6 +18,10 @@ export const AdvisorChoiceSchema = z
     addStatuses: z.array(zId).optional(),
     removeStatuses: z.array(zId).optional(),
     delayed: DelayedEffectSchema.optional(),
+    newsLines: z.object({
+      liberal: z.string().optional(),
+      state: z.string().optional()
+    }).optional(),
   })
   .strict();
 export type AdvisorChoice = z.infer<typeof AdvisorChoiceSchema>;

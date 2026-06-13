@@ -1,0 +1,12 @@
+{
+  "id": "ru_washing_planes",
+  "name": "Стиральные Авиалинии",
+  "type": "state",
+  "description": "Наш авиапром перешел на чипы из стиралок. Смешно, но самолеты летают.",
+  "effects": {
+    "sectors": {
+      "science": -1,
+      "economy": 1
+    }
+  }
+}
