@@ -31,6 +31,10 @@ export const SocketEvents = {
   RoomHostLayout: 'room:host_layout',
   /** председатель: попросить игрока замьютиться (c2s, { playerId }) */
   RoomHostMute: 'room:host_mute',
+  /** хост: возобновить авто-паузу (реконнект) досрочно (c2s) */
+  RoomHostResume: 'room:host_resume',
+  /** хост: исключить игрока из комнаты (c2s, { targetPlayerId }) */
+  RoomKick: 'room:kick',
   /** s2c: председатель выключил вам микрофон (можно включить обратно) */
   VideoForceMute: 'video:force_mute',
   /** s2c: что сделал бот (для отладки баланса в консоли браузера) */

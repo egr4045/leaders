@@ -217,6 +217,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     );
   }
 
+  @SubscribeMessage(SocketEvents.RoomHostResume)
+  hostResume(@ConnectedSocket() socket: Socket) {
+    return this.withSession(socket, (s) => this.rooms.hostResume(s.roomCode, s.playerId));
+  }
+
+  @SubscribeMessage(SocketEvents.RoomKick)
+  kickPlayer(@ConnectedSocket() socket: Socket, @MessageBody() body: { targetPlayerId: string }) {
+    return this.withSession(socket, (s) =>
+      this.rooms.kickPlayer(s.roomCode, s.playerId, body?.targetPlayerId ?? ''),
+    );
+  }
+
   @SubscribeMessage(SocketEvents.SpyOrder)
   spyOrder(
     @ConnectedSocket() socket: Socket,

@@ -423,6 +423,37 @@ export class RoomsService {
     this.nextSpeaker(room);
   }
 
+  /** Хост досрочно снимает авто-паузу (реконнект) — «продолжить без него». */
+  hostResume(code: string, playerId: string) {
+    const room = this.mustChairman(code, playerId);
+    if (!room.paused) throw new Error('Игра не на паузе');
+    if (room.manualPause) throw new Error('Это ручной перерыв — используйте кнопку Перерыв');
+    this.resume(room);
+    this.broadcast(room);
+  }
+
+  /** Хост исключает игрока: в лобби удаляет, в игре помечает disconnected. */
+  kickPlayer(code: string, playerId: string, targetPlayerId: string) {
+    const room = this.mustChairman(code, playerId);
+    if (targetPlayerId === playerId) throw new Error('Нельзя кикнуть самого себя');
+    const target = this.mustPlayer(room, targetPlayerId);
+    if (target.isHost) throw new Error('Нельзя кикнуть хоста');
+
+    if (room.phase === 'lobby') {
+      room.players = room.players.filter((p) => p.playerId !== targetPlayerId);
+    } else {
+      target.connected = false;
+      target.socketId = null;
+      // если игра на паузе из-за этого игрока — снять паузу
+      if (room.paused && !room.manualPause) {
+        const stillDisconnected = room.players.some((p) => !p.connected && !p.isBot);
+        if (!stillDisconnected) this.resume(room);
+      }
+    }
+    this.persist(room);
+    this.broadcast(room);
+  }
+
   /** Председатель принудительно задаёт раскладку видео ('auto' = вернуть автоматику). */
   hostSetLayout(code: string, playerId: string, layout: string) {
     const room = this.mustChairman(code, playerId);

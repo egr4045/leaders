@@ -367,6 +367,15 @@ function ChairmanContent() {
                     🔇
                   </button>
                 )}
+                {!isSelf && (
+                  <button
+                    title="Исключить"
+                    onClick={() => act(SocketEvents.RoomKick, { targetPlayerId: p.playerId })}
+                    className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px] text-slate-400 hover:bg-red-900/60 hover:text-red-400"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             );
           })}
@@ -392,15 +401,14 @@ export function UnScreen() {
   const effectiveLayout: 'spotlight' | 'grid' | 'strip' =
     snapshot.unLayout !== 'auto'
       ? snapshot.unLayout
-      : phase === 'un_comments'
-      ? 'spotlight'
       : phase === 'un_debate'
       ? 'grid'
-      : 'strip';
+      : 'spotlight'; // un_summary, un_comments, un_vote, results — все spotlight
 
   const duckOthers =
     phase === 'un_summary' || (phase === 'un_comments' && !!snapshot.currentSpeakerId);
-  const spotlightId = phase === 'un_summary' ? '__news__' : snapshot.currentSpeakerId;
+  // un_summary → null (авто-выбор по громкости), иначе — текущий спикер/ведущий
+  const spotlightId = phase === 'un_summary' ? null : snapshot.currentSpeakerId;
 
   // Control bar buttons passed into VideoGrid
   const barControls = (
@@ -439,6 +447,14 @@ export function UnScreen() {
       )}
       {!isHost && snapshot.waitingContinue && (
         <span className="text-xs text-amber-400">⏳ Ждём хоста…</span>
+      )}
+      {isHost && snapshot.pause.paused && !snapshot.pause.manual && (
+        <button
+          onClick={() => void emitRaw(SocketEvents.RoomHostResume, {})}
+          className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-500"
+        >
+          ▶ Продолжить без него
+        </button>
       )}
       {isHost && (
         <motion.button
@@ -514,8 +530,8 @@ export function UnScreen() {
   );
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-slate-950">
-      {/* ── Video section: always flex-1, takes the majority of the screen ── */}
+    <div className="flex h-dvh flex-col overflow-hidden bg-slate-950 md:flex-row">
+      {/* ── Video: flex-1, takes the majority of the screen ── */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {/* Floating header overlay */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between bg-gradient-to-b from-slate-950/90 to-transparent px-4 pb-6 pt-2">
@@ -560,14 +576,9 @@ export function UnScreen() {
         />
       </div>
 
-      {/* ── Phase content: below video, scrollable ── */}
-      <div
-        className="relative shrink-0 border-t border-slate-800 overflow-y-auto"
-        style={{ maxHeight: '42dvh' }}
-      >
+      {/* ── Phase content: below video (mobile) or right sidebar (md+) ── */}
+      <div className="max-h-[38dvh] shrink-0 overflow-y-auto border-t border-slate-800 md:max-h-none md:w-72 md:border-l md:border-t-0">
         <div className="px-4 py-3">{phaseContent}</div>
-        {/* Fade shadow at bottom to indicate more content */}
-        <div className="pointer-events-none sticky bottom-0 h-6 bg-gradient-to-t from-slate-950 to-transparent" />
       </div>
 
       {/* Chairman panel: BottomDrawer */}

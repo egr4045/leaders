@@ -15,10 +15,9 @@ import { CallPanel } from '../video/CallPanel';
 import { WiretapListener } from '../video/WiretapListener';
 import { BudgetPanel } from './cabinet/BudgetPanel';
 import { LawsPanel } from './cabinet/LawsPanel';
-import { OthersPanel } from './cabinet/OthersPanel';
 import type { AdvisorCard } from '@leaders/shared';
 
-type Tab = 'advisor' | 'country' | 'diplomacy' | 'others';
+type Tab = 'advisor' | 'country' | 'laws' | 'diplomacy';
 
 interface PendingResult {
   card: AdvisorCard;
@@ -130,7 +129,7 @@ function DiplomacyTab({ you, others }: { you: PrivateCountryView; others: Public
         {others.length === 0 ? (
           <div className="py-8 text-center text-slate-500">Нет других стран</div>
         ) : (
-          <div className="grid grid-cols-3 gap-2 md:grid-cols-4 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-2">
             {others.map((o) => {
               const player = playerByCountry.get(o.countryId);
               const isOnline = player?.connected ?? false;
@@ -141,49 +140,49 @@ function DiplomacyTab({ you, others }: { you: PrivateCountryView; others: Public
                 <motion.div
                   key={o.countryId}
                   layout
-                  className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900 p-2.5"
+                  className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4"
                 >
-                  <div className="flex items-start gap-1.5">
+                  <div className="flex items-start gap-2">
                     <div className="relative shrink-0 pt-0.5">
-                      <span className="text-2xl leading-none">🌍</span>
+                      <span className="text-3xl leading-none">🌍</span>
                       <span
-                        className={`absolute bottom-0 right-0 h-2 w-2 rounded-full border border-slate-900 ${isOnline ? 'bg-emerald-500' : 'bg-slate-600'}`}
+                        className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-slate-900 ${isOnline ? 'bg-emerald-500' : 'bg-slate-600'}`}
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-xs font-semibold leading-tight">{o.countryName}</div>
-                      <div className="truncate text-[10px] leading-tight text-slate-500">{o.playerName}</div>
+                      <div className="truncate text-sm font-bold leading-tight">{o.countryName}</div>
+                      <div className="truncate text-xs leading-tight text-slate-400">{o.playerName}</div>
                     </div>
                   </div>
                   {(isAtWar || hasTrade || o.sanctions > 0) && (
                     <div className="flex flex-wrap gap-1">
-                      {isAtWar && <span className="rounded bg-red-900/40 px-1 text-[9px] text-red-400">⚔️ война</span>}
-                      {hasTrade && <span className="rounded bg-amber-900/40 px-1 text-[9px] text-amber-400">📨 сделка</span>}
-                      {o.sanctions > 0 && <span className="rounded bg-rose-900/40 px-1 text-[9px] text-rose-400">🚫 {o.sanctions}</span>}
+                      {isAtWar && <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-xs text-red-400">⚔️ война</span>}
+                      {hasTrade && <span className="rounded bg-amber-900/40 px-1.5 py-0.5 text-xs text-amber-400">📨 сделка</span>}
+                      {o.sanctions > 0 && <span className="rounded bg-rose-900/40 px-1.5 py-0.5 text-xs text-rose-400">🚫 {o.sanctions}</span>}
                     </div>
                   )}
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5">
                     <button
                       onClick={() => void emitRaw(SocketEvents.CallInvite, { toCountryId: o.countryId })}
                       disabled={callsLeft <= 0 || !!outgoingCall}
-                      className="flex-1 rounded-lg bg-slate-800 py-1.5 text-sm transition-colors hover:bg-slate-700 disabled:opacity-40"
+                      className="flex-1 rounded-lg bg-slate-800 py-2.5 text-base transition-colors hover:bg-slate-700 disabled:opacity-40"
                       title={`Позвонить (осталось ${callsLeft})`}
                     >
                       📞
                     </button>
                     <button
                       onClick={() => openDrawer(o, 'trade')}
-                      className="relative flex-1 rounded-lg bg-slate-800 py-1.5 text-sm transition-colors hover:bg-slate-700"
+                      className="relative flex-1 rounded-lg bg-slate-800 py-2.5 text-base transition-colors hover:bg-slate-700"
                       title="Торговля"
                     >
                       💰
                       {hasTrade && (
-                        <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-amber-400" />
+                        <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-amber-400" />
                       )}
                     </button>
                     <button
                       onClick={() => openDrawer(o, 'spy')}
-                      className="flex-1 rounded-lg bg-slate-800 py-1.5 text-sm transition-colors hover:bg-slate-700"
+                      className="flex-1 rounded-lg bg-slate-800 py-2.5 text-base transition-colors hover:bg-slate-700"
                       title="Разведка"
                     >
                       🕵️
@@ -258,11 +257,11 @@ function ReadyButton({
 }
 
 // ── Tab bar ─────────────────────────────────────────────────────────────
-const TABS: { id: Tab; icon: string; label: string; hideOnMd?: boolean }[] = [
-  { id: 'advisor', icon: '🃏', label: 'Совет' },
+const TABS: { id: Tab; icon: string; label: string }[] = [
+  { id: 'advisor', icon: '🃏', label: 'Советник' },
   { id: 'country', icon: '🌍', label: 'Страна' },
+  { id: 'laws', icon: '⚖️', label: 'Законы' },
   { id: 'diplomacy', icon: '🤝', label: 'Дипломатия' },
-  { id: 'others', icon: '🌐', label: 'Мир' },
 ];
 
 function TabBar({
@@ -389,21 +388,18 @@ export function CabinetScreen() {
               <div className="my-3 border-t border-slate-800" />
             </div>
             <BudgetPanel you={you} />
-            <div className="mt-3">
-              <LawsPanel you={you} />
-            </div>
+          </div>
+        )}
+
+        {tab === 'laws' && (
+          <div className="h-full overflow-y-auto p-3">
+            <LawsPanel you={you} />
           </div>
         )}
 
         {tab === 'diplomacy' && (
           <div className="h-full">
             <DiplomacyTab you={you} others={snapshot.others} />
-          </div>
-        )}
-
-        {tab === 'others' && (
-          <div className="h-full overflow-y-auto p-3">
-            <OthersPanel others={snapshot.others} myCountryId={you.countryId} />
           </div>
         )}
       </motion.div>

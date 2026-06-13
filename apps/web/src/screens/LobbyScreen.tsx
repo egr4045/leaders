@@ -7,7 +7,6 @@ type Tab = 'call' | 'countries' | 'host';
 
 export function LobbyScreen() {
   const { snapshot, session, pickCountry, startGame, leaveRoom, emitRaw } = useGame();
-  const [tab, setTab] = useState<Tab>('call');
   const [pickingId, setPickingId] = useState<string | null>(null);
   const [pickError, setPickError] = useState<string | null>(null);
 
@@ -16,6 +15,10 @@ export function LobbyScreen() {
   const me = snapshot.players.find((p) => p.playerId === session.playerId);
   const myCountryId = me?.countryId ?? null;
   const isHost = me?.isHost ?? false;
+  const gameRunning = snapshot.phase !== 'lobby';
+  const needsCountry = gameRunning && !myCountryId;
+
+  const [tab, setTab] = useState<Tab>(needsCountry ? 'countries' : 'call');
 
   const takenById = new Map(
     snapshot.players.filter((p) => p.countryId).map((p) => [p.countryId!, p]),
@@ -72,6 +75,14 @@ export function LobbyScreen() {
       >
         {tab === 'call' && (
           <div className="p-3">
+            {needsCountry && (
+              <div className="mb-3 rounded-xl border border-amber-600 bg-amber-950/20 p-3">
+                <div className="font-bold text-amber-400">Игра идёт — выберите страну</div>
+                <div className="text-xs text-slate-400 mt-1">
+                  Перейдите во вкладку «Страны» и займите слот отключившегося игрока
+                </div>
+              </div>
+            )}
             <div className="mb-2 text-xs font-semibold uppercase text-slate-500">
               Игроки ({snapshot.players.length})
             </div>
@@ -91,7 +102,18 @@ export function LobbyScreen() {
                     {p.isHost && <span className="text-xs text-amber-400">👑</span>}
                     {p.isBot && <span className="text-xs text-slate-500">AI</span>}
                   </span>
-                  <span className="text-xs text-slate-400">{p.countryName ?? 'выбирает…'}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">{p.countryName ?? 'выбирает…'}</span>
+                    {isHost && p.playerId !== session.playerId && (
+                      <button
+                        onClick={() => void emitRaw('room:kick', { targetPlayerId: p.playerId })}
+                        title="Исключить"
+                        className="rounded px-1.5 py-0.5 text-[10px] text-slate-500 hover:bg-red-900/40 hover:text-red-400"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 </motion.li>
               ))}
             </ul>

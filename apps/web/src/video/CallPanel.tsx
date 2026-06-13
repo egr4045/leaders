@@ -145,22 +145,22 @@ export function CallPanel({
 
       {/* активный звонок */}
       {activeCallId && (
-        <div className="fixed inset-0 z-50 flex flex-col gap-3 bg-slate-950/95 p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-950/95 p-3">
           {/* Уведомления о входящих во время звонка */}
           {incomingCalls.length > 0 && (
-            <div className="absolute top-4 right-4 flex flex-col gap-2 z-50">
+            <div className="absolute right-4 top-4 z-50 flex flex-col gap-2">
               {incomingCalls.map(c => (
                 <div key={c.callId} className="rounded-lg border border-amber-500/50 bg-slate-900/90 p-3 shadow-lg backdrop-blur">
-                  <div className="text-sm font-bold text-slate-200">📞 Звонит: {c.fromCountryName} (в очереди)</div>
+                  <div className="text-sm font-bold text-slate-200">📞 {c.fromCountryName} (в очереди)</div>
                   <div className="mt-2 flex gap-2">
-                    <button 
-                      onClick={() => void accept(c.callId, c.fromCountryId)} 
+                    <button
+                      onClick={() => void accept(c.callId, c.fromCountryId)}
                       className="rounded bg-emerald-700 px-3 py-1 text-xs text-white hover:bg-emerald-600"
                     >
-                      Ответить (сбросив текущий)
+                      Ответить
                     </button>
-                    <button 
-                      onClick={() => void decline(c.callId)} 
+                    <button
+                      onClick={() => void decline(c.callId)}
                       className="rounded bg-red-800 px-3 py-1 text-xs text-white hover:bg-red-700"
                     >
                       Отклонить
@@ -171,23 +171,26 @@ export function CallPanel({
             </div>
           )}
 
-          <div className="text-center text-sm text-slate-400 shrink-0">Приватный звонок — никто не слышит</div>
-          <div className="shrink-0">
-            <VideoGrid kind="call" callId={activeCallId} />
-          </div>
-          
-          {activeCallWithCountryId && (
-            <div className="mx-auto w-full max-w-md shrink-0">
-              <TradePanel 
-                you={you} 
-                others={others.filter(o => o.countryId === activeCallWithCountryId)} 
-                defaultTargetCountryId={activeCallWithCountryId}
-                forceOpen={true}
-              />
-            </div>
-          )}
+          <div className="shrink-0 pb-1 text-center text-xs text-slate-500">Приватный звонок — никто не слышит</div>
 
-          <button onClick={() => void hangup()} className="mx-auto mt-auto rounded-xl bg-red-700 px-8 py-3 font-bold shrink-0">
+          {/* Main body: video + trade side-by-side on md+ */}
+          <div className="flex min-h-0 flex-1 flex-col gap-3 md:flex-row">
+            <div className="min-h-0 flex-1">
+              <VideoGrid kind="call" callId={activeCallId} />
+            </div>
+            {activeCallWithCountryId && (
+              <div className="shrink-0 overflow-y-auto md:w-80">
+                <TradePanel
+                  you={you}
+                  others={others.filter(o => o.countryId === activeCallWithCountryId)}
+                  defaultTargetCountryId={activeCallWithCountryId}
+                  forceOpen={true}
+                />
+              </div>
+            )}
+          </div>
+
+          <button onClick={() => void hangup()} className="mx-auto mt-3 shrink-0 rounded-xl bg-red-700 px-8 py-3 font-bold hover:bg-red-600">
             Положить трубку
           </button>
         </div>

@@ -62,9 +62,10 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
   /** имя председателя, попросившего выключить микрофон (null = не просили) */
   const [forceMutedBy, setForceMutedBy] = useState<string | null>(null);
 
-  // sticky speaker map: identity → last-active timestamp
-  const stickyRef = useRef<Map<string, number>>(new Map());
-  const STICKY_MS = 4000;
+  // ordered queue of speakers (front = most recent dominant)
+  const speakerQueueRef = useRef<string[]>([]);
+  // freeze grid reordering until this timestamp
+  const frozenUntilRef = useRef<number>(0);
 
   useEffect(() => {
     if (!enabled) return;
@@ -120,27 +121,35 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
       if (cancelled) return;
       const now = Date.now();
       const active = room.activeSpeakers;
-      // stamp currently active speakers
-      for (const p of active) stickyRef.current.set(p.identity, now);
-      // prune expired entries
-      for (const [id, ts] of stickyRef.current) {
-        if (now - ts >= STICKY_MS) stickyRef.current.delete(id);
+      const dominant = active[0]?.identity ?? null;
+
+      if (now < frozenUntilRef.current) {
+        // grid frozen — emit current queue without reordering
+        setSpeakingIds([...speakerQueueRef.current]);
+        return;
       }
-      const activeSet = new Set(active.map((p) => p.identity));
-      // sort: currently active first (LiveKit order), then recently-sticky (by recency)
-      const sorted = [...stickyRef.current.keys()].sort((a, b) => {
-        const ai = active.findIndex((p) => p.identity === a);
-        const bi = active.findIndex((p) => p.identity === b);
-        if (ai !== -1 && bi !== -1) return ai - bi;
-        if (activeSet.has(a)) return -1;
-        if (activeSet.has(b)) return 1;
-        return (stickyRef.current.get(b) ?? 0) - (stickyRef.current.get(a) ?? 0);
-      });
-      setSpeakingIds(sorted);
+
+      if (dominant) {
+        if (speakerQueueRef.current[0] !== dominant) {
+          // new dominant speaker → move to front and freeze for 5 seconds
+          speakerQueueRef.current = [
+            dominant,
+            ...speakerQueueRef.current.filter((id) => id !== dominant),
+          ];
+          frozenUntilRef.current = now + 5000;
+        }
+        // ensure all currently-active speakers are in the queue
+        for (const p of active) {
+          if (!speakerQueueRef.current.includes(p.identity)) {
+            speakerQueueRef.current.push(p.identity);
+          }
+        }
+      }
+
+      setSpeakingIds([...speakerQueueRef.current]);
     };
     room.on(RoomEvent.ActiveSpeakersChanged, flushSpeakers);
-    // periodic cleanup so stale entries expire even when no new speaker event fires
-    const speakerInterval = setInterval(flushSpeakers, 1000);
+    const speakerInterval = setInterval(flushSpeakers, 500);
 
     // председатель попросил замьютиться: глушим локальный мик (включить обратно можно)
     const onForceMute = (d: { by: string }) => {
@@ -176,7 +185,8 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
       roomRef.current = null;
       setTiles([]);
       setSpeakingIds([]);
-      stickyRef.current.clear();
+      speakerQueueRef.current = [];
+      frozenUntilRef.current = 0;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind, callId, enabled, emitRaw]);

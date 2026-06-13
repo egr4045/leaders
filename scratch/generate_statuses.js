@@ -6,6 +6,25 @@ if (!fs.existsSync(statusesDir)) fs.mkdirSync(statusesDir, { recursive: true });
 
 const statuses = [
   // Глобальные мемы
+  // Германия
+  { id: 'de_afd_rise', name: 'Подъём Популизма', type: 'state', description: 'Правые популисты набирают очки в парламенте.', effects: { sectors: { smi: -1 }, modifiers: { dovolstvoDrift: -10 } } },
+  { id: 'de_energy_dependence', name: 'Газовая Зависимость', type: 'state', description: 'Северный поток закрыт. Промышленность замерзает.', effects: { sectors: { economy: -3 }, modifiers: { outputMult: { rabotyagi: 0.7 }, dovolstvoDrift: -15 } } },
+  { id: 'de_green_energy', name: 'Грин Революция', type: 'state', description: 'Ветряки и солнечные панели закрывают потребность.', effects: { sectors: { science: 2 }, modifiers: { outputMult: { rabotyagi: 1.1 } } } },
+  { id: 'de_auto_crisis', name: 'Кризис Автопрома', type: 'state', description: 'Немецкие гиганты теряют рынок электромобилей китайцам.', effects: { sectors: { economy: -2 }, modifiers: { outputMult: { umniki: 0.8 } } } },
+  { id: 'de_gastarbeiter', name: 'Гастарбайтер', type: 'state', description: 'Миллионы иммигрантов заполнили заводы.', effects: { sectors: { economy: 2 }, modifiers: { outputMult: { rabotyagi: 1.3 }, dovolstvoDrift: -5 } } },
+  // Израиль
+  { id: 'il_intifada', name: 'Интифада', type: 'state', description: 'Волна насилия в городах. Туристы боятся приезжать.', effects: { sectors: { economy: -2, army: 1 }, modifiers: { dovolstvoDrift: -20 } } },
+  { id: 'il_coalition_chaos', name: 'Кальция Из 11 Партий', type: 'state', description: 'Правительство разваливается на ходу из-за ультрарелигиозных партнеров.', effects: { sectors: { intel: -1 }, modifiers: { dovolstvoDrift: -15 } } },
+  { id: 'il_judicial_reform', name: 'Судебная Реформа', type: 'state', description: 'Министры хотят ослабить Суд. Улицы полны протестующих.', effects: { sectors: { smi: 1, intel: 1 }, modifiers: { dovolstvoDrift: -20 } } },
+  // Индия
+  { id: 'in_caste_conflict', name: 'Кастовый Конфликт', type: 'state', description: 'Общественные напряжения зашкаливают.', effects: { sectors: { economy: -1 }, modifiers: { dovolstvoDrift: -15 } } },
+  { id: 'in_space_power', name: 'Космическая Держава', type: 'state', description: 'Индия запустила ракету на Луну дешевле, чем все.', effects: { sectors: { science: 3 }, modifiers: { dovolstvoDrift: 15 } } },
+  { id: 'in_hindu_nationalism', name: 'Хиндутва', type: 'state', description: 'Хинду-национализм на подъёме. Меч возрождается.', effects: { sectors: { smi: 1 }, modifiers: { dovolstvoDrift: 10 } } },
+  { id: 'in_pakistan_tension', name: 'Напряженность с Пакистаном', type: 'state', description: 'Стрельба на линии контроля.', effects: { sectors: { army: 2 }, modifiers: { dovolstvoDrift: -10 } } },
+  // Япония
+  { id: 'jp_island_dispute', name: 'Островной Спор', type: 'state', description: 'Китай ведет себя всё наглее вокруг Сенкаку.', effects: { sectors: { army: 1 }, modifiers: { dovolstvoDrift: -10 } } },
+  { id: 'jp_deflation', name: 'Дефляционная Ловушка', type: 'state', description: 'Экономика не растет 10 лет. Люди откладывают деньги.', effects: { sectors: { economy: -2 }, modifiers: { outputMult: { umniki: 0.9 } } } },
+  { id: 'jp_robot_revolution', name: 'Роботизация', type: 'state', description: 'Роботы заменяют человека везде.', effects: { sectors: { science: 2, economy: 1 }, modifiers: { outputMult: { rabotyagi: 1.5 } } } },
   { id: 'uk_scottish_independence', name: 'Шотландский Сепаратизм', type: 'state', description: 'Эдинбург требует нового референдума о независимости.', effects: { sectors: { intel: -1 }, modifiers: { dovolstvoDrift: -10 } } },
   { id: 'uk_royal_scandal', name: 'Королевский Скандал', type: 'state', description: 'Таблоиды разрывают монархию на части из-за нового интервью.', effects: { sectors: { smi: 2 }, modifiers: { dovolstvoDrift: -5 } } },
   { id: 'uk_energy_crisis', name: 'Энергетический Кризис', type: 'state', description: 'Цены на газ бьют рекорды. Пабы закрываются из-за счетов за отопление.', effects: { sectors: { economy: -2 }, modifiers: { outputMult: { rabotyagi: 0.8 }, dovolstvoDrift: -15 } } },
