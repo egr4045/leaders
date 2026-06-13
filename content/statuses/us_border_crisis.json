@@ -1,0 +1,17 @@
+{
+  "id": "us_border_crisis",
+  "name": "Миграционный Кризис",
+  "type": "state",
+  "description": "Стена не спасла, караваны идут.",
+  "effects": {
+    "sectors": {
+      "economy": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -15,
+      "outputMult": {
+        "rabotyagi": 1.2
+      }
+    }
+  }
+}

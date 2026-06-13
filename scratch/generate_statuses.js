@@ -6,6 +6,14 @@ if (!fs.existsSync(statusesDir)) fs.mkdirSync(statusesDir, { recursive: true });
 
 const statuses = [
   // Глобальные мемы
+  { id: 'us_tech_monopoly', name: 'Монополия Бигтеха', type: 'state', description: 'Техногиганты стали сильнее правительства.', effects: { sectors: { science: 2, economy: 1 }, modifiers: { dovolstvoDrift: -5 } } },
+  { id: 'us_woke_capitalism', name: 'ESG Корпорации', type: 'state', description: 'Повесточка решает всё. Корпорации увольняют за неправильные мысли.', effects: { sectors: { smi: 2, economy: -1 }, modifiers: { dovolstvoDrift: -10 } } },
+  { id: 'us_mars_program', name: 'Колонизация Марса', type: 'state', description: 'Мы летим на Красную Планету!', effects: { sectors: { science: 3 }, modifiers: { outputMult: { umniki: 1.2 } } } },
+  { id: 'us_border_crisis', name: 'Миграционный Кризис', type: 'state', description: 'Стена не спасла, караваны идут.', effects: { sectors: { economy: 1 }, modifiers: { dovolstvoDrift: -15, outputMult: { rabotyagi: 1.2 } } } },
+  { id: 'us_healthcare_crisis', name: 'Кризис Медицины', type: 'state', description: 'Вызов скорой стоит как крыло самолета.', effects: { modifiers: { dovolstvoDrift: -20, outputMult: { rabotyagi: 0.8 } } } },
+  { id: 'us_gun_culture', name: 'Вторая Поправка', type: 'state', description: 'У каждого гражданина по три ствола.', effects: { sectors: { army: 1 }, modifiers: { dovolstvoDrift: 5 } } },
+  { id: 'us_polarization', name: 'Политическая Поляризация', type: 'state', description: 'Красные и Синие готовы вцепиться друг другу в глотки.', effects: { modifiers: { dovolstvoDrift: -30 } } },
+  { id: 'us_crypto_legal', name: 'Легализация Крипты', type: 'state', description: 'США стали крипто-гаванью.', effects: { sectors: { economy: 2 }, modifiers: { inflationDelta: -0.05 } } },
   {
     id: "pandemic",
     name: "Пандемия Ковид-26",

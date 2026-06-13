@@ -1,0 +1,15 @@
+{
+  "id": "us_tech_monopoly",
+  "name": "Монополия Бигтеха",
+  "type": "state",
+  "description": "Техногиганты стали сильнее правительства.",
+  "effects": {
+    "sectors": {
+      "science": 2,
+      "economy": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -5
+    }
+  }
+}

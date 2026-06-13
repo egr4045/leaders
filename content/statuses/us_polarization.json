@@ -1,0 +1,11 @@
+{
+  "id": "us_polarization",
+  "name": "Политическая Поляризация",
+  "type": "state",
+  "description": "Красные и Синие готовы вцепиться друг другу в глотки.",
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": -30
+    }
+  }
+}

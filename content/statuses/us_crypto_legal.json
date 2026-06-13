@@ -1,0 +1,14 @@
+{
+  "id": "us_crypto_legal",
+  "name": "Легализация Крипты",
+  "type": "state",
+  "description": "США стали крипто-гаванью.",
+  "effects": {
+    "sectors": {
+      "economy": 2
+    },
+    "modifiers": {
+      "inflationDelta": -0.05
+    }
+  }
+}

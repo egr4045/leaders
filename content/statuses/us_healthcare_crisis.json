@@ -1,0 +1,14 @@
+{
+  "id": "us_healthcare_crisis",
+  "name": "Кризис Медицины",
+  "type": "state",
+  "description": "Вызов скорой стоит как крыло самолета.",
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": -20,
+      "outputMult": {
+        "rabotyagi": 0.8
+      }
+    }
+  }
+}

@@ -324,54 +324,163 @@ const decks = {
   ],
   usa: [
     {
-      id: "us_fed",
+      id: "us_silicon_valley",
+      speaker: "CEO Бигтеха",
+      situation: "Мы готовы профинансировать вашу кампанию, если вы не будете жестко регулировать ИИ.",
+      weight: 1,
+      choices: [
+        { label: "Берем деньги. Технологии — наше будущее", addStatuses: ["us_tech_monopoly"], effects: { resources: { money: 2000 }, sectors: { science: 1 } }, newsLines: { state: "Инновации ведут страну вперед", liberal: "Корпорации скупили правительство" } },
+        { label: "Ужесточить антимонопольное законодательство", effects: { sectors: { economy: -1, intel: 1 }, dovolstvo: 10 }, newsLines: { state: "Закон един для всех", liberal: "Техногиганты угрожают переездом" } }
+      ]
+    },
+    {
+      id: "us_ai_regulation",
+      speaker: "Сенатор",
+      situation: "Алгоритмы техногигантов формируют мнение избирателей. Нужно вмешаться.",
+      requires: { statuses: ["us_tech_monopoly"] },
+      weight: 1,
+      choices: [
+        { label: "Заставить их внедрить ESG и квоты разнообразия", addStatuses: ["us_woke_capitalism"], effects: { sectors: { smi: 1 }, dovolstvo: 5 }, newsLines: { state: "Новая этика в корпорациях", liberal: "Справедливость восторжествовала" } },
+        { label: "Оставить алгоритмы в покое, свобода слова превыше всего", effects: { sectors: { intel: -1 }, dovolstvo: 10 } }
+      ]
+    },
+    {
+      id: "us_cancel_culture",
+      speaker: "Звезда Голливуда",
+      situation: "Меня отменили за твит десятилетней давности! Общество расколото.",
+      requires: { statuses: ["us_woke_capitalism"] },
+      weight: 1,
+      choices: [
+        { label: "Поддержать культуру отмены. Никакой терпимости к нетерпимым", addStatuses: ["us_polarization"], effects: { sectors: { smi: 1 }, dovolstvo: -10 }, newsLines: { state: "Звезда уволена за неподобающие слова", liberal: "Очищение рядов продолжается" } },
+        { label: "Выступить с речью о свободе мнений", removeStatuses: ["us_woke_capitalism"], effects: { dovolstvo: 15, resources: { influence: -50 } }, newsLines: { state: "Свобода слова защищена", liberal: "Президент поддерживает мракобесие" } }
+      ]
+    },
+    {
+      id: "us_fed_crisis",
       speaker: "Глава ФРС",
-      situation: "Госдолг пробил очередной потолок, рынки в панике.",
+      situation: "Доллар теряет позиции, инфляция растет. Печатный станок перегрелся.",
       requires: { statuses: ["fed_printer"] },
       weight: 1,
       choices: [
-        {
-          label: "Включайте печатный станок! [СМИ: ФРС спасает экономику количественным смягчением]",
-          effects: { resources: { money: 2000 }, modifiers: { inflationDelta: 0.05 } }
-        },
-        {
-          label: "Урежем социалку [СМИ: Жесткие меры экономии возмутили общество]",
-          effects: { resources: { money: 500 }, dovolstvo: -20 }
-        }
+        { label: "Легализовать крипту и обложить ее налогами", addStatuses: ["us_crypto_legal"], effects: { sectors: { economy: 1 }, resources: { money: 1000 } }, newsLines: { state: "Мы стали цифровой гаванью", liberal: "Отказ от доллара неизбежен" } },
+        { label: "Печатать еще больше! Раздадим вертолетные деньги", effects: { resources: { money: 3000 }, modifiers: { inflationDelta: 0.1 }, dovolstvo: 20 }, newsLines: { state: "Выплаты каждому американцу", liberal: "Гиперинфляция стучится в двери" } }
       ]
     },
     {
-      id: "us_movie",
-      speaker: "Голливудский Режиссер",
-      situation: "Мы сняли новый супергеройский фильм про то, какие мы молодцы.",
-      requires: { statuses: ["hollywood_softpower"] },
+      id: "us_crypto_bros",
+      speaker: "Криптобро",
+      situation: "Мы перенесли майнинг фермы в Техас. Дайте налоговые льготы.",
+      requires: { statuses: ["us_crypto_legal"] },
       weight: 1,
       choices: [
-        {
-          label: "Вложить миллионы в промо по всему миру [СМИ: Новый блокбастер бьет рекорды]",
-          effects: { resources: { money: -500, influence: 200 }, sectors: { smi: 1 } }
-        },
-        {
-          label: "Фильм провалился из-за повестки [СМИ: Зрители устали от однообразия]",
-          effects: { dovolstvo: -5 }
-        }
+        { label: "Дать льготы. Америка будет крипто-столицей", effects: { resources: { money: 1500 }, sectors: { economy: 1, science: 1 } }, newsLines: { state: "Инвестиции рекой текут в Техас", liberal: "Фермы сжигают энергию целых городов" } },
+        { label: "Никаких поблажек", effects: { resources: { money: 500 } } }
       ]
     },
     {
-      id: "us_military",
-      speaker: "Лоббист Пентагона",
-      situation: "Где-то на Ближнем Востоке нашли нефть. Ой, то есть отсутствие демократии.",
+      id: "us_border_wall",
+      speaker: "Губернатор Техаса",
+      situation: "Караваны мигрантов штурмуют границу. Пора строить стену.",
+      weight: 1,
+      choices: [
+        { label: "Начать строительство Великой Стены", effects: { resources: { money: -2000 }, dovolstvo: 15, sectors: { economy: 1 } }, newsLines: { state: "Граница на замке", liberal: "Возведение памятника ксенофобии" } },
+        { label: "Стена не нужна, пусть приезжают", addStatuses: ["us_border_crisis"], effects: { resources: { influence: 100 }, dovolstvo: -15 }, newsLines: { state: "США остается страной иммигрантов", liberal: "Гуманитарный кризис на южной границе" } }
+      ]
+    },
+    {
+      id: "us_cartels",
+      speaker: "Глава DEA",
+      situation: "Из-за кризиса на границе картели обнаглели.",
+      requires: { statuses: ["us_border_crisis"] },
+      weight: 1,
+      choices: [
+        { label: "Отправить армию на границу", removeStatuses: ["us_border_crisis"], effects: { sectors: { army: 1 }, resources: { money: -1000 }, dovolstvo: 20 }, newsLines: { state: "Армия навела порядок на границе", liberal: "Милитаризация границы недопустима" } },
+        { label: "Это проблема местных властей", effects: { sectors: { intel: -1 }, dovolstvo: -20 } }
+      ]
+    },
+    {
+      id: "us_2nd_amendment",
+      speaker: "Глава Оружейной Ассоциации",
+      situation: "Опять предлагают запретить штурмовые винтовки. Мы спонсируем вашу партию, не забывайте.",
+      weight: 1,
+      choices: [
+        { label: "Защитить Вторую Поправку. Оружие для всех", addStatuses: ["us_gun_culture"], effects: { resources: { money: 1000 }, sectors: { army: 1 } }, newsLines: { state: "Священное право на оружие защищено", liberal: "Спонсоры важнее жизней" } },
+        { label: "Ввести строгие проверки биографии", effects: { dovolstvo: 10, resources: { influence: 50, money: -500 } }, newsLines: { state: "Новый закон о контроле оружия", liberal: "Шаг в правильном направлении" } }
+      ]
+    },
+    {
+      id: "us_school_safety",
+      speaker: "Министр Образования",
+      situation: "Оружейная культура привела к кризису. Предлагают вооружить учителей.",
+      requires: { statuses: ["us_gun_culture"] },
+      weight: 1,
+      choices: [
+        { label: "Отличная идея, закупить автоматы для школ", effects: { resources: { money: -500 }, sectors: { army: 1 }, dovolstvo: -10 }, newsLines: { state: "Учителя теперь смогут защитить детей", liberal: "Школы превращаются в военные базы" } },
+        { label: "Лучше нанять психологов и поставить рамки", effects: { resources: { money: -800 }, dovolstvo: 15 }, newsLines: { state: "Инвестиции в безопасность школ", liberal: "Проблема оружия всё ещё не решена" } }
+      ]
+    },
+    {
+      id: "us_medicare",
+      speaker: "Министр Здравоохранения",
+      situation: "Цены на инсулин запредельные. Страховки не покрывают базовые нужды.",
+      weight: 1,
+      choices: [
+        { label: "Пусть рынок сам всё регулирует", addStatuses: ["us_healthcare_crisis"], effects: { resources: { money: 1500 }, dovolstvo: -15 }, newsLines: { state: "Свободный рынок снизит цены", liberal: "Люди умирают без страховки" } },
+        { label: "Продавить систему Medicare for All", effects: { resources: { money: -3000 }, dovolstvo: 30, sectors: { science: 1 } }, newsLines: { state: "Историческая реформа медицины", liberal: "Наконец-то здоровье не роскошь" } }
+      ]
+    },
+    {
+      id: "us_pharma_lobby",
+      speaker: "Лоббист БигФармы",
+      situation: "Медицинский кризис выгоден нам. Если вы не будете вмешиваться, мы озолотим вас.",
+      requires: { statuses: ["us_healthcare_crisis"] },
+      weight: 1,
+      choices: [
+        { label: "Взять взнос в предвыборный фонд", effects: { resources: { money: 2500 }, dovolstvo: -20 }, newsLines: { state: "Сотрудничество государства и бизнеса", liberal: "Власти куплены БигФармой" } },
+        { label: "Начать антимонопольное расследование", removeStatuses: ["us_healthcare_crisis"], effects: { dovolstvo: 25, sectors: { intel: 1 } }, newsLines: { state: "Цены на лекарства будут снижены", liberal: "Конец диктатуры фармацевтов" } }
+      ]
+    },
+    {
+      id: "us_nasa_vs_musk",
+      speaker: "Глава NASA",
+      situation: "Частники обгоняют нас в космосе. Нужно либо удвоить бюджет, либо отдать им контракты.",
+      weight: 1,
+      choices: [
+        { label: "Удвоить бюджет NASA", effects: { resources: { money: -1500 }, sectors: { science: 2 } }, newsLines: { state: "Новая эра освоения космоса", liberal: "Налоги улетают в трубу" } },
+        { label: "Отдать лунную программу эксцентричному миллиардеру", addStatuses: ["us_mars_program"], effects: { resources: { influence: 100 }, sectors: { science: 1 } }, newsLines: { state: "Частный капитал покоряет звезды", liberal: "Космос приватизирован" } }
+      ]
+    },
+    {
+      id: "us_space_force",
+      speaker: "Генерал Космических Войск",
+      situation: "Мы летим на Марс, но нам нужна защита. Предлагаю создать Космические Войска.",
+      requires: { statuses: ["us_mars_program"] },
+      weight: 1,
+      choices: [
+        { label: "Создать Космические Войска", effects: { resources: { money: -1000 }, sectors: { army: 2, science: 1 } }, newsLines: { state: "США доминируют в космосе", liberal: "Милитаризация орбиты" } },
+        { label: "Космос должен быть мирным", effects: { resources: { influence: 100 } } }
+      ]
+    },
+    {
+      id: "us_proxy_war",
+      speaker: "Генерал Пентагона",
+      situation: "Наши союзники в Европе просят оружие. Военно-промышленный комплекс требует контрактов.",
       requires: { statuses: ["military_industrial_complex"] },
       weight: 1,
       choices: [
-        {
-          label: "Отправить авианосцы! (ВПК получит заказы) [СМИ: США несут свободу и демократию!]",
-          effects: { resources: { money: 1000, influence: -100 }, sectors: { army: 1 } }
-        },
-        {
-          label: "Ограничиться осуждением в Твиттере [СМИ: Слабая внешняя политика Президента]",
-          effects: { resources: { influence: -50 }, dovolstvo: -10 }
-        }
+        { label: "Послать оружие на миллиарды долларов", effects: { resources: { money: -2000, influence: 300 }, sectors: { army: 1, economy: 1 } }, newsLines: { state: "Америка поддерживает союзников", liberal: "Очередная бесконечная война" } },
+        { label: "Сконцентрироваться на внутренних проблемах", effects: { dovolstvo: 15, resources: { influence: -150 } }, newsLines: { state: "Америка на первом месте", liberal: "Мы бросаем партнеров на произвол судьбы" } }
+      ]
+    },
+    {
+      id: "us_hollywood_strike",
+      speaker: "Глава Профсоюза",
+      situation: "Голливуд бастует. Сценаристы боятся, что их заменят нейросети.",
+      requires: { statuses: ["hollywood_softpower"] },
+      weight: 1,
+      choices: [
+        { label: "Запретить студиям использовать ИИ", effects: { dovolstvo: 15, sectors: { science: -1, smi: 1 } }, newsLines: { state: "Права трудящихся защищены", liberal: "Конец креативного кризиса" } },
+        { label: "ИИ это прогресс. Пусть бастуют", effects: { sectors: { science: 2, smi: -1 }, dovolstvo: -15 }, newsLines: { state: "Технологии не остановить", liberal: "Сценаристы остаются на улице" } }
       ]
     }
   ],

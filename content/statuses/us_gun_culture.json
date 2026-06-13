@@ -1,0 +1,14 @@
+{
+  "id": "us_gun_culture",
+  "name": "Вторая Поправка",
+  "type": "state",
+  "description": "У каждого гражданина по три ствола.",
+  "effects": {
+    "sectors": {
+      "army": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": 5
+    }
+  }
+}

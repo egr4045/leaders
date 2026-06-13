@@ -1,0 +1,15 @@
+{
+  "id": "us_woke_capitalism",
+  "name": "ESG Корпорации",
+  "type": "state",
+  "description": "Повесточка решает всё. Корпорации увольняют за неправильные мысли.",
+  "effects": {
+    "sectors": {
+      "smi": 2,
+      "economy": -1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -10
+    }
+  }
+}
