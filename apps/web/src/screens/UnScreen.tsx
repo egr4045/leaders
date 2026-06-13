@@ -60,7 +60,8 @@ export function ForbesLeaderboard() {
   if (!snapshot) return null;
   const list = [];
   if (snapshot.you && snapshot.you.declaredForbes !== null) {
-    list.push({ countryName: snapshot.you.countryName, playerName: snapshot.you.playerName ?? 'Вы', declared: snapshot.you.declaredForbes, isMe: true });
+    const me = snapshot.players.find((p) => p.playerId === session?.playerId);
+    list.push({ countryName: snapshot.you.countryName, playerName: me?.name ?? 'Вы', declared: snapshot.you.declaredForbes, isMe: true });
   }
   for (const o of snapshot.others) {
     if (o.declaredForbes !== null) {

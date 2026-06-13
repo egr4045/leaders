@@ -121,7 +121,7 @@ export function LobbyScreen() {
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {allCountries.map((c) => {
-                const taken = takenById.get(c.id) || (c.takenBy ? { name: c.takenBy, playerId: '', connected: Boolean(c.connected), isBot: Boolean(c.isBot) } : null);
+                const taken = takenById.get(c.id) || (c.takenBy ? { name: c.takenBy, playerId: '', connected: Boolean((c as any).connected), isBot: Boolean((c as any).isBot) } : null);
                 const isMine = c.isMine || myCountryId === c.id;
                 const isPicking = pickingId === c.id;
                 const isError = pickError === c.id;
