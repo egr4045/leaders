@@ -83,7 +83,7 @@ export function CustomCardNode({ data }: { data: CustomCardNodeData }) {
   });
 
   return (
-    <div className="flex flex-col min-w-[250px] rounded-lg shadow-xl bg-slate-800 border border-slate-900 font-sans overflow-hidden">
+    <div className="flex flex-col min-w-[250px] rounded-lg shadow-xl bg-slate-800 border border-slate-900 font-sans">
       {/* Header */}
       <div className="px-3 py-2 bg-gradient-to-r from-slate-700 to-slate-800 border-b border-slate-900 flex flex-col relative">
         <span className="text-amber-500 font-bold text-xs uppercase">{card.speaker}</span>
