@@ -1485,8 +1485,6 @@ export class RoomsService {
 
     this.persist(room);
     this.broadcast(room);
-    // broadcast чтобы обновить очереди
-    this.broadcastState(room.code);
     return { callId: call.id };
   }
 
@@ -1517,7 +1515,7 @@ export class RoomsService {
     }
     this.persist(room);
     // broadcast чтобы обновить очереди
-    this.broadcastState(room.code);
+    this.broadcast(room);
     return { callId, accepted: accept };
   }
 
@@ -1538,7 +1536,7 @@ export class RoomsService {
     }
     this.persist(room);
     // broadcast чтобы обновить очереди
-    this.broadcastState(room.code);
+    this.broadcast(room);
   }
 
   /** Проверка прав на видеокомнату: лобби/ООН — все; звонок — только участники. */
