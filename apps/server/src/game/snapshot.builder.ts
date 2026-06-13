@@ -57,6 +57,7 @@ export function buildSnapshot(
 
   let you: PrivateCountryView | null = null;
   const others: PublicCountryView[] = [];
+  const myCountryId = me?.countryId ?? null;
 
   if (room.world) {
     for (const p of room.players) {
@@ -121,7 +122,7 @@ export function buildSnapshot(
               description: st.description,
               cost: st.cost,
             })),
-          budget: room.sectorBudget?.[s.id] ?? {},
+          budget: (room.sectorBudget?.[s.id] as Record<string, number>) ?? {},
         };
       } else {
         others.push({
@@ -166,7 +167,6 @@ export function buildSnapshot(
 
   // войны: публичные факты всем, личные поля — только участнику.
   // КРИТИЧНО: WarState не сериализуется сырым — investedThisYear врага секретен.
-  const myCountryId = me?.countryId ?? null;
   const wars: WarView[] = room.world
     ? room.world.wars.map((w) => buildWarView(w, room.world!, myCountryId, content))
     : [];
