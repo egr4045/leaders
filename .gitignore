@@ -7,3 +7,6 @@ build/
 .pnpm-store/
 assets-cache/
 .claude/
+ml-box/.env
+ml-box/.venv/
+ml-box/silero_installed
