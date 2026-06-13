@@ -55,7 +55,7 @@ export function CustomStatusNode({ data }: { data: CustomStatusNodeData }) {
         {/* Display simple effects text if any */}
         {status.effects && Object.keys(status.effects).length > 0 && (
           <div className="text-[10px] text-sky-200 mt-1">
-            Эффекты: {JSON.stringify(status.effects).substring(0, 40)}...
+            Эффекты: {JSON.stringify(status.effects as any).substring(0, 40)}...
           </div>
         )}
       </div>

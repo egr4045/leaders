@@ -18,7 +18,7 @@ export function CustomCardNode({ data }: { data: CustomCardNodeData }) {
   const handleSaveConditions = async () => {
     setSaving(true);
     try {
-      const condArray = conditions.split(',').map(c => c.trim()).filter(Boolean);
+      const condArray = conditions.split(',').map((c: string) => c.trim()).filter(Boolean);
       const newRequires = { ...(card.raw?.requires as any) };
       if (condArray.length > 0) {
         newRequires.conditions = condArray;
