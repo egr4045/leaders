@@ -34,7 +34,7 @@ export interface PublicCountryView {
   playerId: string;
   playerName: string;
   /** публично видимые статусы: законы, режимы, технологии, чудеса */
-  publicStatuses: { id: string; name: string; type: string }[];
+  publicStatuses: { id: string; name: string; type: string; description?: string }[];
   /** заявленный (возможно лживый) Форбс; null = не заявлял */
   declaredForbes: number | null;
   /** активные санкции ООН — публичный факт */
@@ -56,7 +56,7 @@ export interface PrivateCountryView {
   sciencePoints: number;
   moneyRate: number;
   inflation: number;
-  statuses: { id: string; name: string; type: string }[];
+  statuses: { id: string; name: string; type: string; description?: string }[];
   quest: { id: string; name: string; description?: string; completed: boolean } | null;
   forbes: { moneyReal: number; goldValue: number; questBonus: number; legacy: number; total: number };
   declaredForbes: number | null;
@@ -75,7 +75,7 @@ export interface PrivateCountryView {
   /** прогноз на следующий тик (без ООН-эффектов) */
   projection: YearProjection;
   /** Законы, доступные для принятия (не принятые и не отклонённые) */
-  availableLaws?: { id: string; name: string; description?: string; cost?: { money?: number; influence?: number } }[];
+  availableLaws?: { id: string; name: string; description?: string; cost?: { money?: number; influence?: number }; effectsSummary?: string[] }[];
   /** Установленный бюджет */
   budget?: Record<string, number>;
   /** Очередь входящих звонков */

@@ -25,6 +25,33 @@ import type { RoomState } from './room.types.js';
 /** Публично видимые типы статусов: законы, режимы, технологии, чудеса. Состояния — скрыты. */
 const PUBLIC_STATUS_TYPES = new Set(['law', 'regime', 'tech', 'wonder']);
 
+const SECTOR_NAMES: Record<string, string> = { economy: 'Экономика', science: 'Наука', army: 'Армия', smi: 'СМИ', intel: 'Разведка' };
+const RES_NAMES: Record<string, string> = { money: 'Деньги', gold: 'Золото', food: 'Еда', influence: 'Влияние' };
+const POP_NAMES: Record<string, string> = { rabotyagi: 'рабочие', umniki: 'умники', siloviki: 'силовики', mediyshchiki: 'медийщики', ministry: 'министры' };
+
+function summarizeEffects(effects: Record<string, unknown> | undefined): string[] {
+  if (!effects) return [];
+  const lines: string[] = [];
+  const res = effects['resources'] as Record<string, number> | undefined;
+  if (res) for (const [k, v] of Object.entries(res)) lines.push(`${v > 0 ? '+' : ''}${v} ${RES_NAMES[k] ?? k}`);
+  const sec = effects['sectors'] as Record<string, number> | undefined;
+  if (sec) for (const [k, v] of Object.entries(sec)) lines.push(`${SECTOR_NAMES[k] ?? k} ${v > 0 ? '+' : ''}${v}`);
+  const pop = effects['population'] as Record<string, number> | undefined;
+  if (pop) for (const [k, v] of Object.entries(pop)) lines.push(`${v > 0 ? '+' : ''}${v} ${POP_NAMES[k] ?? k}`);
+  const dov = effects['dovolstvo'] as number | undefined;
+  if (dov != null) lines.push(`Довольство ${dov > 0 ? '+' : ''}${dov}`);
+  const mod = effects['modifiers'] as Record<string, unknown> | undefined;
+  if (mod) {
+    if (mod['dovolstvoDrift'] != null) { const v = mod['dovolstvoDrift'] as number; lines.push(`Тренд довольства ${v > 0 ? '+' : ''}${v}/год`); }
+    if (mod['inflationDelta'] != null) { const v = Math.round((mod['inflationDelta'] as number) * 100); lines.push(`Инфляция ${v > 0 ? '+' : ''}${v}%`); }
+    if (mod['forbesLegacy'] != null) { const v = mod['forbesLegacy'] as number; lines.push(`Форбс-наследие +${v}`); }
+    const sp = mod['special'] as Record<string, unknown> | undefined;
+    if (sp?.['planEconomy']) lines.push('Плановая экономика');
+    if (sp?.['oligarchy']) lines.push('Олигархия');
+  }
+  return lines;
+}
+
 /**
  * КРИТИЧНО (раздел 3 спеки): снапшот строится персонально.
  * Чужие реальные статы, реальный Форбс, тайные квесты сюда не попадают.
@@ -90,7 +117,7 @@ export function buildSnapshot(
           statuses: s.activeStatuses
             .map((id) => content.statuses.get(id))
             .filter((st) => !!st)
-            .map((st) => ({ id: st.id, name: st.name, type: st.type })),
+            .map((st) => ({ id: st.id, name: st.name, type: st.type, description: st.description })),
           quest: quest
             ? {
                 id: quest.id,
@@ -121,6 +148,7 @@ export function buildSnapshot(
               name: st.name,
               description: st.description,
               cost: st.cost,
+              effectsSummary: summarizeEffects(st.effects as Record<string, unknown> | undefined),
             })),
           budget: (room.sectorBudget?.[s.id] as Record<string, number>) ?? {},
           incomingCalls: [], // Заполним ниже
@@ -135,7 +163,7 @@ export function buildSnapshot(
           publicStatuses: s.activeStatuses
             .map((id) => content.statuses.get(id))
             .filter((st) => !!st && PUBLIC_STATUS_TYPES.has(st.type))
-            .map((st) => ({ id: st!.id, name: st!.name, type: st!.type })),
+            .map((st) => ({ id: st!.id, name: st!.name, type: st!.type, description: st!.description })),
           declaredForbes: s.declaredForbes,
           sanctions: s.sanctions,
           wonders: s.wondersBuilt,
@@ -252,6 +280,7 @@ export function buildSnapshot(
     wiretap: (() => {
       for (const w of room.wiretaps ?? []) {
         if (w.spyPlayerId !== forPlayerId) continue;
+        if (w.year !== room.world?.year) continue;
         const call = room.calls.find(
           (c) => c.status === 'active' && (c.fromCountryId === w.targetCountryId || c.toCountryId === w.targetCountryId),
         );

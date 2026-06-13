@@ -12,7 +12,7 @@ interface ReadLine {
 const MS_PER_CHAR = 55;
 const FALLBACK_MS = 2800;
 
-export function NewsPlayer({ news }: { news: NewsItem[] }) {
+export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?: boolean }) {
   const [stage, setStage] = useState<'intro' | number>('intro');
   const [lineIdx, setLineIdx] = useState(0);
   const [subtitleText, setSubtitleText] = useState('');
@@ -137,8 +137,8 @@ export function NewsPlayer({ news }: { news: NewsItem[] }) {
             </span>
           </div>
         )}
-        {/* Кнопка «дальше» */}
-        {allLinesShown && (
+        {/* Кнопка «дальше» — только хост */}
+        {isHost && allLinesShown && (
           <button
             onClick={goNext}
             className="absolute bottom-3 right-3 rounded-lg bg-amber-500 px-4 py-1.5 text-sm font-bold text-slate-950 hover:bg-amber-400"
@@ -146,7 +146,7 @@ export function NewsPlayer({ news }: { news: NewsItem[] }) {
             {idx + 1 < news.length ? 'Следующая страна →' : 'Завершить выпуск ✓'}
           </button>
         )}
-        {!allLinesShown && (
+        {isHost && !allLinesShown && (
           <button
             onClick={goNext}
             className="absolute bottom-3 right-3 rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-500 hover:text-slate-300"

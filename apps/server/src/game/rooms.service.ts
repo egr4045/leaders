@@ -278,7 +278,7 @@ export class RoomsService {
       room.readyPlayerIds = [];
     }
     if (phase === 'un_comments') {
-      room.speakerOrder = room.players.map((p) => p.playerId);
+      room.speakerOrder = room.players.filter((p) => p.connected || p.isBot).map((p) => p.playerId);
       room.speakerIdx = 0;
     } else if (phase !== 'cabinet') {
       room.speakerOrder = [];
@@ -346,7 +346,10 @@ export class RoomsService {
       return;
     }
     const ms = Math.max(10, Math.min(600, extraSeconds)) * 1000;
-    if (room.phaseEndsAt) {
+    room.waitingContinue = false;
+    if (!room.phaseEndsAt) {
+      this.armPhaseTimer(room, ms);
+    } else {
       room.phaseEndsAt += ms;
       this.armPhaseTimer(room, room.phaseEndsAt - Date.now());
     }
@@ -528,18 +531,16 @@ export class RoomsService {
         this.applyYearResults(room);
         this.enterPhase(room, 'results');
         break;
-      case 'results': {
+      case 'results':
+      case 'year_summary': {
         const years = this.content.tunables.game.years;
         if (room.world && room.world.year > years) {
           this.enterPhase(room, 'final');
         } else {
-          this.enterPhase(room, 'year_summary');
+          this.enterPhase(room, 'cabinet');
         }
         break;
       }
-      case 'year_summary':
-        this.enterPhase(room, 'cabinet');
-        break;
       default:
         break;
     }
@@ -1512,6 +1513,12 @@ export class RoomsService {
       this.server
         .to(fromSocket)
         .emit(accept ? SocketEvents.CallStarted : SocketEvents.CallEnded, { callId });
+    }
+    if (!accept) {
+      const toSocket = this.socketOfCountry(room, call.toCountryId);
+      if (toSocket && this.server) {
+        this.server.to(toSocket).emit(SocketEvents.CallEnded, { callId });
+      }
     }
     this.persist(room);
     // broadcast чтобы обновить очереди

@@ -84,7 +84,7 @@ function Tile({
         autoPlay
         playsInline
         muted={tile.isLocal}
-        className={`h-full w-full object-cover ${tile.isLocal ? 'scale-x-[-1]' : ''}`}
+        className={`h-full w-full object-contain bg-slate-950 ${tile.isLocal ? 'scale-x-[-1]' : ''}`}
       />
       {!tile.isLocal && <audio ref={audioRef} autoPlay />}
       {!tile.videoTrack && (

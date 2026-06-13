@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../lib/useGame';
+import type { YearReport } from '@leaders/shared';
 import { Timer } from '../ui/Timer';
 import { SwipeCard } from './cabinet/SwipeCard';
 import { CardResultModal } from './cabinet/CardResultModal';
@@ -20,6 +21,54 @@ interface PendingResult {
   card: AdvisorCard;
   choiceIndex: number;
   wonderFallback: string | null;
+}
+
+function YearReportBanner({ report }: { report: YearReport }) {
+  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    const id = setTimeout(() => setOpen(false), 15000);
+    return () => clearTimeout(id);
+  }, []);
+  if (!report) return null;
+  const delta = (b: number, a: number) => {
+    const d = a - b;
+    return d === 0 ? null : <span className={d > 0 ? 'text-emerald-400' : 'text-red-400'}>{d > 0 ? '+' : ''}{d}</span>;
+  };
+  return (
+    <details open={open} onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)} className="mb-3 rounded-xl border border-amber-800/40 bg-amber-950/20">
+      <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-amber-400 flex items-center justify-between">
+        <span>📊 Итоги {report.endedYear} года</span>
+        <span className="text-slate-500">{open ? '▲' : '▼'}</span>
+      </summary>
+      <div className="px-3 pb-3 pt-1 flex flex-col gap-2 text-xs">
+        {/* Ресурсы */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+          {(Object.entries(report.resources) as [string, {before:number;after:number}][]).map(([k, v]) => (
+            <div key={k} className="flex justify-between">
+              <span className="text-slate-400">{({ money:'💰 Деньги', gold:'🥇 Золото', food:'🌾 Еда', influence:'🗳 Влияние' } as Record<string,string>)[k] ?? k}</span>
+              <span>{delta(v.before, v.after) ?? <span className="text-slate-600">без изм.</span>}</span>
+            </div>
+          ))}
+        </div>
+        {/* Форбс */}
+        <div className="flex justify-between border-t border-amber-900/40 pt-1">
+          <span className="text-amber-400 font-semibold">Форбс</span>
+          <span>{delta(report.forbes.before, report.forbes.after) ?? '—'} <span className="text-slate-500 text-[10px]">({report.forbes.after})</span></span>
+        </div>
+        {/* Санкции / события */}
+        {report.globalEvents.length > 0 && (
+          <div className="flex flex-col gap-0.5">
+            {report.globalEvents.map((e, i) => <div key={i} className="text-slate-400">• {e}</div>)}
+          </div>
+        )}
+        {report.statusChanges.length > 0 && (
+          <div className="flex flex-col gap-0.5">
+            {report.statusChanges.map((e, i) => <div key={i} className="text-slate-400">• {e}</div>)}
+          </div>
+        )}
+      </div>
+    </details>
+  );
 }
 
 export function CabinetScreen() {
@@ -76,6 +125,9 @@ export function CabinetScreen() {
           </div>
         </div>
       </header>
+
+      {/* Итоги прошлого года */}
+      {snapshot.yearReport && <YearReportBanner report={snapshot.yearReport} />}
 
       {/* Вкладки */}
       <div className="mb-3 flex gap-1 rounded-xl bg-slate-900 p-1">

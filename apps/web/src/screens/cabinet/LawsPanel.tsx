@@ -66,6 +66,15 @@ export function LawsPanel({ you }: { you: PrivateCountryView }) {
                   <div key={law.id} className="rounded-lg border border-indigo-900/50 bg-indigo-950/20 p-3 text-sm">
                     <div className="font-bold text-indigo-300">{law.name}</div>
                     {law.description && <div className="mt-1 text-xs text-slate-300">{law.description}</div>}
+                    {law.effectsSummary && law.effectsSummary.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {law.effectsSummary.map((line, i) => (
+                          <span key={i} className="rounded bg-indigo-900/40 px-1.5 py-0.5 text-[10px] text-indigo-300">
+                            {line}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <div className="mt-2 flex flex-wrap gap-2 text-xs">
                       {law.cost?.money ? (
                         <span className={canAffordMoney ? 'text-slate-400' : 'text-rose-400 font-bold'}>

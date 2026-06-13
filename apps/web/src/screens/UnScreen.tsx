@@ -418,7 +418,7 @@ export function UnScreen() {
         <div className="flex flex-col gap-3">
           {snapshot.you && <DeclareForbes />}
           <ForbesLeaderboard />
-          {snapshot.news ? <NewsPlayer news={snapshot.news} /> : <NewsFeed />}
+          {snapshot.news ? <NewsPlayer news={snapshot.news} isHost={isHost} /> : <NewsFeed />}
         </div>
       )}
 

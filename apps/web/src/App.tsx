@@ -22,6 +22,7 @@ function Router() {
     case 'lobby':
       return <LobbyScreen />;
     case 'cabinet':
+    case 'year_summary':
       return <CabinetScreen />;
     case 'un_summary':
     case 'un_comments':
@@ -29,8 +30,6 @@ function Router() {
     case 'un_vote':
     case 'results':
       return <UnScreen />;
-    case 'year_summary':
-      return <YearSummaryScreen />;
     case 'final':
       return <FinalScreen />;
     default:

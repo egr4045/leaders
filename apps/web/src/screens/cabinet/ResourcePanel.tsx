@@ -1,4 +1,5 @@
 import type { PrivateCountryView } from '@leaders/shared';
+import { StatusBadge } from '../../ui/StatusBadge';
 
 const SECTOR_NAMES: Record<string, string> = {
   economy: 'Экономика',
@@ -117,11 +118,7 @@ export function ResourcePanel({ you }: { you: PrivateCountryView }) {
           <div className="mb-2">
             <div className="mb-1 text-xs font-semibold uppercase text-slate-600">Состояния</div>
             <div className="flex flex-wrap gap-1">
-              {privateStatuses.map((s) => (
-                <span key={s.id} className="rounded bg-red-900/40 px-2 py-0.5 text-xs text-red-300">
-                  {s.name}
-                </span>
-              ))}
+              {privateStatuses.map((s) => <StatusBadge key={s.id} status={s} />)}
             </div>
           </div>
         )}
@@ -208,24 +205,7 @@ export function ResourcePanel({ you }: { you: PrivateCountryView }) {
         {/* Публичные статусы */}
         {publicStatuses.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {publicStatuses.map((s) => {
-              const color =
-                s.type === 'law'
-                  ? 'bg-blue-900/40 text-blue-300'
-                  : s.type === 'regime'
-                  ? 'bg-purple-900/40 text-purple-300'
-                  : s.type === 'tech'
-                  ? 'bg-cyan-900/40 text-cyan-300'
-                  : 'bg-amber-900/40 text-amber-300';
-              return (
-                <span key={s.id} className={`rounded px-2 py-0.5 text-xs ${color}`}>
-                  {s.name}
-                  <span className="ml-1 opacity-60 text-[10px]">
-                    {s.type === 'law' ? 'закон' : s.type === 'regime' ? 'режим' : s.type === 'tech' ? 'техно' : 'чудо'}
-                  </span>
-                </span>
-              );
-            })}
+            {publicStatuses.map((s) => <StatusBadge key={s.id} status={s} />)}
           </div>
         ) : (
           <span className="text-xs text-slate-600">Нет публичных статусов</span>
