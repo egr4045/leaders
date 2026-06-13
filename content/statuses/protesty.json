@@ -1,0 +1,10 @@
+{
+  "id": "protesty",
+  "name": "Массовые Протесты",
+  "type": "state",
+  "description": "Люди вышли на улицы. Угроза госпереворота.",
+  "auto": "protesty",
+  "effects": {
+    "sectors": { "economy": -2 }
+  }
+}

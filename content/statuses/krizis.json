@@ -1,0 +1,10 @@
+{
+  "id": "krizis",
+  "name": "Экономический Кризис",
+  "type": "state",
+  "description": "Деньги кончились. Дефолт на носу.",
+  "auto": "krizis",
+  "effects": {
+    "modifiers": { "dovolstvoDrift": -10, "inflationDelta": 0.1 }
+  }
+}
