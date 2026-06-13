@@ -62,6 +62,10 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
   /** имя председателя, попросившего выключить микрофон (null = не просили) */
   const [forceMutedBy, setForceMutedBy] = useState<string | null>(null);
 
+  // sticky speaker map: identity → last-active timestamp
+  const stickyRef = useRef<Map<string, number>>(new Map());
+  const STICKY_MS = 4000;
+
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
@@ -112,11 +116,31 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
     ];
     for (const e of events) room.on(e, rebuild);
 
-    const onSpeakers = () => {
+    const flushSpeakers = () => {
       if (cancelled) return;
-      setSpeakingIds(room.activeSpeakers.map((p) => p.identity));
+      const now = Date.now();
+      const active = room.activeSpeakers;
+      // stamp currently active speakers
+      for (const p of active) stickyRef.current.set(p.identity, now);
+      // prune expired entries
+      for (const [id, ts] of stickyRef.current) {
+        if (now - ts >= STICKY_MS) stickyRef.current.delete(id);
+      }
+      const activeSet = new Set(active.map((p) => p.identity));
+      // sort: currently active first (LiveKit order), then recently-sticky (by recency)
+      const sorted = [...stickyRef.current.keys()].sort((a, b) => {
+        const ai = active.findIndex((p) => p.identity === a);
+        const bi = active.findIndex((p) => p.identity === b);
+        if (ai !== -1 && bi !== -1) return ai - bi;
+        if (activeSet.has(a)) return -1;
+        if (activeSet.has(b)) return 1;
+        return (stickyRef.current.get(b) ?? 0) - (stickyRef.current.get(a) ?? 0);
+      });
+      setSpeakingIds(sorted);
     };
-    room.on(RoomEvent.ActiveSpeakersChanged, onSpeakers);
+    room.on(RoomEvent.ActiveSpeakersChanged, flushSpeakers);
+    // periodic cleanup so stale entries expire even when no new speaker event fires
+    const speakerInterval = setInterval(flushSpeakers, 1000);
 
     // председатель попросил замьютиться: глушим локальный мик (включить обратно можно)
     const onForceMute = (d: { by: string }) => {
@@ -144,13 +168,15 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
 
     return () => {
       cancelled = true;
+      clearInterval(speakerInterval);
       for (const e of events) room.off(e, rebuild);
-      room.off(RoomEvent.ActiveSpeakersChanged, onSpeakers);
+      room.off(RoomEvent.ActiveSpeakersChanged, flushSpeakers);
       socket.off(SocketEvents.VideoForceMute, onForceMute);
       void room.disconnect();
       roomRef.current = null;
       setTiles([]);
       setSpeakingIds([]);
+      stickyRef.current.clear();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind, callId, enabled, emitRaw]);
