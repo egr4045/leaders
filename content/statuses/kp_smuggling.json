@@ -1,0 +1,15 @@
+{
+  "id": "kp_smuggling",
+  "name": "Китайская Контрабанда",
+  "type": "state",
+  "description": "Серый рынок процветает на границе.",
+  "effects": {
+    "sectors": {
+      "economy": 1,
+      "intel": -1
+    },
+    "modifiers": {
+      "dovolstvoDrift": 5
+    }
+  }
+}

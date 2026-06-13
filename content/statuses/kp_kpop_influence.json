@@ -1,0 +1,14 @@
+{
+  "id": "kp_kpop_influence",
+  "name": "Южное Влияние",
+  "type": "state",
+  "description": "Молодежь тайно слушает K-pop и смотрит дорамы.",
+  "effects": {
+    "sectors": {
+      "smi": -2
+    },
+    "modifiers": {
+      "dovolstvoDrift": -10
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "id": "kp_famine",
+  "name": "Голодомор",
+  "type": "state",
+  "description": "Трава закончилась. Люди едят кору деревьев.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 0.5,
+        "umniki": 0.5
+      },
+      "dovolstvoDrift": -20,
+      "populationMult": -0.05
+    }
+  }
+}

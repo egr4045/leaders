@@ -1,0 +1,14 @@
+{
+  "id": "kp_border_skirmish",
+  "name": "Пограничный Конфликт",
+  "type": "state",
+  "description": "Перестрелки в демилитаризованной зоне.",
+  "effects": {
+    "sectors": {
+      "army": 1
+    },
+    "modifiers": {
+      "dovolstvoDrift": -5
+    }
+  }
+}

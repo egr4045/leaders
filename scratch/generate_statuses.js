@@ -6,6 +6,13 @@ if (!fs.existsSync(statusesDir)) fs.mkdirSync(statusesDir, { recursive: true });
 
 const statuses = [
   // Глобальные мемы
+  { id: 'kp_famine', name: 'Голодомор', type: 'state', description: 'Трава закончилась. Люди едят кору деревьев.', effects: { modifiers: { outputMult: { rabotyagi: 0.5, umniki: 0.5 }, dovolstvoDrift: -20, populationMult: -0.05 } } },
+  { id: 'kp_smuggling', name: 'Китайская Контрабанда', type: 'state', description: 'Серый рынок процветает на границе.', effects: { sectors: { economy: 1, intel: -1 }, modifiers: { dovolstvoDrift: 5 } } },
+  { id: 'kp_kpop_influence', name: 'Южное Влияние', type: 'state', description: 'Молодежь тайно слушает K-pop и смотрит дорамы.', effects: { sectors: { smi: -2 }, modifiers: { dovolstvoDrift: -10 } } },
+  { id: 'kp_nuke_testing', name: 'Ядерные Испытания', type: 'state', description: 'Гора дрожит от подземных взрывов.', effects: { sectors: { army: 2, science: 1, economy: -2 }, modifiers: { dovolstvoDrift: 10 } } },
+  { id: 'kp_personality_cult_max', name: 'Божественный Культ', type: 'state', description: 'Вождь буквально признан богом.', effects: { sectors: { smi: 3 }, modifiers: { outputMult: { umniki: 0.7 } } } },
+  { id: 'kp_border_skirmish', name: 'Пограничный Конфликт', type: 'state', description: 'Перестрелки в демилитаризованной зоне.', effects: { sectors: { army: 1 }, modifiers: { dovolstvoDrift: -5 } } },
+  { id: 'kp_hacker_army', name: 'Армия Хакеров (Отряд 121)', type: 'state', description: 'Элитные кибервойска взламывают криптобиржи.', effects: { sectors: { intel: 2, economy: 1 }, modifiers: { outputMult: { umniki: 1.5 } } } },
   { id: 'cn_taiwan_tension', name: 'Тайваньский Кризис', type: 'state', description: 'Отношения с Западом накалены до предела.', effects: { sectors: { army: 2, economy: -1 }, modifiers: { dovolstvoDrift: -10 } } },
   { id: 'cn_real_estate_crisis', name: 'Пузырь Недвижимости', type: 'state', description: 'Крупнейшие застройщики банкротятся. Города-призраки пустуют.', effects: { sectors: { economy: -2 }, modifiers: { outputMult: { rabotyagi: 0.8 } } } },
   { id: 'cn_demographic_crisis', name: 'Демографическая Яма', type: 'state', description: 'Наследие политики одного ребенка. Работать некому.', effects: { modifiers: { outputMult: { rabotyagi: 0.7, umniki: 0.9 }, dovolstvoDrift: -5 } } },

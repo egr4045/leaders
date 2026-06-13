@@ -649,54 +649,166 @@ const decks = {
   ],
   dprk: [
     {
-      id: "kp_nuke",
-      speaker: "Генерал",
-      situation: "Южные соседи снова проводят учения. Предлагаю запустить ракету в сторону моря.",
-      requires: { statuses: ["red_button"] },
-      weight: 1,
-      choices: [
-        {
-          label: "Пуск! Пусть боятся! [СМИ: Очередное успешное испытание оружия возмездия]",
-          effects: { resources: { money: -200, influence: 150 }, dovolstvo: 20 }
-        },
-        {
-          label: "У нас нет денег на топливо [СМИ: Армия переведена на сбор урожая]",
-          effects: { resources: { food: 500 }, sectors: { army: -1 } }
-        }
-      ]
-    },
-    {
-      id: "kp_chuchhe",
-      speaker: "Пропагандист",
-      situation: "Западные СМИ говорят, что мы едим траву.",
+      id: "kp_bad_harvest",
+      speaker: "Министр Сельского Хозяйства",
+      situation: "Из-за засухи урожай погиб. Нам нечем кормить народ.",
       requires: { statuses: ["chuchhe"] },
       weight: 1,
       choices: [
-        {
-          label: "Заявить, что трава очень полезна (Чучхе!) [СМИ: Новая диета Вождя оздоровит нацию]",
-          effects: { dovolstvo: 10, modifiers: { foodPerCapitaMult: -0.1 } }
-        },
-        {
-          label: "Отправить хакеров взломать их СМИ [СМИ: Неизвестные хакеры обвалили серверы клеветников]",
-          effects: { sectors: { intel: 1 } }
-        }
+        { label: "Ввести строгий рацион: 200 грамм риса на человека", addStatuses: ["kp_famine"], effects: { resources: { food: 500 }, dovolstvo: -30 }, newsLines: { state: "Трудный поход закаляет наш дух", liberal: "Люди падают в обморок от истощения" } },
+        { label: "Умолять ООН о гуманитарной помощи", effects: { resources: { food: 2000, influence: -100 }, dovolstvo: 10 }, newsLines: { state: "Враги признали наше величие и платят дань", liberal: "Без подачек Запада они бы вымерли" } }
       ]
     },
     {
-      id: "kp_leader",
-      speaker: "Министр Обороны",
-      situation: "Вождь приехал на завод и дал ценные указания, глядя на станок.",
+      id: "kp_black_market",
+      speaker: "Начальник Службы Безопасности",
+      situation: "Из-за голода на границе с Китаем расцвел черный рынок (Чанмадан).",
+      requires: { statuses: ["kp_famine"] },
+      weight: 1,
+      choices: [
+        { label: "Закрыть глаза. Пусть люди выживают как могут", addStatuses: ["kp_smuggling"], removeStatuses: ["kp_famine"], effects: { sectors: { economy: 1 }, dovolstvo: 20 }, newsLines: { state: "Стихийные рынки демонстрируют инициативу масс", liberal: "Капитализм просачивается сквозь щели" } },
+        { label: "Расстрелять спекулянтов на площади", effects: { sectors: { intel: 1 }, dovolstvo: -20 }, newsLines: { state: "Беспощадная борьба с предателями социализма", liberal: "Кровавый террор продолжается" } }
+      ]
+    },
+    {
+      id: "kp_smuggler_crackdown",
+      speaker: "Генерал-Инспектор",
+      situation: "Контрабандисты обнаглели. Они завозят южнокорейские сериалы и джинсы!",
+      requires: { statuses: ["kp_smuggling"] },
+      weight: 1,
+      choices: [
+        { label: "Очистить границу! Жесточайшие репрессии!", removeStatuses: ["kp_smuggling"], effects: { sectors: { intel: 2, economy: -1 }, dovolstvo: -30 }, newsLines: { state: "Граница на замке от тлетворного влияния", liberal: "Единственная отдушина закрыта" } },
+        { label: "Брать с них дань в твердой валюте", effects: { resources: { money: 1000 }, sectors: { economy: 1 } }, newsLines: { state: "Партия контролирует неофициальные доходы", liberal: "Коррупция пронизала всю вертикаль" } }
+      ]
+    },
+    {
+      id: "kp_new_statue",
+      speaker: "Главный Архитектор",
+      situation: "Нам нужен новый 100-метровый бронзовый памятник Великому Вождю.",
       requires: { statuses: ["supreme_leader"] },
       weight: 1,
       choices: [
-        {
-          label: "Записать каждое слово в блокнот! [СМИ: Мудрость Вождя повысила надои стали!]",
-          effects: { sectors: { economy: 1 }, dovolstvo: 10 }
-        },
-        {
-          label: "Раздать рабочим портреты [СМИ: Народ ликует!]",
-          effects: { dovolstvo: 20 }
-        }
+        { label: "Построить! И заставить всех поклоняться!", addStatuses: ["kp_personality_cult_max"], effects: { resources: { money: -1500 }, sectors: { smi: 2 }, dovolstvo: -10 }, newsLines: { state: "Солнце Нации сияет в бронзе", liberal: "Миллионы долларов на статую в нищей стране" } },
+        { label: "У нас нет на это бронзы", effects: { resources: { influence: -50 }, dovolstvo: 5 } }
+      ]
+    },
+    {
+      id: "kp_tears_of_joy",
+      speaker: "Глава Пропаганды",
+      situation: "Вождь едет по столице. Толпа должна плакать от счастья.",
+      requires: { statuses: ["kp_personality_cult_max"] },
+      weight: 1,
+      choices: [
+        { label: "Кто не плачет достаточно искренне — в лагеря!", effects: { sectors: { intel: 1 }, dovolstvo: -20 }, newsLines: { state: "Слезы радости затопили улицы Пхеньяна", liberal: "Оскароносная игра под дулом автомата" } },
+        { label: "Раздать всем по луковице перед парадом", effects: { resources: { money: -100 }, dovolstvo: 5 } }
+      ]
+    },
+    {
+      id: "kp_usb_drives",
+      speaker: "Офицер Полиции",
+      situation: "Мы перехватили партию USB-флешек с южнокорейской музыкой.",
+      requires: { statuses: ["kp_smuggling"] },
+      weight: 1,
+      choices: [
+        { label: "Проигнорировать. Молодежи нужно развлекаться", addStatuses: ["kp_kpop_influence"], effects: { sectors: { smi: -1 }, dovolstvo: 15 }, newsLines: { state: "Послабления в культурной сфере", liberal: "Режим теряет хватку" } },
+        { label: "Устроить показательные суды над слушателями", effects: { sectors: { intel: 2 }, dovolstvo: -25 }, newsLines: { state: "Идеологическая зараза остановлена", liberal: "Смертная казнь за прослушивание песни" } }
+      ]
+    },
+    {
+      id: "kp_public_execution",
+      speaker: "Глава Суда",
+      situation: "Западная культура слишком глубоко проникла в общество. Нужен пример.",
+      requires: { statuses: ["kp_kpop_influence"] },
+      weight: 1,
+      choices: [
+        { label: "Публично расстрелять распространителей флешек", removeStatuses: ["kp_kpop_influence"], effects: { sectors: { intel: 1 }, dovolstvo: -30, resources: { influence: -100 } }, newsLines: { state: "Враги народа уничтожены зенитными пулеметами", liberal: "Средневековое варварство в 21 веке" } },
+        { label: "Отправить их в шахты на 15 лет", effects: { resources: { money: 500 }, dovolstvo: -10 } }
+      ]
+    },
+    {
+      id: "kp_missile_parade",
+      speaker: "Генерал Армии",
+      situation: "Мы собрали новую межконтинентальную ракету. Нужно показать её миру.",
+      requires: { statuses: ["red_button"] },
+      weight: 1,
+      choices: [
+        { label: "Провести подземные ядерные испытания!", addStatuses: ["kp_nuke_testing"], effects: { resources: { money: -2000 }, sectors: { army: 2 }, dovolstvo: 15 }, newsLines: { state: "Земля содрогнулась от нашей мощи", liberal: "Ядерный шантаж продолжается" } },
+        { label: "Просто провезти муляж на параде", effects: { resources: { influence: 50 }, dovolstvo: 5 } }
+      ]
+    },
+    {
+      id: "kp_un_sanctions",
+      speaker: "Дипломат в ООН",
+      situation: "В ответ на наши испытания Совбез ООН ввел тотальное эмбарго на нефть.",
+      requires: { statuses: ["kp_nuke_testing"] },
+      weight: 1,
+      choices: [
+        { label: "Перевести весь транспорт на дрова", effects: { sectors: { economy: -2, science: -1 }, dovolstvo: -20 }, newsLines: { state: "Грузовики на древесном газе спасают логистику", liberal: "Возврат в 19 век" } },
+        { label: "Попросить Китай нарушить санкции", effects: { resources: { influence: -150, money: 1000 }, sectors: { economy: 1 } } }
+      ]
+    },
+    {
+      id: "kp_dmz_speakers",
+      speaker: "Командир Погранзаставы",
+      situation: "Южане поставили огромные колонки на границе и транслируют пропаганду.",
+      requires: { statuses: ["kp_nuke_testing"] },
+      weight: 1,
+      choices: [
+        { label: "Привести артиллерию в боевую готовность", addStatuses: ["kp_border_skirmish"], effects: { sectors: { army: 1 }, dovolstvo: 10 }, newsLines: { state: "Мы готовы стереть Сеул с лица земли", liberal: "Эскалация на полуострове" } },
+        { label: "Поставить свои колонки и включить патриотичные марши", effects: { sectors: { smi: 1 }, resources: { money: -200 } } }
+      ]
+    },
+    {
+      id: "kp_artillery_fire",
+      speaker: "Министр Обороны",
+      situation: "Стычки на границе переросли в перестрелку. Южане обстреляли наш патруль.",
+      requires: { statuses: ["kp_border_skirmish"] },
+      weight: 1,
+      choices: [
+        { label: "Ударить артиллерией по южному острову Енпхендо!", effects: { resources: { influence: 200 }, sectors: { army: 2, economy: -1 }, dovolstvo: 30 }, newsLines: { state: "Адекватный ответ на провокации", liberal: "Они обстреляли мирных жителей" } },
+        { label: "Отступить и подать жалобу", removeStatuses: ["kp_border_skirmish"], effects: { sectors: { army: -1 }, dovolstvo: -15 }, newsLines: { state: "Мы проявили дипломатическую сдержанность", liberal: "Режим испугался настоящей войны" } }
+      ]
+    },
+    {
+      id: "kp_cyber_unit",
+      speaker: "Министр Информатики",
+      situation: "Мы не можем победить США в прямой войне, но мы можем разрушить их сети.",
+      weight: 1,
+      choices: [
+        { label: "Создать элитное подразделение хакеров (Отряд 121)", addStatuses: ["kp_hacker_army"], effects: { resources: { money: -1000 }, sectors: { intel: 2, science: 1 } }, newsLines: { state: "Невидимый фронт нашей революции", liberal: "Создание государственной ОПГ" } },
+        { label: "Интернет нам не нужен, это зло", effects: { sectors: { intel: -1, science: -1 } } }
+      ]
+    },
+    {
+      id: "kp_crypto_heist",
+      speaker: "Командир Отряда 121",
+      situation: "Мы нашли уязвимость в западной криптобирже. Можно украсть полмиллиарда.",
+      requires: { statuses: ["kp_hacker_army"] },
+      weight: 1,
+      choices: [
+        { label: "Взламывайте! Деньги пойдут на ракетную программу", effects: { resources: { money: 5000 }, sectors: { army: 1, economy: 1 }, dovolstvo: 10 }, newsLines: { state: "Наши гении добывают валюту", liberal: "Государство-хакер спонсирует терроризм" } },
+        { label: "Это слишком рискованно", effects: { resources: { influence: 50 } } }
+      ]
+    },
+    {
+      id: "kp_sony_hack",
+      speaker: "Глава Пропаганды",
+      situation: "В Голливуде сняли комедию про убийство нашего Вождя! Это возмутительно!",
+      requires: { statuses: ["kp_hacker_army"] },
+      weight: 1,
+      choices: [
+        { label: "Уничтожить их сервера и слить фильмы в сеть!", effects: { resources: { influence: 300 }, sectors: { intel: 1, smi: 1 }, dovolstvo: 25 }, newsLines: { state: "Справедливое возмездие клеветникам", liberal: "Атака на свободу слова" } },
+        { label: "Запретить этот фильм к просмотру у нас", effects: { dovolstvo: -5 } }
+      ]
+    },
+    {
+      id: "kp_train_ride",
+      speaker: "Служба Протокола",
+      situation: "Вождь собирается на встречу с союзником. На самолете лететь опасно.",
+      weight: 1,
+      choices: [
+        { label: "Снарядить бронепоезд! Ехать неделю со скоростью 40 км/ч", effects: { resources: { money: -500, influence: 150 }, sectors: { army: 1 }, dovolstvo: 15 }, newsLines: { state: "Исторический визит на высшем уровне", liberal: "Паранойя Вождя парализует ЖД пути" } },
+        { label: "Послать делегатов по Зуму", effects: { sectors: { intel: -1 }, dovolstvo: -10 } }
       ]
     }
   ],

@@ -1,0 +1,17 @@
+{
+  "id": "kp_hacker_army",
+  "name": "Армия Хакеров (Отряд 121)",
+  "type": "state",
+  "description": "Элитные кибервойска взламывают криптобиржи.",
+  "effects": {
+    "sectors": {
+      "intel": 2,
+      "economy": 1
+    },
+    "modifiers": {
+      "outputMult": {
+        "umniki": 1.5
+      }
+    }
+  }
+}

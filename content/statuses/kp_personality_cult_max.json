@@ -1,0 +1,16 @@
+{
+  "id": "kp_personality_cult_max",
+  "name": "Божественный Культ",
+  "type": "state",
+  "description": "Вождь буквально признан богом.",
+  "effects": {
+    "sectors": {
+      "smi": 3
+    },
+    "modifiers": {
+      "outputMult": {
+        "umniki": 0.7
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "id": "kp_nuke_testing",
+  "name": "Ядерные Испытания",
+  "type": "state",
+  "description": "Гора дрожит от подземных взрывов.",
+  "effects": {
+    "sectors": {
+      "army": 2,
+      "science": 1,
+      "economy": -2
+    },
+    "modifiers": {
+      "dovolstvoDrift": 10
+    }
+  }
+}
