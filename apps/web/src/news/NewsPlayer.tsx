@@ -4,10 +4,6 @@ import { Anchor } from './Anchor';
 
 type NewsItem = NonNullable<RoomSnapshot['news']>[number];
 
-interface ReadLine {
-  countryName: string;
-  text: string;
-}
 
 const MS_PER_CHAR = 55;
 const FALLBACK_MS = 2800;
@@ -56,10 +52,8 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
   const [stage, setStage] = useState<'intro' | number>('intro');
   const [lineIdx, setLineIdx] = useState(0);
   const [subtitleText, setSubtitleText] = useState('');
-  const [readLog, setReadLog] = useState<ReadLine[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
-  const logEndRef = useRef<HTMLDivElement>(null);
   const jinglePlayed = useRef(false);
 
   // Play intro jingle once on mount
@@ -101,7 +95,6 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       ? Math.max(line.length * MS_PER_CHAR + 600, FALLBACK_MS)
       : FALLBACK_MS;
     const timer = setTimeout(() => {
-      setReadLog((prev) => [...prev, { countryName: item.countryName, text: line }]);
       if (lineIdx + 1 < item.lines.length) {
         setLineIdx((l) => l + 1);
       }
@@ -130,11 +123,6 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx]);
-
-  // auto-scroll read log
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [readLog]);
 
   const goNext = () => {
     setAudioEl(null);
@@ -229,21 +217,6 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
         />
       </div>
 
-      {/* Read log */}
-      {readLog.length > 0 && (
-        <div className="max-h-36 overflow-y-auto border-t border-slate-800 p-3">
-          <div className="mb-1 text-xs uppercase tracking-wide text-slate-600">Прочитано</div>
-          <ul className="flex flex-col gap-1">
-            {readLog.map((l, i) => (
-              <li key={i} className="flex gap-2 text-xs text-slate-400">
-                <span className="shrink-0 font-semibold text-amber-500">{l.countryName}</span>
-                <span>{l.text}</span>
-              </li>
-            ))}
-          </ul>
-          <div ref={logEndRef} />
-        </div>
-      )}
     </div>
   );
 }

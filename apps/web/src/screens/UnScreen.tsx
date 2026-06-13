@@ -473,8 +473,6 @@ export function UnScreen() {
       >
         {phase === 'un_summary' && (
           <>
-            {snapshot.you && <DeclareForbes />}
-            <ForbesLeaderboard />
             {snapshot.news ? <NewsPlayer news={snapshot.news} isHost={isHost} /> : <NewsFeed />}
           </>
         )}
@@ -496,6 +494,7 @@ export function UnScreen() {
         {phase === 'un_vote' && (
           <>
             {snapshot.you && <DeclareForbes />}
+            <ForbesLeaderboard />
             <WarCourtPanel />
             <VotePanel />
           </>

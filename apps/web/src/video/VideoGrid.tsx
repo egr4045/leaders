@@ -369,22 +369,23 @@ export function VideoGrid({
     const isLobby = kind === 'lobby';
     // Lobby: fewer columns so aspect-video tiles grow tall enough to fill the screen height
     const cols = isLobby
-      ? n <= 2
+      ? // Lobby: fewer cols so aspect-video tiles grow to fill the tall video panel
+        n <= 2
         ? 'grid-cols-1 sm:grid-cols-2'
         : n <= 6
         ? 'grid-cols-2'
         : 'grid-cols-2 md:grid-cols-3'
-      : n <= 1
+      : // UN grid (debate/vote): same fewer-col logic — video area is ~900px tall,
+        // 2 cols for ≤6 gives 3 rows × 256px ≈ 784px, nearly filling the height
+        n <= 1
       ? 'grid-cols-1'
       : n <= 2
       ? 'grid-cols-1 sm:grid-cols-2'
-      : n <= 4
-      ? 'grid-cols-2'
       : n <= 6
+      ? 'grid-cols-2'
+      : n <= 9
       ? 'grid-cols-2 md:grid-cols-3'
-      : n <= 8
-      ? 'grid-cols-3 md:grid-cols-4'
-      : 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+      : 'grid-cols-3';
     tilesEl = (
       <div className={`grid gap-2 ${cols} ${isLobby ? 'h-full place-content-center' : 'h-full w-full content-center'}`}>
         {sorted.map((e) => renderEntry(e))}
