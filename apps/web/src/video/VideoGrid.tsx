@@ -29,7 +29,7 @@ function CamIcon({ on }: { on: boolean }) {
 /** Размер тайла: fill = занять контейнер, strip = фикс. ширина в полосе, иначе по сетке. */
 function tileSizeClass(opts: { fill?: boolean; stripMode?: boolean; large?: boolean }) {
   if (opts.fill) return 'h-full w-full';
-  if (opts.stripMode) return 'h-full w-28 shrink-0';
+  if (opts.stripMode) return 'h-full w-28 md:w-36 shrink-0';
   return opts.large ? 'aspect-video' : 'aspect-square sm:aspect-video';
 }
 
@@ -92,31 +92,31 @@ function Tile({
       )}
 
       {/* Name + country overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
-        <div className="flex items-center gap-1 text-xs font-semibold leading-tight text-white">
-          {speaking && <span className="inline-block h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-emerald-400" />}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2 py-2 backdrop-blur-0">
+        <div className="flex items-center gap-1 text-xs font-semibold leading-tight text-white drop-shadow">
+          {speaking && <span className="inline-block h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-400" />}
           {displayName}
         </div>
         {countryName && (
-          <div className="text-[10px] leading-tight text-amber-300">{countryName}</div>
+          <div className="text-[10px] leading-tight text-amber-300 drop-shadow">{countryName}</div>
         )}
       </div>
 
       {/* Mic/cam controls on local tile */}
       {tile.isLocal && showControls && (
-        <div className="absolute right-1 top-1 flex gap-1">
+        <div className="absolute right-1.5 top-1.5 flex gap-1.5">
           <button
             onClick={onToggleMic}
-            className={`rounded-full p-1.5 transition-colors ${
-              micEnabled ? 'bg-black/50 text-white hover:bg-black/70' : 'bg-red-600 text-white'
+            className={`rounded-full p-2.5 shadow-lg transition-colors ${
+              micEnabled ? 'bg-black/60 text-white hover:bg-black/80' : 'bg-red-600 text-white'
             }`}
           >
             <MicIcon on={micEnabled ?? true} />
           </button>
           <button
             onClick={onToggleCam}
-            className={`rounded-full p-1.5 transition-colors ${
-              camEnabled ? 'bg-black/50 text-white hover:bg-black/70' : 'bg-red-600 text-white'
+            className={`rounded-full p-2.5 shadow-lg transition-colors ${
+              camEnabled ? 'bg-black/60 text-white hover:bg-black/80' : 'bg-red-600 text-white'
             }`}
           >
             <CamIcon on={camEnabled ?? true} />
@@ -254,22 +254,38 @@ export function VideoGrid({
   let tilesEl: ReactNode;
 
   if (layout === 'spotlight') {
-    // главный спикер крупно в центре, остальные — полоса снизу (как шаринг экрана в Мите)
+    // главный спикер крупно; на мобайле/планшете — полоса снизу; на lg+ — боковая колонка справа
     const mainId = spotlightId ?? speakingIds[0] ?? entries[0]?.id ?? null;
     const main = entries.find((e) => e.id === mainId) ?? entries[0];
     const rest = entries.filter((e) => e.id !== main?.id);
     tilesEl = (
-      <div className="flex h-full flex-col gap-2">
-        <div className="min-h-0 flex-1">{main && renderEntry(main, { fill: true })}</div>
-        {rest.length > 0 && (
-          <div className="flex h-20 shrink-0 gap-2 overflow-x-auto">
-            {rest.map((e) => renderEntry(e, { strip: true }))}
-          </div>
-        )}
-      </div>
+      <>
+        {/* Mobile / tablet: main top, strip bottom */}
+        <div className="flex h-full flex-col gap-2 lg:hidden">
+          <div className="min-h-0 flex-1">{main && renderEntry(main, { fill: true })}</div>
+          {rest.length > 0 && (
+            <div className="flex h-24 shrink-0 gap-2 overflow-x-auto">
+              {rest.map((e) => renderEntry(e, { strip: true }))}
+            </div>
+          )}
+        </div>
+        {/* Desktop lg+: main left, sidebar right */}
+        <div className="hidden h-full gap-2 lg:flex">
+          <div className="min-h-0 min-w-0 flex-1">{main && renderEntry(main, { fill: true })}</div>
+          {rest.length > 0 && (
+            <div className="flex w-36 shrink-0 flex-col gap-2 overflow-y-auto">
+              {rest.map((e) => renderEntry(e, { strip: false }))}
+            </div>
+          )}
+        </div>
+      </>
     );
   } else if (stripMode) {
-    tilesEl = <div className="flex h-full gap-2 overflow-x-auto">{entries.map((e) => renderEntry(e, { strip: true }))}</div>;
+    tilesEl = (
+      <div className="flex h-full gap-2 overflow-x-auto">
+        {entries.map((e) => renderEntry(e, { strip: true }))}
+      </div>
+    );
   } else {
     // сетка («балаган»): говорящие — в начало, число колонок по количеству участников
     const rank = (id: string) => {
@@ -279,14 +295,22 @@ export function VideoGrid({
     const sorted = [...entries].sort((a, b) => rank(a.id) - rank(b.id));
     const n = sorted.length;
     const cols =
-      n <= 2
+      n <= 1
+        ? 'grid-cols-1'
+        : n <= 2
         ? 'grid-cols-1 sm:grid-cols-2'
         : n <= 4
         ? 'grid-cols-2'
         : n <= 6
-        ? 'grid-cols-2 sm:grid-cols-3'
-        : 'grid-cols-3 sm:grid-cols-4';
-    tilesEl = <div className={`grid w-full gap-2 ${cols}`}>{sorted.map((e) => renderEntry(e))}</div>;
+        ? 'grid-cols-2 md:grid-cols-3'
+        : n <= 8
+        ? 'grid-cols-3 md:grid-cols-4'
+        : 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+    tilesEl = (
+      <div className={`grid h-full w-full auto-rows-fr gap-2 ${cols}`}>
+        {sorted.map((e) => renderEntry(e))}
+      </div>
+    );
   }
 
   const muteToast = forceMutedBy && (
@@ -311,11 +335,11 @@ export function VideoGrid({
     <div className="flex h-full flex-col">
       {muteToast}
       <div className="min-h-0 flex-1 overflow-hidden">{tilesEl}</div>
-      <div className="flex items-center gap-2 border-t border-slate-800 bg-slate-950 px-3 py-2">
+      <div className="flex flex-wrap items-center gap-2 border-t border-slate-800 bg-slate-950 px-3 py-2.5">
         <button
           onClick={toggleMic}
           title={micEnabled ? 'Выключить микрофон' : 'Включить микрофон'}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
             micEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-700 text-white'
           }`}
         >
@@ -325,14 +349,14 @@ export function VideoGrid({
         <button
           onClick={toggleCam}
           title={camEnabled ? 'Выключить камеру' : 'Включить камеру'}
-          className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
             camEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-700 text-white'
           }`}
         >
           <CamIcon on={camEnabled} />
           <span className="hidden sm:inline">{camEnabled ? 'Камера' : 'Камера выкл'}</span>
         </button>
-        {hostControls && <div className="ml-auto flex items-center gap-2">{hostControls}</div>}
+        {hostControls && <div className="ml-auto flex flex-wrap items-center gap-2">{hostControls}</div>}
       </div>
     </div>
   );

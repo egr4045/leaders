@@ -241,6 +241,7 @@ export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry
       </div>
       <div style={{ height: '75vh' }} className="rounded-xl border border-slate-700 bg-slate-950 overflow-hidden relative">
         <ReactFlow
+          key={countryFilter || 'all'}
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
