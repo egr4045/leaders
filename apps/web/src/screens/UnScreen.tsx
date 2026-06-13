@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../lib/useGame';
 import { Timer } from '../ui/Timer';
 import { VideoGrid } from '../video/VideoGrid';
 import { NewsPlayer } from '../news/NewsPlayer';
 import { SocketEvents, type GamePhase } from '@leaders/shared';
+import { BottomDrawer } from '../ui/BottomDrawer';
 
 const PHASE_TITLES: Record<string, string> = {
   un_summary: 'Новости ООН',
@@ -20,17 +22,25 @@ function DeclareForbes() {
 
   const others = snapshot.others.filter((o) => o.declaredForbes !== null);
   const myDeclared = snapshot.you.declaredForbes;
-  const rank = myDeclared !== null
-    ? others.filter((o) => (o.declaredForbes ?? 0) > myDeclared).length + 1
-    : null;
+  const rank =
+    myDeclared !== null
+      ? others.filter((o) => (o.declaredForbes ?? 0) > myDeclared).length + 1
+      : null;
 
   return (
     <div className="flex flex-col gap-2 rounded-xl bg-slate-900 p-3 text-sm">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
-        <span>Реальный Форбс: <b className="text-amber-400">{Math.round(snapshot.you.forbes.total)}</b> (только вы)</span>
+        <span>
+          Реальный Форбс: <b className="text-amber-400">{Math.round(snapshot.you.forbes.total)}</b>
+        </span>
         {myDeclared !== null && (
-          <span>Заявлено: <b className="text-slate-200">{myDeclared}</b>
-            {rank !== null && <span className="ml-1 text-amber-400">— место #{rank} из {snapshot.players.filter(p => !p.isBot).length}</span>}
+          <span>
+            Заявлено: <b className="text-slate-200">{myDeclared}</b>
+            {rank !== null && (
+              <span className="ml-1 text-amber-400">
+                — #{rank} из {snapshot.players.filter((p) => !p.isBot).length}
+              </span>
+            )}
           </span>
         )}
       </div>
@@ -41,12 +51,15 @@ function DeclareForbes() {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Ваш «форбс»"
-          className="w-32 rounded border border-slate-700 bg-slate-950 px-2 py-1"
+          className="w-32 rounded border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm"
         />
         <button
           disabled={!value}
-          onClick={() => { void declareForbes(Number(value)); setValue(''); }}
-          className="rounded bg-amber-600 px-3 py-1 font-semibold disabled:opacity-40"
+          onClick={() => {
+            void declareForbes(Number(value));
+            setValue('');
+          }}
+          className="rounded bg-amber-600 px-4 py-1.5 font-semibold disabled:opacity-40"
         >
           Заявить
         </button>
@@ -61,7 +74,12 @@ export function ForbesLeaderboard() {
   const list = [];
   if (snapshot.you && snapshot.you.declaredForbes !== null) {
     const me = snapshot.players.find((p) => p.playerId === session?.playerId);
-    list.push({ countryName: snapshot.you.countryName, playerName: me?.name ?? 'Вы', declared: snapshot.you.declaredForbes, isMe: true });
+    list.push({
+      countryName: snapshot.you.countryName,
+      playerName: me?.name ?? 'Вы',
+      declared: snapshot.you.declaredForbes,
+      isMe: true,
+    });
   }
   for (const o of snapshot.others) {
     if (o.declaredForbes !== null) {
@@ -69,7 +87,6 @@ export function ForbesLeaderboard() {
     }
   }
   if (list.length === 0) return null;
-
   list.sort((a, b) => b.declared - a.declared);
 
   return (
@@ -77,8 +94,14 @@ export function ForbesLeaderboard() {
       <div className="mb-2 text-xs font-semibold uppercase text-slate-500">🏆 Заявленный рейтинг Форбс</div>
       <div className="flex flex-col gap-1">
         {list.map((item, i) => (
-          <div key={i} className={`flex justify-between items-center text-sm ${item.isMe ? 'text-amber-400 font-bold' : 'text-slate-300'}`}>
-            <span>#{i + 1} {item.countryName} <span className="text-xs text-slate-500">({item.playerName})</span></span>
+          <div
+            key={i}
+            className={`flex items-center justify-between text-sm ${item.isMe ? 'font-bold text-amber-400' : 'text-slate-300'}`}
+          >
+            <span>
+              #{i + 1} {item.countryName}{' '}
+              <span className="text-xs text-slate-500">({item.playerName})</span>
+            </span>
             <span>{item.declared}</span>
           </div>
         ))}
@@ -91,7 +114,7 @@ function NewsFeed() {
   const { snapshot } = useGame();
   if (!snapshot?.news) return null;
   return (
-    <div className="flex w-full flex-col gap-3">
+    <div className="flex flex-col gap-3">
       {snapshot.news.map((n) => (
         <div key={n.countryId} className="rounded-xl bg-slate-900 p-4">
           <div className="mb-1 font-bold text-amber-400">{n.countryName}</div>
@@ -104,7 +127,6 @@ function NewsFeed() {
   );
 }
 
-/** Суд ООН по войнам: оглашение обоснования + голосование «справедлива/нет». */
 function WarCourtPanel() {
   const { snapshot, emitRaw } = useGame();
   const [msg, setMsg] = useState<string | null>(null);
@@ -120,7 +142,7 @@ function WarCourtPanel() {
   };
 
   return (
-    <div className="w-full">
+    <div>
       <div className="mb-2 flex items-center justify-between">
         <div className="font-bold text-amber-400">⚖️ Суд ООН: справедливы ли войны?</div>
         {msg && <span className="text-xs text-amber-400">{msg}</span>}
@@ -132,7 +154,8 @@ function WarCourtPanel() {
           return (
             <div key={w.id} className="rounded-xl bg-slate-900 p-3 text-sm">
               <div className="font-bold text-red-300">
-                ⚔️ {w.attacker.countryNames.join(' + ')} <span className="text-slate-500">против</span>{' '}
+                ⚔️ {w.attacker.countryNames.join(' + ')}{' '}
+                <span className="text-slate-500">vs</span>{' '}
                 {w.defender.countryNames.join(' + ')}
               </div>
               <div className="my-1 rounded border-l-2 border-amber-600 bg-slate-950 px-2 py-1 text-xs italic text-slate-300">
@@ -145,16 +168,16 @@ function WarCourtPanel() {
                 {iAmIn ? (
                   <span className="text-xs text-slate-600">участники не голосуют</span>
                 ) : (
-                  <div className="flex gap-1">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => void vote(w.id, 'just')}
-                      className="rounded bg-emerald-700 px-2 py-1 text-xs font-semibold hover:bg-emerald-600"
+                      className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold hover:bg-emerald-600"
                     >
                       Справедлива
                     </button>
                     <button
                       onClick={() => void vote(w.id, 'unjust')}
-                      className="rounded bg-red-700 px-2 py-1 text-xs font-semibold hover:bg-red-600"
+                      className="rounded-lg bg-red-700 px-3 py-1.5 text-xs font-semibold hover:bg-red-600"
                     >
                       Несправедлива
                     </button>
@@ -181,26 +204,33 @@ function VotePanel() {
   };
 
   return (
-    <div className="w-full">
+    <div>
       <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="text-slate-400">Влияние: <b className="text-sky-400">{snapshot.you.resources.influence}</b></span>
+        <span className="text-slate-400">
+          Влияние: <b className="text-sky-400">{snapshot.you.resources.influence}</b>
+        </span>
         {msg && <span className="text-amber-400 text-xs">{msg}</span>}
       </div>
-
       <details className="mb-3 rounded-lg border border-slate-700 text-xs">
-        <summary className="cursor-pointer px-3 py-2 text-slate-400 hover:text-slate-200">Что дают санкции и поддержка?</summary>
+        <summary className="cursor-pointer px-3 py-2 text-slate-400 hover:text-slate-200">
+          Что дают санкции и поддержка?
+        </summary>
         <div className="border-t border-slate-700 px-3 py-2 text-slate-400 leading-relaxed">
-          <b className="text-red-400">Санкции</b> → +1 санкция у цели → +2% инфляции в год<br />
-          <b className="text-emerald-400">Поддержка</b> → −1 санкция (или +10 влияния если санкций нет)<br />
+          <b className="text-red-400">Санкции</b> → +1 санкция → +2% инфляции/год
+          <br />
+          <b className="text-emerald-400">Поддержка</b> → −1 санкция (или +10 влияния)
+          <br />
           Стоимость голоса: 10 влияния
         </div>
       </details>
-
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {snapshot.others.map((o) => {
           const tally = snapshot.voteTally[o.countryId];
           return (
-            <div key={o.countryId} className="flex items-center justify-between rounded-xl bg-slate-900 p-3 text-sm">
+            <div
+              key={o.countryId}
+              className="flex items-center justify-between rounded-xl bg-slate-900 p-3 text-sm"
+            >
               <div>
                 <div className="font-bold">{o.countryName}</div>
                 <div className="text-xs text-slate-500">
@@ -208,11 +238,17 @@ function VotePanel() {
                   {o.sanctions > 0 && <span className="ml-1 text-red-400">({o.sanctions} акт.)</span>}
                 </div>
               </div>
-              <div className="flex gap-1">
-                <button onClick={() => void vote(o.countryId, 'sanction')} className="rounded bg-red-700 px-2 py-1 text-xs font-semibold hover:bg-red-600">
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => void vote(o.countryId, 'sanction')}
+                  className="rounded-lg bg-red-700 px-2.5 py-1.5 text-xs font-semibold hover:bg-red-600"
+                >
                   Санкции
                 </button>
-                <button onClick={() => void vote(o.countryId, 'support')} className="rounded bg-emerald-700 px-2 py-1 text-xs font-semibold hover:bg-emerald-600">
+                <button
+                  onClick={() => void vote(o.countryId, 'support')}
+                  className="rounded-lg bg-emerald-700 px-2.5 py-1.5 text-xs font-semibold hover:bg-emerald-600"
+                >
                   Поддержать
                 </button>
               </div>
@@ -224,35 +260,34 @@ function VotePanel() {
   );
 }
 
+// ── Chairman panel (content only, rendered inside BottomDrawer) ─────────
 const SEGMENTS: { phase: GamePhase; label: string }[] = [
   { phase: 'un_summary', label: 'Новости' },
   { phase: 'un_comments', label: 'Выступления' },
   { phase: 'un_debate', label: 'Дебаты' },
   { phase: 'un_vote', label: 'Голосование' },
 ];
-
 const LAYOUTS: { value: string; label: string }[] = [
   { value: 'auto', label: 'Авто' },
   { value: 'spotlight', label: 'Спикер' },
   { value: 'grid', label: 'Сетка' },
 ];
 
-/** Пульт председателя ООН: сегменты, раскладка, перерыв, слово/скип/мьют. */
-function ChairmanPanel() {
+function ChairmanContent() {
   const { snapshot, session, emitRaw } = useGame();
   if (!snapshot) return null;
 
   const phase = snapshot.phase;
   const inUn = phase.startsWith('un_');
   const act = (event: string, body?: unknown) => void emitRaw(event, body);
-  const btn = 'rounded px-2 py-1 text-xs font-semibold transition-colors';
+  const btn = 'rounded-lg px-3 py-2 text-sm font-semibold transition-colors';
 
   return (
-    <div className="max-h-56 shrink-0 overflow-y-auto border-t border-amber-900/50 bg-slate-900/95 px-4 py-2 text-sm">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-        {inUn && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500">Сегмент:</span>
+    <div className="flex flex-col gap-4 text-sm">
+      {inUn && (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase text-slate-500">Сегмент</div>
+          <div className="flex flex-wrap gap-2">
             {SEGMENTS.map((s) => (
               <button
                 key={s.phase}
@@ -264,10 +299,12 @@ function ChairmanPanel() {
               </button>
             ))}
           </div>
-        )}
+        </div>
+      )}
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-slate-500">Раскладка:</span>
+      <div>
+        <div className="mb-2 text-xs font-semibold uppercase text-slate-500">Раскладка видео</div>
+        <div className="flex gap-2">
           {LAYOUTS.map((l) => (
             <button
               key={l.value}
@@ -279,14 +316,15 @@ function ChairmanPanel() {
             </button>
           ))}
         </div>
+      </div>
 
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => act(SocketEvents.RoomHostPause, { paused: true })}
           className={`${btn} border border-slate-600 text-slate-300 hover:bg-slate-800`}
         >
           ☕ Перерыв
         </button>
-
         {phase === 'un_comments' && (
           <button
             onClick={() => act(SocketEvents.RoomHostSkipSpeaker)}
@@ -297,45 +335,52 @@ function ChairmanPanel() {
         )}
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {snapshot.players.map((p) => {
-          const isSpeaker = p.playerId === snapshot.currentSpeakerId;
-          const isSelf = p.playerId === session?.playerId;
-          return (
-            <div
-              key={p.playerId}
-              className={`flex items-center gap-1 rounded-lg px-2 py-1 text-xs ${isSpeaker ? 'bg-emerald-900/50 text-emerald-300' : 'bg-slate-800 text-slate-300'}`}
-            >
-              <span>{p.isBot ? '🤖 ' : ''}{p.name}</span>
-              {phase === 'un_comments' && !isSpeaker && (
-                <button
-                  title="Дать слово"
-                  onClick={() => act(SocketEvents.RoomHostSetSpeaker, { playerId: p.playerId })}
-                  className="rounded bg-slate-700 px-1.5 py-0.5 hover:bg-emerald-800"
-                >
-                  🎤
-                </button>
-              )}
-              {!p.isBot && !isSelf && (
-                <button
-                  title="Попросить выключить микрофон"
-                  onClick={() => act(SocketEvents.RoomHostMute, { playerId: p.playerId })}
-                  className="rounded bg-slate-700 px-1.5 py-0.5 hover:bg-red-900"
-                >
-                  🔇
-                </button>
-              )}
-            </div>
-          );
-        })}
+      <div>
+        <div className="mb-2 text-xs font-semibold uppercase text-slate-500">Игроки</div>
+        <div className="flex flex-wrap gap-2">
+          {snapshot.players.map((p) => {
+            const isSpeaker = p.playerId === snapshot.currentSpeakerId;
+            const isSelf = p.playerId === session?.playerId;
+            return (
+              <div
+                key={p.playerId}
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs ${
+                  isSpeaker ? 'bg-emerald-900/60 text-emerald-300' : 'bg-slate-800 text-slate-300'
+                }`}
+              >
+                <span>{p.isBot ? '🤖 ' : ''}{p.name}</span>
+                {phase === 'un_comments' && !isSpeaker && (
+                  <button
+                    title="Дать слово"
+                    onClick={() => act(SocketEvents.RoomHostSetSpeaker, { playerId: p.playerId })}
+                    className="rounded bg-slate-700 px-1.5 py-0.5 hover:bg-emerald-800"
+                  >
+                    🎤
+                  </button>
+                )}
+                {!p.isBot && !isSelf && (
+                  <button
+                    title="Попросить выключить микрофон"
+                    onClick={() => act(SocketEvents.RoomHostMute, { playerId: p.playerId })}
+                    className="rounded bg-slate-700 px-1.5 py-0.5 hover:bg-red-900"
+                  >
+                    🔇
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
 
+// ── Main UnScreen ───────────────────────────────────────────────────────
 export function UnScreen() {
   const { snapshot, session, commentDone, hostContinue, emitRaw } = useGame();
   const [chairOpen, setChairOpen] = useState(false);
+
   if (!snapshot) return null;
 
   const me = snapshot.players.find((p) => p.playerId === session?.playerId);
@@ -344,8 +389,6 @@ export function UnScreen() {
   const itsMe = snapshot.currentSpeakerId === session?.playerId;
   const phase = snapshot.phase;
 
-  // Раскладка видео: председатель главнее автоматики; авто — по фазе
-  // (выступления = спикер крупно, дебаты-«балаган» = все крупно, остальное = полоса).
   const effectiveLayout: 'spotlight' | 'grid' | 'strip' =
     snapshot.unLayout !== 'auto'
       ? snapshot.unLayout
@@ -354,19 +397,18 @@ export function UnScreen() {
       : phase === 'un_debate'
       ? 'grid'
       : 'strip';
-  const videoMain = effectiveLayout !== 'strip';
 
-  // Кого не приглушать: спикер в круге комментариев; в новостях главная — сводка (глушим всех).
   const duckOthers =
     phase === 'un_summary' || (phase === 'un_comments' && !!snapshot.currentSpeakerId);
   const spotlightId = phase === 'un_summary' ? '__news__' : snapshot.currentSpeakerId;
 
+  // Control bar buttons passed into VideoGrid
   const barControls = (
     <>
       {itsMe && phase === 'un_comments' && (
         <button
           onClick={() => void commentDone()}
-          className="rounded-lg bg-amber-500 px-4 py-1.5 text-sm font-bold text-slate-950 hover:bg-amber-400"
+          className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-amber-400"
         >
           Я закончил 🎤
         </button>
@@ -375,22 +417,22 @@ export function UnScreen() {
         <>
           <button
             onClick={() => void emitRaw(SocketEvents.RoomHostExtend, { extraSeconds: 120 })}
-            className="rounded-lg border border-amber-600 px-3 py-1.5 text-xs font-semibold text-amber-400 hover:bg-amber-950/40"
+            className="rounded-lg border border-amber-600 px-3 py-2 text-xs font-semibold text-amber-400 hover:bg-amber-950/40"
           >
             +2 мин
           </button>
           <button
             onClick={() => void emitRaw(SocketEvents.RoomHostExtend, { extraSeconds: 0 })}
-            className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-slate-950 hover:bg-amber-500"
+            className="rounded-lg bg-amber-600 px-3 py-2 text-xs font-bold text-slate-950 hover:bg-amber-500"
           >
-            Завершить дебаты
+            Завершить
           </button>
         </>
       )}
       {isHost && snapshot.waitingContinue && (
         <button
           onClick={() => void hostContinue()}
-          className="rounded-lg bg-amber-500 px-4 py-1.5 text-sm font-bold text-slate-950 hover:bg-amber-400"
+          className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-amber-400"
         >
           ▶ Продолжить
         </button>
@@ -399,118 +441,113 @@ export function UnScreen() {
         <span className="text-xs text-amber-400">⏳ Ждём хоста…</span>
       )}
       {isHost && (
-        <button
+        <motion.button
           onClick={() => setChairOpen((v) => !v)}
+          whileTap={{ scale: 0.95 }}
           title="Пульт председателя"
-          className={`rounded-lg px-3 py-1.5 text-sm font-bold transition-colors ${
+          className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
             chairOpen ? 'bg-amber-500 text-slate-950' : 'border border-amber-700 text-amber-400 hover:bg-amber-950/40'
           }`}
         >
           👑
-        </button>
+        </motion.button>
       )}
     </>
   );
 
+  // Phase-specific content rendered below video
   const phaseContent = (
-    <>
-      {phase === 'un_summary' && (
-        <div className="flex flex-col gap-3">
-          {snapshot.you && <DeclareForbes />}
-          <ForbesLeaderboard />
-          {snapshot.news ? <NewsPlayer news={snapshot.news} isHost={isHost} /> : <NewsFeed />}
-        </div>
-      )}
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={phase}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="flex flex-col gap-3"
+      >
+        {phase === 'un_summary' && (
+          <>
+            {snapshot.you && <DeclareForbes />}
+            <ForbesLeaderboard />
+            {snapshot.news ? <NewsPlayer news={snapshot.news} isHost={isHost} /> : <NewsFeed />}
+          </>
+        )}
 
-      {phase === 'un_comments' && (
-        <div className="flex flex-col gap-4">
-          {!videoMain && (
-            <div className="rounded-xl border border-slate-700 bg-slate-900 p-4 text-center">
-              <div className="text-xs uppercase text-slate-500 mb-1">Сейчас говорит</div>
-              <div className="text-2xl font-bold text-amber-400">{speaker?.name ?? '…'}</div>
-              {speaker?.countryName && (
-                <div className="text-sm text-slate-400">{speaker.countryName}</div>
-              )}
-            </div>
-          )}
-          {snapshot.you && <DeclareForbes />}
-          <NewsFeed />
-        </div>
-      )}
+        {phase === 'un_comments' && (
+          <>
+            {snapshot.you && <DeclareForbes />}
+            <NewsFeed />
+          </>
+        )}
 
-      {phase === 'un_debate' && (
-        <div className="flex flex-col gap-3">
-          {snapshot.you && <DeclareForbes />}
-          <NewsFeed />
-        </div>
-      )}
+        {phase === 'un_debate' && (
+          <>
+            {snapshot.you && <DeclareForbes />}
+            <NewsFeed />
+          </>
+        )}
 
-      {phase === 'un_vote' && (
-        <div className="flex flex-col gap-3">
-          {snapshot.you && <DeclareForbes />}
-          <WarCourtPanel />
-          <VotePanel />
-        </div>
-      )}
+        {phase === 'un_vote' && (
+          <>
+            {snapshot.you && <DeclareForbes />}
+            <WarCourtPanel />
+            <VotePanel />
+          </>
+        )}
 
-      {phase === 'results' && (
-        <div className="flex flex-col gap-3">
-          {snapshot.lastResults?.map((r) => (
-            <div key={r.countryId} className="rounded-xl bg-slate-900 p-4">
-              <div className="mb-1 font-bold text-amber-400">{r.countryName}</div>
-              <ul className="list-inside list-disc text-sm text-slate-300">
-                {r.lines.map((l, i) => <li key={i}>{l}</li>)}
-              </ul>
-            </div>
-          ))}
-          {!snapshot.lastResults?.length && <p className="text-slate-400">Год пересчитан…</p>}
-        </div>
-      )}
-    </>
+        {phase === 'results' && (
+          <>
+            {snapshot.lastResults?.map((r) => (
+              <div key={r.countryId} className="rounded-xl bg-slate-900 p-4">
+                <div className="mb-1 font-bold text-amber-400">{r.countryName}</div>
+                <ul className="list-inside list-disc text-sm text-slate-300">
+                  {r.lines.map((l, i) => <li key={i}>{l}</li>)}
+                </ul>
+              </div>
+            ))}
+            {!snapshot.lastResults?.length && <p className="text-slate-400">Год пересчитан…</p>}
+          </>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-slate-950">
-      {/* Header */}
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-800 px-4 py-2">
-        <div className="flex items-baseline gap-3">
+      {/* ── Video section: always flex-1, takes the majority of the screen ── */}
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        {/* Floating header overlay */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between bg-gradient-to-b from-slate-950/90 to-transparent px-4 pb-6 pt-2">
           <div>
-            <div className="text-xs uppercase text-slate-500">Год {snapshot.year}/{snapshot.totalYears}</div>
-            <div className="font-bold text-amber-400">{PHASE_TITLES[phase] ?? phase}</div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-amber-400">
+              {PHASE_TITLES[phase] ?? phase}
+            </div>
+            <div className="text-xs text-slate-400">Год {snapshot.year}/{snapshot.totalYears}</div>
           </div>
-          {videoMain && phase === 'un_debate' && (
-            <span className="hidden text-xs text-slate-500 sm:inline">говорите все — торгуйтесь, угрожайте, обещайте</span>
-          )}
+          <div className="text-right">
+            {snapshot.waitingContinue ? (
+              <span className="text-xs text-amber-400">Таймер завершён</span>
+            ) : (
+              <Timer endsAt={snapshot.phaseEndsAt} />
+            )}
+          </div>
         </div>
-        <div className="text-right">
-          {snapshot.waitingContinue ? (
-            <span className="text-xs text-amber-400">Таймер завершён</span>
-          ) : (
-            <Timer endsAt={snapshot.phaseEndsAt} />
-          )}
-        </div>
-      </header>
 
-      {/* Контент фазы: при видео-раскладке сворачивается в выпадашку, чтобы видео занимало экран */}
-      {videoMain ? (
-        <details className="max-h-[35vh] shrink-0 overflow-y-auto border-b border-slate-800">
-          <summary className="cursor-pointer px-4 py-2 text-xs text-slate-400 hover:text-slate-200">
-            📋 Материалы года — Форбс, новости{phase === 'un_vote' ? ', голосование' : ''}
-          </summary>
-          <div className="px-4 pb-3">{phaseContent}</div>
-        </details>
-      ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">{phaseContent}</div>
-      )}
+        {/* Current speaker indicator for un_comments (floating at top-center) */}
+        {phase === 'un_comments' && speaker && (
+          <div className="pointer-events-none absolute inset-x-0 top-1 z-10 flex justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-full bg-emerald-900/80 px-4 py-1 text-xs font-semibold text-emerald-300 backdrop-blur-sm"
+            >
+              🎤 {speaker.name} {speaker.countryName ? `· ${speaker.countryName}` : ''}
+            </motion.div>
+          </div>
+        )}
 
-      {isHost && chairOpen && <ChairmanPanel />}
-
-      {/* Видео: одна точка монтирования VideoGrid (одно LiveKit-подключение),
-          размер контейнера зависит от раскладки */}
-      <div
-        className={`border-t border-slate-800 ${videoMain ? 'min-h-0 flex-1 px-2 pt-2' : 'shrink-0 px-2 pt-2'}`}
-        style={videoMain ? undefined : { height: '9rem' }}
-      >
+        {/* VideoGrid fills the entire video section */}
         <VideoGrid
           kind="un"
           players={snapshot.players}
@@ -522,6 +559,25 @@ export function UnScreen() {
           hostControls={barControls}
         />
       </div>
+
+      {/* ── Phase content: below video, scrollable ── */}
+      <div
+        className="relative shrink-0 border-t border-slate-800 overflow-y-auto"
+        style={{ maxHeight: '42dvh' }}
+      >
+        <div className="px-4 py-3">{phaseContent}</div>
+        {/* Fade shadow at bottom to indicate more content */}
+        <div className="pointer-events-none sticky bottom-0 h-6 bg-gradient-to-t from-slate-950 to-transparent" />
+      </div>
+
+      {/* Chairman panel: BottomDrawer */}
+      <BottomDrawer
+        open={isHost && chairOpen}
+        onClose={() => setChairOpen(false)}
+        title="👑 Пульт председателя ООН"
+      >
+        <ChairmanContent />
+      </BottomDrawer>
     </div>
   );
 }

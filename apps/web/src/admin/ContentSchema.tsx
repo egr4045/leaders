@@ -117,7 +117,7 @@ export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry
             newEdges.push({
               id: `e_${c.cardId}_${sid}_${idx}`,
               source: cardNodeId,
-              sourceHandle: `add_${sid}`,
+              sourceHandle: `add_${idx}_${sid}`,
               target: `status_${sid}`,
               animated: true,
               style: { stroke: '#10b981', strokeWidth: 2 }
@@ -132,7 +132,7 @@ export function ContentSchema({ cards, statuses, onRefresh }: { cards: CardEntry
             newEdges.push({
               id: `e_rm_${c.cardId}_${sid}_${idx}`,
               source: cardNodeId,
-              sourceHandle: `rem_${sid}`,
+              sourceHandle: `rem_${idx}_${sid}`,
               target: `status_${sid}`,
               animated: true,
               style: { stroke: '#ef4444', strokeWidth: 2 }

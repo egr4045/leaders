@@ -59,94 +59,91 @@ export function CustomCardNode({ data }: { data: CustomCardNodeData }) {
   // Compile inputs (requirements)
   const reqStatuses = (card.raw?.requires as any)?.statuses as string[] || [];
 
-  // Compile outputs (triggers)
-  const addStatuses = new Set<string>();
-  const removeStatuses = new Set<string>();
-  const resourceEffects = new Set<string>();
-
-  card.choices.forEach((ch, idx) => {
-    const rawChoice = (card.raw?.choices as any[])?.[idx];
-    const ef = ch.effects as any;
-
-    const addSt = rawChoice?.addStatuses || ef?.addStatuses as string[];
-    if (addSt) addSt.forEach((s: string) => addStatuses.add(s));
-
-    const remSt = rawChoice?.removeStatuses || ef?.removeStatuses as string[];
-    if (remSt) remSt.forEach((s: string) => removeStatuses.add(s));
-
-    if (ef) {
-      // Try to parse basic resource impacts to show
-      ['money', 'food', 'influence', 'population', 'industry'].forEach(res => {
-        if (ef[res]) resourceEffects.add(res + (ef[res] > 0 ? '+' : '-'));
-      });
-    }
-  });
-
   return (
-    <div className="flex flex-col min-w-[250px] rounded-lg shadow-xl bg-slate-800 border border-slate-900 font-sans">
+    <div className="flex flex-col min-w-[280px] max-w-[350px] rounded-lg shadow-xl bg-slate-800 border border-slate-900 font-sans">
       {/* Header */}
-      <div className="px-3 py-2 bg-gradient-to-r from-slate-700 to-slate-800 border-b border-slate-900 flex flex-col relative">
-        <span className="text-amber-500 font-bold text-xs uppercase">{card.speaker}</span>
-        <span className="text-slate-100 font-medium text-sm">{card.cardId}</span>
-        {card.once && <span className="absolute top-2 right-2 text-[9px] bg-purple-900/50 text-purple-300 px-1 rounded">ОДНОРАЗ</span>}
+      <div className="px-3 py-2 bg-gradient-to-r from-slate-700 to-slate-800 border-b border-slate-900 flex flex-col relative gap-1">
+        <div className="flex justify-between items-start">
+          <span className="text-amber-500 font-bold text-[10px] uppercase">{card.speaker}</span>
+          <span className="text-slate-500 text-[10px]">{card.cardId}</span>
+        </div>
+        <span className="text-slate-200 font-medium text-xs leading-snug">{card.situation || 'Нет описания ситуации'}</span>
+        {card.once && <span className="absolute top-1 right-1 text-[9px] bg-purple-900/50 text-purple-300 px-1 rounded">ОДНОРАЗ</span>}
       </div>
 
-      {/* Body */}
-      <div className="flex flex-row p-0">
-        
-        {/* Left Side (Inputs) */}
-        <div className="flex flex-col flex-1 border-r border-slate-700/50 p-2 min-h-[50px] gap-2">
-          <div className="text-[10px] uppercase text-slate-500 font-semibold mb-1">Требует</div>
-          
-          {reqStatuses.map((s, idx) => (
-            <div key={`req_${s}`} className="relative flex items-center h-5">
+      {/* Requires */}
+      <div className="flex flex-col p-2 bg-slate-800/50 border-b border-slate-700/50 gap-1">
+        <div className="text-[10px] uppercase text-slate-500 font-semibold">Требует статусы:</div>
+        <div className="flex flex-wrap gap-1">
+          {reqStatuses.length === 0 && <span className="text-[10px] text-slate-600 italic">Нет</span>}
+          {reqStatuses.map((s) => (
+            <div key={`req_${s}`} className="relative flex items-center h-4">
               <Handle 
                 type="target" 
                 position={Position.Left} 
                 id={`req_${s}`}
-                className="w-2 h-2 bg-slate-400 border border-slate-600 !left-[-13px]"
+                className="w-2 h-2 bg-slate-400 border border-slate-600 !left-[-11px]"
               />
-              <span className="text-xs text-slate-300 ml-1">{s}</span>
-            </div>
-          ))}
-          {reqStatuses.length === 0 && <span className="text-[10px] text-slate-600 ml-1 italic">Без статусов</span>}
-        </div>
-
-        {/* Right Side (Outputs) */}
-        <div className="flex flex-col flex-1 p-2 gap-2 text-right">
-          <div className="text-[10px] uppercase text-slate-500 font-semibold mb-1">Триггерит</div>
-          
-          {Array.from(addStatuses).map(s => (
-            <div key={`add_${s}`} className="relative flex items-center justify-end h-5">
-              <span className="text-xs text-emerald-400 mr-1">+ {s}</span>
-              <Handle 
-                type="source" 
-                position={Position.Right} 
-                id={`add_${s}`}
-                className="w-2 h-2 bg-emerald-500 border border-emerald-700 !right-[-13px]"
-              />
-            </div>
-          ))}
-
-          {Array.from(removeStatuses).map(s => (
-            <div key={`rem_${s}`} className="relative flex items-center justify-end h-5">
-              <span className="text-xs text-red-400 mr-1">- {s}</span>
-              <Handle 
-                type="source" 
-                position={Position.Right} 
-                id={`rem_${s}`}
-                className="w-2 h-2 bg-red-500 border border-red-700 !right-[-13px]"
-              />
-            </div>
-          ))}
-
-          {Array.from(resourceEffects).map(r => (
-            <div key={`res_${r}`} className="relative flex items-center justify-end h-5">
-              <span className="text-[10px] text-amber-200 mr-1 bg-amber-900/30 px-1 rounded">{r}</span>
+              <span className="text-[10px] bg-slate-700 text-slate-300 px-1 rounded">{s}</span>
             </div>
           ))}
         </div>
+      </div>
 
+      {/* Choices */}
+      <div className="flex flex-col p-2 gap-2 border-b border-slate-700/50">
+        <div className="text-[10px] uppercase text-slate-500 font-semibold">Варианты ответа:</div>
+        {card.choices.map((ch, idx) => {
+          const rawChoice = (card.raw?.choices as any[])?.[idx];
+          const ef = ch.effects as any;
+          const addSt = (rawChoice?.addStatuses || ef?.addStatuses || []) as string[];
+          const remSt = (rawChoice?.removeStatuses || ef?.removeStatuses || []) as string[];
+          const resourceEffects: string[] = [];
+          if (ef) {
+            ['money', 'food', 'influence', 'population', 'industry', 'dovolstvo'].forEach(res => {
+              if (ef[res]) resourceEffects.push(res + (ef[res] > 0 ? '+' : '-'));
+            });
+            if (ef.sectors) {
+              ['economy', 'science', 'army', 'smi', 'intel'].forEach(sec => {
+                if (ef.sectors[sec]) resourceEffects.push(sec + (ef.sectors[sec] > 0 ? '+' : '-'));
+              });
+            }
+          }
+
+          return (
+            <div key={idx} className="relative bg-slate-900/50 border border-slate-700 rounded p-2 flex flex-col gap-1">
+              <span className="text-xs text-slate-300">{ch.label}</span>
+              
+              <div className="flex flex-wrap gap-1 justify-end mt-1">
+                {addSt.map(s => (
+                  <div key={`add_${s}`} className="relative flex items-center h-4">
+                    <span className="text-[9px] text-emerald-400 font-medium px-1 bg-slate-800 rounded border border-emerald-900/50">+ {s}</span>
+                    <Handle 
+                      type="source" 
+                      position={Position.Right} 
+                      id={`add_${idx}_${s}`}
+                      className="w-2 h-2 bg-emerald-500 border border-emerald-700 !right-[-13px]"
+                    />
+                  </div>
+                ))}
+                {remSt.map(s => (
+                  <div key={`rem_${s}`} className="relative flex items-center h-4">
+                    <span className="text-[9px] text-red-400 font-medium px-1 bg-slate-800 rounded border border-red-900/50">- {s}</span>
+                    <Handle 
+                      type="source" 
+                      position={Position.Right} 
+                      id={`rem_${idx}_${s}`}
+                      className="w-2 h-2 bg-red-500 border border-red-700 !right-[-13px]"
+                    />
+                  </div>
+                ))}
+                {resourceEffects.map(r => (
+                  <span key={r} className="text-[9px] text-amber-200 bg-amber-900/30 px-1 rounded">{r}</span>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Footer / Editor */}
