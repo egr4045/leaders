@@ -17,7 +17,7 @@ import { BudgetPanel } from './cabinet/BudgetPanel';
 import { LawsPanel } from './cabinet/LawsPanel';
 import type { AdvisorCard } from '@leaders/shared';
 
-type Tab = 'advisor' | 'budget' | 'laws' | 'diplomacy';
+type Tab = 'advisor' | 'country' | 'intel' | 'diplomacy';
 
 interface PendingResult {
   card: AdvisorCard;
@@ -36,7 +36,12 @@ function YearReportBanner({ report }: { report: YearReport }) {
   const delta = (b: number, a: number) => {
     const d = a - b;
     if (d === 0) return null;
-    return <span className={d > 0 ? 'text-emerald-400' : 'text-red-400'}>{d > 0 ? '+' : ''}{d}</span>;
+    return (
+      <span className={d > 0 ? 'text-emerald-400' : 'text-red-400'}>
+        {d > 0 ? '+' : ''}
+        {d}
+      </span>
+    );
   };
 
   return (
@@ -62,14 +67,27 @@ function YearReportBanner({ report }: { report: YearReport }) {
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="px-3 pb-3 pt-1 flex flex-col gap-2 text-xs">
+            <div className="flex flex-col gap-2 px-3 pb-3 pt-1 text-xs">
               <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                {(Object.entries(report.resources) as [string, { before: number; after: number }][]).map(([k, v]) => (
+                {(
+                  Object.entries(report.resources) as [string, { before: number; after: number }][]
+                ).map(([k, v]) => (
                   <div key={k} className="flex justify-between">
                     <span className="text-slate-400">
-                      {({ money: '💰 Деньги', gold: '🥇 Золото', food: '🌾 Еда', influence: '🗳 Влияние' } as Record<string, string>)[k] ?? k}
+                      {(
+                        {
+                          money: '💰 Деньги',
+                          gold: '🥇 Золото',
+                          food: '🌾 Еда',
+                          influence: '🗳 Влияние',
+                        } as Record<string, string>
+                      )[k] ?? k}
                     </span>
-                    <span>{delta(v.before, v.after) ?? <span className="text-slate-600">без изм.</span>}</span>
+                    <span>
+                      {delta(v.before, v.after) ?? (
+                        <span className="text-slate-600">без изм.</span>
+                      )}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -77,11 +95,19 @@ function YearReportBanner({ report }: { report: YearReport }) {
                 <span className="font-semibold text-amber-400">Форбс</span>
                 <span>
                   {delta(report.forbes.before, report.forbes.after) ?? '—'}{' '}
-                  <span className="text-slate-500 text-[10px]">({report.forbes.after})</span>
+                  <span className="text-[10px] text-slate-500">({report.forbes.after})</span>
                 </span>
               </div>
-              {report.globalEvents.map((e, i) => <div key={i} className="text-slate-400">• {e}</div>)}
-              {report.statusChanges.map((e, i) => <div key={i} className="text-slate-400">• {e}</div>)}
+              {report.globalEvents.map((e, i) => (
+                <div key={i} className="text-slate-400">
+                  • {e}
+                </div>
+              ))}
+              {report.statusChanges.map((e, i) => (
+                <div key={i} className="text-slate-400">
+                  • {e}
+                </div>
+              ))}
             </div>
           </motion.div>
         )}
@@ -90,42 +116,113 @@ function YearReportBanner({ report }: { report: YearReport }) {
   );
 }
 
-// ── Diplomacy tab: country grid + per-country drawers ───────────────────
-type DiploMode = 'trade' | 'spy' | null;
+// ── Country dossier (spy intel summary per country) ─────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CountryDossier({ reports }: { reports: any[] }) {
+  const [open, setOpen] = useState(false);
+  if (!reports || reports.length === 0) return null;
 
-function DiplomacyTab({ you, others }: { you: PrivateCountryView; others: PublicCountryView[] }) {
+  // Latest report of each kind
+  const rev = [...reports].reverse().find((r: any) => r.kind === 'reveal');
+  const calls = [...reports].reverse().find((r: any) => r.kind === 'reveal_calls');
+
+  return (
+    <div className="border-t border-slate-700/60 pt-2">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between text-xs text-sky-500 hover:text-sky-400"
+      >
+        <span>🔍 Досье {rev ? `(год ${rev.year})` : calls ? `(год ${calls.year})` : ''}</span>
+        <span className="text-slate-500">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div className="mt-2 flex flex-col gap-1.5 text-xs">
+          {rev?.data && (
+            <>
+              <div className="flex flex-wrap gap-x-2 gap-y-0.5 font-mono text-slate-300">
+                <span>💰{rev.data.resources.money}</span>
+                <span>🥇{rev.data.resources.gold}</span>
+                <span>🌾{rev.data.resources.food}</span>
+                <span>🗳{rev.data.resources.influence}</span>
+              </div>
+              <div className="text-slate-500">
+                эк{rev.data.sectors.economy} нау{rev.data.sectors.science} арм
+                {rev.data.sectors.army} сми{rev.data.sectors.smi} раз{rev.data.sectors.intel} · дов{' '}
+                {rev.data.dovolstvo}
+              </div>
+              <div className="text-amber-300/80">
+                Форбс: {rev.data.forbesTotal}
+                {rev.data.declaredForbes != null && (
+                  <span className="ml-1 text-slate-500">(объявил {rev.data.declaredForbes})</span>
+                )}
+              </div>
+            </>
+          )}
+          {calls?.calls && calls.calls.length > 0 && (
+            <div className="mt-0.5 text-slate-500">
+              📞{' '}
+              {(calls.calls as any[])
+                .map((c: any) => `${c.withCountryName} ${c.durationSec}с`)
+                .join(' · ')}
+            </div>
+          )}
+          {calls?.calls && calls.calls.length === 0 && (
+            <div className="text-slate-600">📞 звонков не зафиксировано</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Diplomacy tab ───────────────────────────────────────────────────────
+function DiplomacyTab({
+  you,
+  others,
+  selectedCountry,
+  drawerMode,
+  onOpenDrawer,
+  onCloseDrawer,
+}: {
+  you: PrivateCountryView;
+  others: PublicCountryView[];
+  selectedCountry: PublicCountryView | null;
+  drawerMode: 'trade' | null;
+  onOpenDrawer: (country: PublicCountryView, mode: 'trade') => void;
+  onCloseDrawer: () => void;
+}) {
   const { snapshot, emitRaw } = useGame();
-  const [selectedCountry, setSelectedCountry] = useState<PublicCountryView | null>(null);
-  const [mode, setMode] = useState<DiploMode>(null);
-
-  const openDrawer = (country: PublicCountryView, m: DiploMode) => {
-    setSelectedCountry(country);
-    setMode(m);
-  };
-  const closeDrawer = () => { setSelectedCountry(null); setMode(null); };
 
   const callsLeft = you.callsLeft;
   const outgoingCall = you.outgoingCall;
   const playerByCountry = new Map(
-    (snapshot?.players ?? []).filter(p => p.countryId).map(p => [p.countryId!, p])
+    (snapshot?.players ?? []).filter((p) => p.countryId).map((p) => [p.countryId!, p]),
   );
 
   const incomingPendingFrom = new Set(
     (snapshot?.offers ?? [])
-      .filter(o => o.status === 'pending' && o.toCountryId === you.countryId)
-      .map(o => o.fromCountryId)
+      .filter((o) => o.status === 'pending' && o.toCountryId === you.countryId)
+      .map((o) => o.fromCountryId),
   );
 
   const activeWarCountries = new Set(
     (snapshot?.wars ?? [])
-      .filter(w => w.yourSide && w.status === 'active')
-      .flatMap(w => [...w.attacker.countryIds, ...w.defender.countryIds])
+      .filter((w) => w.yourSide && w.status === 'active')
+      .flatMap((w) => [...w.attacker.countryIds, ...w.defender.countryIds]),
   );
+
+  // Group spy intel by target country name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const intelByCountry = new Map<string, any[]>();
+  for (const report of (snapshot?.spyIntel ?? [])) {
+    const key = (report as any).targetCountryName as string;
+    if (!intelByCountry.has(key)) intelByCountry.set(key, []);
+    intelByCountry.get(key)!.push(report);
+  }
 
   return (
     <>
       <div className="flex flex-col gap-4 overflow-y-auto p-4">
-        {/* Country grid */}
         {others.length === 0 ? (
           <div className="py-8 text-center text-slate-500">Нет других стран</div>
         ) : (
@@ -151,19 +248,35 @@ function DiplomacyTab({ you, others }: { you: PrivateCountryView; others: Public
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-bold leading-tight">{o.countryName}</div>
-                      <div className="truncate text-xs leading-tight text-slate-400">{o.playerName}</div>
+                      <div className="truncate text-xs leading-tight text-slate-400">
+                        {o.playerName}
+                      </div>
                     </div>
                   </div>
                   {(isAtWar || hasTrade || o.sanctions > 0) && (
                     <div className="flex flex-wrap gap-1">
-                      {isAtWar && <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-xs text-red-400">⚔️ война</span>}
-                      {hasTrade && <span className="rounded bg-amber-900/40 px-1.5 py-0.5 text-xs text-amber-400">📨 сделка</span>}
-                      {o.sanctions > 0 && <span className="rounded bg-rose-900/40 px-1.5 py-0.5 text-xs text-rose-400">🚫 {o.sanctions}</span>}
+                      {isAtWar && (
+                        <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-xs text-red-400">
+                          ⚔️ война
+                        </span>
+                      )}
+                      {hasTrade && (
+                        <span className="rounded bg-amber-900/40 px-1.5 py-0.5 text-xs text-amber-400">
+                          📨 сделка
+                        </span>
+                      )}
+                      {o.sanctions > 0 && (
+                        <span className="rounded bg-rose-900/40 px-1.5 py-0.5 text-xs text-rose-400">
+                          🚫 {o.sanctions}
+                        </span>
+                      )}
                     </div>
                   )}
                   <div className="flex gap-1.5">
                     <button
-                      onClick={() => void emitRaw(SocketEvents.CallInvite, { toCountryId: o.countryId })}
+                      onClick={() =>
+                        void emitRaw(SocketEvents.CallInvite, { toCountryId: o.countryId })
+                      }
                       disabled={callsLeft <= 0 || !!outgoingCall}
                       className="flex-1 rounded-lg bg-slate-800 py-2.5 text-base transition-colors hover:bg-slate-700 disabled:opacity-40"
                       title={`Позвонить (осталось ${callsLeft})`}
@@ -171,7 +284,7 @@ function DiplomacyTab({ you, others }: { you: PrivateCountryView; others: Public
                       📞
                     </button>
                     <button
-                      onClick={() => openDrawer(o, 'trade')}
+                      onClick={() => onOpenDrawer(o, 'trade')}
                       className="relative flex-1 rounded-lg bg-slate-800 py-2.5 text-base transition-colors hover:bg-slate-700"
                       title="Торговля"
                     >
@@ -180,28 +293,19 @@ function DiplomacyTab({ you, others }: { you: PrivateCountryView; others: Public
                         <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-amber-400" />
                       )}
                     </button>
-                    <button
-                      onClick={() => openDrawer(o, 'spy')}
-                      className="flex-1 rounded-lg bg-slate-800 py-2.5 text-base transition-colors hover:bg-slate-700"
-                      title="Разведка"
-                    >
-                      🕵️
-                    </button>
                   </div>
+                  <CountryDossier reports={intelByCountry.get(o.countryName) ?? []} />
                 </motion.div>
               );
             })}
           </div>
         )}
-
-        {/* War panel */}
-        <WarPanel others={others} />
       </div>
 
       {/* Trade drawer */}
       <BottomDrawer
-        open={!!selectedCountry && mode === 'trade'}
-        onClose={closeDrawer}
+        open={!!selectedCountry && drawerMode === 'trade'}
+        onClose={onCloseDrawer}
         title={`💰 Сделка с ${selectedCountry?.countryName ?? ''}`}
       >
         {selectedCountry && (
@@ -210,21 +314,6 @@ function DiplomacyTab({ you, others }: { you: PrivateCountryView; others: Public
             others={others}
             defaultTargetCountryId={selectedCountry.countryId}
             forceOpen
-          />
-        )}
-      </BottomDrawer>
-
-      {/* Spy drawer */}
-      <BottomDrawer
-        open={!!selectedCountry && mode === 'spy'}
-        onClose={closeDrawer}
-        title={`🕵️ Операция против ${selectedCountry?.countryName ?? ''}`}
-      >
-        {selectedCountry && (
-          <SpyPanel
-            others={others}
-            myCountryId={you.countryId}
-            defaultTargetId={selectedCountry.countryId}
           />
         )}
       </BottomDrawer>
@@ -259,8 +348,8 @@ function ReadyButton({
 // ── Tab bar ─────────────────────────────────────────────────────────────
 const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'advisor', icon: '🃏', label: 'Советник' },
-  { id: 'budget', icon: '💹', label: 'Бюджет' },
-  { id: 'laws', icon: '⚖️', label: 'Законы' },
+  { id: 'country', icon: '🏛️', label: 'Страна' },
+  { id: 'intel', icon: '🕵️', label: 'Разведка' },
   { id: 'diplomacy', icon: '🤝', label: 'Дипломатия' },
 ];
 
@@ -308,12 +397,30 @@ export function CabinetScreen() {
   const { snapshot, chooseCard, markReady } = useGame();
   const [tab, setTab] = useState<Tab>('advisor');
   const [readyClicked, setReadyClicked] = useState(false);
-  const [budgetNotified, setBudgetNotified] = useState(false);
+  const [countryNotified, setCountryNotified] = useState(false);
   const [showReadyConfirm, setShowReadyConfirm] = useState(false);
   const [pendingResult, setPendingResult] = useState<PendingResult | null>(null);
+  // Drawer state lifted here so tab switches always close open drawers
+  const [drawerCountry, setDrawerCountry] = useState<PublicCountryView | null>(null);
+  const [drawerMode, setDrawerMode] = useState<'trade' | null>(null);
 
   if (!snapshot?.you) return null;
   const you = snapshot.you;
+
+  const openDrawer = (country: PublicCountryView, mode: 'trade') => {
+    setDrawerCountry(country);
+    setDrawerMode(mode);
+  };
+  const closeDrawer = () => {
+    setDrawerCountry(null);
+    setDrawerMode(null);
+  };
+
+  const handleSetTab = (t: Tab) => {
+    if (t === 'country') setCountryNotified(true);
+    closeDrawer();
+    setTab(t);
+  };
 
   // Tab badges
   const budgetSaved = you.budget ?? {};
@@ -322,9 +429,14 @@ export function CabinetScreen() {
   const pendingTrades = (snapshot.offers ?? []).filter(
     (o) => o.status === 'pending' && o.toCountryId === you.countryId,
   ).length;
+  const myActiveWars = (snapshot.wars ?? []).filter((w) => w.status === 'active' && w.yourSide);
+  const warsWithPoints = (snapshot.wars ?? []).filter((w) => (w.victorPointsRemaining ?? 0) > 0);
+  const intelBadge = myActiveWars.length + warsWithPoints.length;
+
   const tabBadges: Partial<Record<Tab, number | boolean>> = {
     advisor: you.cardsLeft > 0 ? you.cardsLeft : false,
-    budget: !budgetNotified && budgetReserve > 0 ? true : false,
+    country: !countryNotified && budgetReserve > 0 ? true : false,
+    intel: intelBadge > 0 ? intelBadge : false,
     diplomacy: pendingTrades > 0 ? pendingTrades : false,
   };
 
@@ -341,9 +453,9 @@ export function CabinetScreen() {
     await markReady();
   };
 
-  // Tab content with animation
+  // Tab content
   const tabContent = (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence initial={false}>
       <motion.div
         key={tab}
         initial={{ opacity: 0 }}
@@ -354,7 +466,6 @@ export function CabinetScreen() {
       >
         {tab === 'advisor' && (
           <div className="flex h-full flex-col overflow-y-auto px-4 py-3">
-            {/* Cards counter as progress-like info row */}
             <div className="mb-3 flex items-center justify-between rounded-lg bg-slate-900 px-3 py-2 text-sm">
               <span className="text-slate-400">Карточки советника</span>
               <span className="font-mono font-bold text-amber-400">
@@ -401,26 +512,49 @@ export function CabinetScreen() {
           </div>
         )}
 
-        {tab === 'budget' && (
-          <div className="flex h-full flex-col overflow-y-auto p-3">
-            {/* ResourcePanel only on mobile (hidden on md+ — sidebar has it) */}
+        {tab === 'country' && (
+          <div className="flex h-full flex-col gap-3 overflow-y-auto p-3">
             <div className="md:hidden">
               <ResourcePanel you={you} />
               <div className="my-3 border-t border-slate-800" />
             </div>
             <BudgetPanel you={you} />
+            <LawsPanel you={you} />
           </div>
         )}
 
-        {tab === 'laws' && (
-          <div className="h-full overflow-y-auto p-3">
-            <LawsPanel you={you} />
+        {tab === 'intel' && (
+          <div className="flex h-full flex-col gap-4 overflow-y-auto p-3">
+            <div>
+              <div className="mb-2 px-1 text-xs font-semibold uppercase text-slate-500">
+                Операции разведки
+              </div>
+              <div className="rounded-xl border border-slate-700 bg-slate-900 p-3">
+                <SpyPanel others={snapshot.others} myCountryId={you.countryId} inline />
+              </div>
+            </div>
+            <div>
+              <div className="mb-2 px-1 text-xs font-semibold uppercase text-slate-500">Войны</div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+                <WarPanel
+                  others={snapshot.others}
+                  onGoDiplomacy={() => handleSetTab('diplomacy')}
+                />
+              </div>
+            </div>
           </div>
         )}
 
         {tab === 'diplomacy' && (
           <div className="h-full">
-            <DiplomacyTab you={you} others={snapshot.others} />
+            <DiplomacyTab
+              you={you}
+              others={snapshot.others}
+              selectedCountry={drawerCountry}
+              drawerMode={drawerMode}
+              onOpenDrawer={openDrawer}
+              onCloseDrawer={closeDrawer}
+            />
           </div>
         )}
       </motion.div>
@@ -438,14 +572,18 @@ export function CabinetScreen() {
         <div className="shrink-0 border-b border-slate-800 px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs uppercase text-slate-500">Год {snapshot.year}/{snapshot.totalYears} · Кабинет</div>
+              <div className="text-xs uppercase text-slate-500">
+                Год {snapshot.year}/{snapshot.totalYears} · Кабинет
+              </div>
               <div className="font-bold text-amber-400">{you.countryName}</div>
             </div>
             <div className="text-right">
               <div className="text-2xl">
                 <Timer endsAt={snapshot.phaseEndsAt} />
               </div>
-              <div className="text-xs text-slate-500">✓ {snapshot.readyCount}/{snapshot.readyTotal}</div>
+              <div className="text-xs text-slate-500">
+                ✓ {snapshot.readyCount}/{snapshot.readyTotal}
+              </div>
             </div>
           </div>
         </div>
@@ -454,10 +592,7 @@ export function CabinetScreen() {
           <ResourcePanel you={you} />
         </div>
         <div className="shrink-0 border-t border-slate-800 px-4 py-3">
-          <ReadyButton
-            readyClicked={readyClicked}
-            onReady={() => setShowReadyConfirm(true)}
-          />
+          <ReadyButton readyClicked={readyClicked} onReady={() => setShowReadyConfirm(true)} />
           <div className="mt-1.5 text-center text-xs text-slate-600">
             ✓ {snapshot.readyCount}/{snapshot.readyTotal} готовы
           </div>
@@ -469,14 +604,18 @@ export function CabinetScreen() {
         {/* Mobile header */}
         <header className="shrink-0 flex items-center justify-between border-b border-slate-800 px-4 py-2.5 md:hidden">
           <div>
-            <div className="text-xs uppercase text-slate-500">Год {snapshot.year}/{snapshot.totalYears}</div>
+            <div className="text-xs uppercase text-slate-500">
+              Год {snapshot.year}/{snapshot.totalYears}
+            </div>
             <div className="font-bold text-amber-400">{you.countryName}</div>
           </div>
           <div className="flex flex-col items-end gap-0.5">
-            <div className="text-xl font-mono">
+            <div className="font-mono text-xl">
               <Timer endsAt={snapshot.phaseEndsAt} />
             </div>
-            <div className="text-xs text-slate-500">✓ {snapshot.readyCount}/{snapshot.readyTotal}</div>
+            <div className="text-xs text-slate-500">
+              ✓ {snapshot.readyCount}/{snapshot.readyTotal}
+            </div>
           </div>
         </header>
 
@@ -492,21 +631,11 @@ export function CabinetScreen() {
 
         {/* Mobile ready button */}
         <div className="shrink-0 border-t border-slate-800 px-4 py-3 md:hidden">
-          <ReadyButton
-            readyClicked={readyClicked}
-            onReady={() => setShowReadyConfirm(true)}
-          />
+          <ReadyButton readyClicked={readyClicked} onReady={() => setShowReadyConfirm(true)} />
         </div>
 
         {/* Tab bar */}
-        <TabBar
-          tab={tab}
-          setTab={(t) => {
-            if (t === 'budget') setBudgetNotified(true);
-            setTab(t);
-          }}
-          badges={tabBadges}
-        />
+        <TabBar tab={tab} setTab={handleSetTab} badges={tabBadges} />
       </div>
 
       {/* ── LG+ Right panel: always-visible diplomacy ── */}
@@ -515,7 +644,14 @@ export function CabinetScreen() {
           <div className="font-semibold text-slate-300">🤝 Дипломатия</div>
         </div>
         <div className="min-h-0 flex-1 overflow-hidden">
-          <DiplomacyTab you={you} others={snapshot.others} />
+          <DiplomacyTab
+            you={you}
+            others={snapshot.others}
+            selectedCountry={drawerCountry}
+            drawerMode={drawerMode}
+            onOpenDrawer={openDrawer}
+            onCloseDrawer={closeDrawer}
+          />
         </div>
       </aside>
 

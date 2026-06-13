@@ -87,10 +87,12 @@ export function SpyPanel({
   others,
   myCountryId: _myCountryId,
   defaultTargetId,
+  inline,
 }: {
   others: PublicCountryView[];
   myCountryId: string;
   defaultTargetId?: string;
+  inline?: boolean;
 }) {
   const { spyOrder, snapshot } = useGame();
   const intel = snapshot?.spyIntel ?? [];
@@ -265,7 +267,7 @@ export function SpyPanel({
     </>
   );
 
-  if (isEmbedded) {
+  if (isEmbedded || inline) {
     return <div className="flex flex-col gap-3">{innerContent}</div>;
   }
 
