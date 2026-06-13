@@ -17,9 +17,11 @@ interface IncomingCall {
 export function CallPanel({
   you,
   others,
+  hideList = false,
 }: {
   you: PrivateCountryView;
   others: PublicCountryView[];
+  hideList?: boolean;
 }) {
   const { emitRaw } = useGame();
   const [open, setOpen] = useState(false);
@@ -191,47 +193,49 @@ export function CallPanel({
         </div>
       )}
 
-      {/* кнопка-список */}
-      <div className="w-full max-w-sm">
-        <button
-          onClick={() => setOpen(!open)}
-          className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300"
-        >
-          📞 Позвонить (осталось {you.callsLeft}) {open ? '▲' : '▼'}
-        </button>
-        {open && (
-          <div className="mt-2 flex flex-col gap-1 rounded-xl bg-slate-900 p-3 text-sm">
-            {others.map((o) => (
-              <button
-                key={o.countryId}
-                disabled={you.callsLeft <= 0 || !!outgoingCall}
-                onClick={() => void invite(o.countryId)}
-                className="rounded-lg border border-slate-800 px-3 py-2 text-left hover:border-amber-400 disabled:opacity-40"
-              >
-                {o.countryName} <span className="text-slate-500">({o.playerName})</span>
-              </button>
-            ))}
-            {outgoingCall && (
-              <div className="rounded-lg bg-slate-800 px-3 py-2 text-center text-xs mt-2">
-                {outgoingCall.isBusy ? (
-                  <span className="text-amber-400 font-bold">⚠️ Абонент занят. Вы {outgoingCall.queuePosition}-й в очереди...</span>
-                ) : (
-                  <span className="text-emerald-400 font-bold">📞 Звоним...</span>
-                )}
-              </div>
-            )}
-            {outgoingCall && (
-              <button
-                onClick={() => void emitRaw(SocketEvents.CallEnd, { callId: outgoingCall.callId })}
-                className="rounded-lg bg-slate-700 px-3 py-2 text-xs"
-              >
-                Отменить вызов
-              </button>
-            )}
-            {msg && <div className="text-center text-xs text-rose-400">{msg}</div>}
-          </div>
-        )}
-      </div>
+      {/* кнопка-список (скрыто в hideList режиме) */}
+      {!hideList && (
+        <div className="w-full max-w-sm">
+          <button
+            onClick={() => setOpen(!open)}
+            className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300"
+          >
+            📞 Позвонить (осталось {you.callsLeft}) {open ? '▲' : '▼'}
+          </button>
+          {open && (
+            <div className="mt-2 flex flex-col gap-1 rounded-xl bg-slate-900 p-3 text-sm">
+              {others.map((o) => (
+                <button
+                  key={o.countryId}
+                  disabled={you.callsLeft <= 0 || !!outgoingCall}
+                  onClick={() => void invite(o.countryId)}
+                  className="rounded-lg border border-slate-800 px-3 py-2 text-left hover:border-amber-400 disabled:opacity-40"
+                >
+                  {o.countryName} <span className="text-slate-500">({o.playerName})</span>
+                </button>
+              ))}
+              {outgoingCall && (
+                <div className="rounded-lg bg-slate-800 px-3 py-2 text-center text-xs mt-2">
+                  {outgoingCall.isBusy ? (
+                    <span className="text-amber-400 font-bold">⚠️ Абонент занят. Вы {outgoingCall.queuePosition}-й в очереди...</span>
+                  ) : (
+                    <span className="text-emerald-400 font-bold">📞 Звоним...</span>
+                  )}
+                </div>
+              )}
+              {outgoingCall && (
+                <button
+                  onClick={() => void emitRaw(SocketEvents.CallEnd, { callId: outgoingCall.callId })}
+                  className="rounded-lg bg-slate-700 px-3 py-2 text-xs"
+                >
+                  Отменить вызов
+                </button>
+              )}
+              {msg && <div className="text-center text-xs text-rose-400">{msg}</div>}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

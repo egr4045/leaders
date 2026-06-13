@@ -223,8 +223,9 @@ const statuses = [
   {
     id: "ru_social_credit_lite",
     name: "Социальный рейтинг (Лайт)",
+    type: "state",
     description: "Китайские партнеры внедрили систему поощрения лояльных граждан.",
-    effects: { modifiers: { outputMult: { army: 1.1, intel: 1.2 } } }
+    effects: { modifiers: { outputMult: { siloviki: 1.1, umniki: 1.2 } } }
   }
 ];
 
