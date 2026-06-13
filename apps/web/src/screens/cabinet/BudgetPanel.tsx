@@ -17,7 +17,7 @@ export function BudgetPanel({ you }: { you: PrivateCountryView }) {
   const [alloc, setAlloc] = useState<Record<string, number>>(() => {
     // Инициализация из snapshot, если там есть уже сохранённый бюджет.
     // Если нет, то нули.
-    const savedBudget = snapshot?.sectorBudget?.[you.countryId] ?? {};
+    const savedBudget = you.budget ?? {};
     return Object.fromEntries(SECTOR_KEYS.map((k) => [k, savedBudget[k] ?? 0]));
   });
   const [saving, setSaving] = useState(false);

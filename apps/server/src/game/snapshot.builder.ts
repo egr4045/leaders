@@ -121,6 +121,7 @@ export function buildSnapshot(
               description: st.description,
               cost: st.cost,
             })),
+          budget: room.sectorBudget?.[s.id] ?? {},
         };
       } else {
         others.push({

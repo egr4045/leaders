@@ -76,6 +76,8 @@ export interface PrivateCountryView {
   projection: YearProjection;
   /** Законы, доступные для принятия (не принятые и не отклонённые) */
   availableLaws?: { id: string; name: string; description?: string; cost?: { money?: number; influence?: number } }[];
+  /** Установленный бюджет */
+  budget?: Record<string, number>;
 }
 
 export interface YearProjection {
