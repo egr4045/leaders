@@ -76,6 +76,16 @@ function SideEditor({
         maxLength={200}
         className="mt-1 w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs"
       />
+      {value.promise && (
+        <label className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
+          <input
+            type="checkbox"
+            checked={Boolean(value.promisePublic)}
+            onChange={(e) => onChange({ ...value, promisePublic: e.target.checked || undefined })}
+          />
+          <span>📢 публичное — попадёт в общий список и огласится в ООН (иначе видят только стороны)</span>
+        </label>
+      )}
     </div>
   );
 }
@@ -121,6 +131,7 @@ export function TradePanel({
   const offers = snapshot?.offers ?? [];
   const incoming = offers.filter((o) => o.toCountryId === you.countryId && o.status === 'pending');
   const recent = [...offers].reverse().slice(0, 6);
+  const promises = snapshot?.promises ?? [];
 
   // активная война между мной и выбранным контрагентом (для мирного предложения)
   const warWithTarget = (snapshot?.wars ?? []).find(
@@ -230,6 +241,25 @@ export function TradePanel({
             </button>
             {msg && <div className="mt-1 text-center text-xs">{msg}</div>}
           </div>
+
+          {promises.length > 0 && (
+            <div>
+              <div className="mb-1 text-xs font-semibold uppercase text-slate-500">
+                Обещания
+                <span className="ml-1 font-normal normal-case text-slate-600">(не enforced — можно нарушить)</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                {[...promises].reverse().map((p) => (
+                  <div key={p.id} className="rounded border border-slate-800 bg-slate-950/50 px-2 py-1 text-xs">
+                    <span className={p.public ? 'text-emerald-300' : 'text-slate-400'}>
+                      {p.public ? '📢' : '🔒'} {p.fromName} → {p.toName}
+                    </span>
+                    <span className="text-slate-500"> (год {p.year}):</span> «{p.text}»
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {recent.length > 0 && (
             <div>

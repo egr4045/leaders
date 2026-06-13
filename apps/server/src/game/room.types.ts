@@ -1,4 +1,4 @@
-import type { AdvisorCard, GamePhase, TradeOfferView, UnLayout, YearReport } from '@leaders/shared';
+import type { AdvisorCard, GamePhase, PromiseRecord, TradeOfferView, UnLayout, YearReport } from '@leaders/shared';
 import type { SpyActionKind, SpyOutcome, WorldState } from '@leaders/engine';
 
 export interface RoomPlayer {
@@ -22,17 +22,31 @@ export interface SpyOrderRec {
   outcome?: SpyOutcome;
 }
 
-/** Разведдонесение для конкретного игрока (результат успешного reveal). */
+/** Разведдонесение для конкретного игрока (результат успешного reveal / reveal_calls). */
 export interface IntelReport {
   year: number;
   targetCountryId: string;
-  data: {
+  kind: 'reveal' | 'reveal_calls';
+  /** для reveal */
+  data?: {
     resources: Record<string, number>;
     sectors: Record<string, number>;
     dovolstvo: number;
     forbesTotal: number;
     declaredForbes: number | null;
   };
+  /** для reveal_calls: журнал звонков цели (с кем и сколько секунд) */
+  calls?: { withCountryId: string; year: number; durationSec: number; ongoing: boolean }[];
+}
+
+/** Запись журнала звонков (для шпионской прослушки, фича 10). */
+export interface CallLogEntry {
+  callId: string;
+  fromCountryId: string;
+  toCountryId: string;
+  year: number;
+  startedAt: number;
+  endedAt: number | null;
 }
 
 export interface RoomState {
@@ -65,6 +79,10 @@ export interface RoomState {
   newsAssets: Record<string, { audioUrl?: string; imageUrl?: string }>;
   /** приватные звонки 1-на-1 (фаза Кабинета) */
   calls: { id: string; fromCountryId: string; toCountryId: string; status: 'ringing' | 'active' | 'ended' }[];
+  /** журнал состоявшихся звонков (для шпионской прослушки, фича 10) */
+  callLog: CallLogEntry[];
+  /** реестр обещаний из сделок (фича 11) */
+  promises: PromiseRecord[];
   /** публичные события последнего tick — для фазы Итогов */
   lastTickEvents: Record<string, string[]> | null;
   /** порядок выступающих в ООН (playerId) и текущий индекс */

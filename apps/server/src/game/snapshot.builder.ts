@@ -189,6 +189,23 @@ export function buildSnapshot(
           (o) => o.fromCountryId === me.countryId || o.toCountryId === me.countryId,
         )
       : [],
+    // обещания: публичные — всем, приватные — только сторонам (фича 11)
+    promises: (room.promises ?? []).filter(
+      (p) => p.public || p.fromCountryId === myCountryId || p.toCountryId === myCountryId,
+    ),
+    // личные разведдонесения (reveal + прослушка звонков, фича 10)
+    spyIntel: (room.intel?.[forPlayerId] ?? []).map((r) => ({
+      year: r.year,
+      targetCountryName: content.countries.get(r.targetCountryId)?.name ?? r.targetCountryId,
+      kind: r.kind ?? 'reveal',
+      data: r.data,
+      calls: r.calls?.map((c) => ({
+        withCountryName: content.countries.get(c.withCountryId)?.name ?? c.withCountryId,
+        year: c.year,
+        durationSec: c.durationSec,
+        ongoing: c.ongoing,
+      })),
+    })),
     news:
       room.news && room.phase.startsWith('un_')
         ? Object.entries(room.news).map(([countryId, lines]) => ({

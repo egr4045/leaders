@@ -28,7 +28,7 @@ import {
   type SpyActionKind,
   type WarRewardKind,
 } from '@leaders/engine';
-import type { TradeSidePayload } from '@leaders/shared';
+import type { TradeSidePayload, TradeOfferView } from '@leaders/shared';
 import { ContentService } from '../content.service.js';
 import { RedisService } from '../redis.service.js';
 import { MlService } from '../ml/ml.service.js';
@@ -95,6 +95,8 @@ export class RoomsService {
       news: null,
       newsAssets: {},
       calls: [],
+      callLog: [],
+      promises: [],
       lastTickEvents: null,
       speakerOrder: [],
       speakerIdx: 0,
@@ -567,6 +569,12 @@ export class RoomsService {
           lines.push('Подписан мирный договор — война окончена');
         }
       }
+      // публичные обещания этого года (фича 11) — оглашаем в сводке давшего
+      for (const pr of room.promises) {
+        if (pr.year === year && pr.public && pr.fromCountryId === countryId) {
+          lines.push(`Публичное обещание стране «${pr.toName}»: «${pr.text}»`);
+        }
+      }
       if (lines.length === 0) lines.push('Год прошёл тихо. Подозрительно тихо.');
       news[countryId] = lines;
     }
@@ -915,6 +923,7 @@ export class RoomsService {
       (room.intel[playerId] ??= []).push({
         year: room.world.year,
         targetCountryId,
+        kind: 'reveal',
         data: {
           resources: { ...target.resources },
           sectors: { ...target.sectors },
@@ -922,6 +931,24 @@ export class RoomsService {
           forbesTotal: Math.round(computeForbes(target, this.content).total),
           declaredForbes: target.declaredForbes,
         },
+      });
+    }
+    // успешная прослушка: кто с кем и как долго созванивался (фича 10)
+    if (kind === 'reveal_calls' && outcome.success) {
+      const now = Date.now();
+      const calls = room.callLog
+        .filter((e) => e.fromCountryId === targetCountryId || e.toCountryId === targetCountryId)
+        .map((e) => ({
+          withCountryId: e.fromCountryId === targetCountryId ? e.toCountryId : e.fromCountryId,
+          year: e.year,
+          durationSec: Math.max(1, Math.round(((e.endedAt ?? now) - e.startedAt) / 1000)),
+          ongoing: e.endedAt === null,
+        }));
+      (room.intel[playerId] ??= []).push({
+        year: room.world.year,
+        targetCountryId,
+        kind: 'reveal_calls',
+        calls,
       });
     }
 
@@ -1003,6 +1030,7 @@ export class RoomsService {
         // сервер валидирует и применяет атомарно; обещания не enforced
         applyTrade(from, to, { from: from.id, to: to.id, give: offer.give, take: offer.take }, this.content);
         offer.status = 'accepted';
+        this.recordPromises(room, offer);
         // 🕊 мирное предложение: принятие завершает войну (Э10)
         if (offer.peaceWarId) {
           const war = room.world.wars.find((w) => w.id === offer.peaceWarId);
@@ -1060,12 +1088,40 @@ export class RoomsService {
     }
     if (typeof side?.promise === 'string' && side.promise.trim()) {
       out.promise = side.promise.trim().slice(0, 200);
+      if (side.promisePublic) out.promisePublic = true;
     }
     return out;
   }
 
   private sideEmpty(side: TradeSidePayload): boolean {
     return !side.resources && !side.population && !side.statuses && !side.promise;
+  }
+
+  /** Записать обещания принятой сделки в реестр (фича 11; без последствий — только видимость). */
+  private recordPromises(room: RoomState, offer: TradeOfferView): void {
+    if (!room.world) return;
+    const year = room.world.year;
+    const add = (
+      side: TradeSidePayload,
+      fromId: string,
+      fromName: string,
+      toId: string,
+      toName: string,
+    ) => {
+      if (!side.promise) return;
+      room.promises.push({
+        id: randomUUID(),
+        year,
+        fromCountryId: fromId,
+        fromName,
+        toCountryId: toId,
+        toName,
+        text: side.promise,
+        public: Boolean(side.promisePublic),
+      });
+    };
+    add(offer.give, offer.fromCountryId, offer.fromName, offer.toCountryId, offer.toName);
+    add(offer.take, offer.toCountryId, offer.toName, offer.fromCountryId, offer.fromName);
   }
 
   declareForbes(code: string, playerId: string, value: number) {
@@ -1350,6 +1406,17 @@ export class RoomsService {
     if (call.toCountryId !== player.countryId) throw new Error('Это не ваш звонок');
 
     call.status = accept ? 'active' : 'ended';
+    if (accept) {
+      // журнал звонков для шпионской прослушки (фича 10)
+      room.callLog.push({
+        callId: call.id,
+        fromCountryId: call.fromCountryId,
+        toCountryId: call.toCountryId,
+        year: room.world?.year ?? 0,
+        startedAt: Date.now(),
+        endedAt: null,
+      });
+    }
     const fromSocket = this.socketOfCountry(room, call.fromCountryId);
     if (fromSocket && this.server) {
       this.server
@@ -1369,6 +1436,8 @@ export class RoomsService {
       throw new Error('Это не ваш звонок');
     }
     call.status = 'ended';
+    const logEntry = [...room.callLog].reverse().find((e) => e.callId === call.id && e.endedAt === null);
+    if (logEntry) logEntry.endedAt = Date.now();
     for (const cid of [call.fromCountryId, call.toCountryId]) {
       const sid = this.socketOfCountry(room, cid);
       if (sid && this.server) this.server.to(sid).emit(SocketEvents.CallEnded, { callId });
@@ -1512,6 +1581,8 @@ export class RoomsService {
           news: data.news ?? null,
           newsAssets: data.newsAssets ?? {},
           calls: data.calls ?? [],
+          callLog: data.callLog ?? [],
+          promises: data.promises ?? [],
           lastTickEvents: data.lastTickEvents ?? null,
           manualPause: data.manualPause ?? false,
           unLayout: data.unLayout ?? 'auto',

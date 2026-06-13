@@ -179,6 +179,10 @@ export interface RoomSnapshot {
   unLayout: UnLayout;
   /** сделки с участием вашей страны (ящик предложений) */
   offers: TradeOfferView[];
+  /** реестр обещаний: публичные — всем, приватные — только сторонам (фича 11) */
+  promises: PromiseRecord[];
+  /** ваши разведдонесения (reveal + прослушка звонков) */
+  spyIntel: SpyIntelReport[];
   /** сводка новостей этого года по странам (уже с искажениями шпионажа) */
   news:
     | {
@@ -216,6 +220,44 @@ export interface TradeSidePayload {
   statuses?: string[];
   /** обещание: не enforced, нарушение — фича */
   promise?: string;
+  /** обещание публичное (true) — попадает в общий список и оглашается в ООН; иначе приватное */
+  promisePublic?: boolean;
+}
+
+/** Запись в реестре обещаний (фича 11). Без механических последствий — только видимость. */
+export interface PromiseRecord {
+  id: string;
+  year: number;
+  fromCountryId: string;
+  fromName: string;
+  toCountryId: string;
+  toName: string;
+  text: string;
+  /** публичное (видят все, оглашается в ООН) или приватное (только стороны) */
+  public: boolean;
+}
+
+/** Разведдонесение для своего экрана (результат успешной операции «Разведка»/«Прослушка звонков»). */
+export interface SpyCallEntry {
+  withCountryName: string;
+  year: number;
+  durationSec: number;
+  ongoing: boolean;
+}
+export interface SpyIntelReport {
+  year: number;
+  targetCountryName: string;
+  kind: 'reveal' | 'reveal_calls';
+  /** для reveal */
+  data?: {
+    resources: Record<string, number>;
+    sectors: Record<string, number>;
+    dovolstvo: number;
+    forbesTotal: number;
+    declaredForbes: number | null;
+  };
+  /** для reveal_calls: с кем и как долго цель созванивалась */
+  calls?: SpyCallEntry[];
 }
 
 export type TradeOfferStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' | 'failed';

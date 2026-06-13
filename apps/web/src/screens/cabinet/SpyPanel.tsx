@@ -19,6 +19,13 @@ const ACTIONS: SpyAction[] = [
     color: 'border-sky-700 bg-sky-950/30 hover:border-sky-500',
   },
   {
+    kind: 'reveal_calls',
+    label: 'Прослушка связи',
+    description: 'Узнать, кто с кем и как долго созванивался',
+    icon: '📞',
+    color: 'border-indigo-700 bg-indigo-950/30 hover:border-indigo-500',
+  },
+  {
     kind: 'steal_money',
     label: 'Похитить деньги',
     description: 'Украсть 15% казны цели',
@@ -76,7 +83,8 @@ export function SpyPanel({
   others: PublicCountryView[];
   myCountryId: string;
 }) {
-  const { spyOrder } = useGame();
+  const { spyOrder, snapshot } = useGame();
+  const intel = snapshot?.spyIntel ?? [];
   const [open, setOpen] = useState(false);
   const [selectedKind, setSelectedKind] = useState<string | null>(null);
   const [targetId, setTargetId] = useState('');
@@ -116,6 +124,43 @@ export function SpyPanel({
               {result.success
                 ? `✅ «${result.kind}» против ${result.target} — успех`
                 : `❌ «${result.kind}» против ${result.target} — провал, вас раскусили`}
+            </div>
+          )}
+
+          {/* Донесения разведки */}
+          {intel.length > 0 && !selectedKind && (
+            <div className="flex flex-col gap-1.5">
+              <div className="text-xs font-semibold uppercase text-slate-500">Донесения</div>
+              {intel.slice().reverse().map((r, i) => (
+                <div key={i} className="rounded-lg border border-slate-700 bg-slate-950/50 p-2 text-xs">
+                  <div className="mb-1 font-semibold text-sky-300">
+                    {r.kind === 'reveal_calls' ? '📞 Связь' : '🔍 Разведка'}: {r.targetCountryName}
+                    <span className="ml-1 font-normal text-slate-500">(год {r.year})</span>
+                  </div>
+                  {r.kind === 'reveal' && r.data && (
+                    <div className="text-slate-300">
+                      <div>💰 {r.data.resources.money} · 🥇 {r.data.resources.gold} · 🌾 {r.data.resources.food} · 📢 {r.data.resources.influence}</div>
+                      <div className="text-slate-400">
+                        Сектора: эк {r.data.sectors.economy}/нау {r.data.sectors.science}/арм {r.data.sectors.army}/сми {r.data.sectors.smi}/раз {r.data.sectors.intel} · довольство {r.data.dovolstvo}
+                      </div>
+                      <div className="text-amber-300">
+                        Реальный Форбс: {r.data.forbesTotal}
+                        {r.data.declaredForbes != null && <span className="text-slate-500"> (заявлял {r.data.declaredForbes})</span>}
+                      </div>
+                    </div>
+                  )}
+                  {r.kind === 'reveal_calls' && (
+                    <div className="text-slate-300">
+                      {(!r.calls || r.calls.length === 0) && <span className="text-slate-500">звонков не зафиксировано</span>}
+                      {r.calls?.map((c, j) => (
+                        <div key={j}>
+                          ↔ {c.withCountryName} — {c.durationSec}с {c.ongoing && <span className="text-emerald-400">(идёт сейчас)</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
