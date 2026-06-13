@@ -110,7 +110,8 @@ export function SpyPanel({
     const res = await spyOrder(action.kind, targetId);
     const targetName = others.find((o) => o.countryId === targetId)?.countryName ?? targetId;
     if (res !== null) {
-      setResult({ success: res.success, kind: action.label, target: targetName });
+      const spyData = res.data as { success?: boolean } | undefined;
+      setResult({ success: spyData?.success ?? res.ok, kind: action.label, target: targetName });
     }
     setBusy(false);
     setSelectedKind(null);

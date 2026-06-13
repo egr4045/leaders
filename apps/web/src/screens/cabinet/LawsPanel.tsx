@@ -3,7 +3,7 @@ import type { PrivateCountryView } from '@leaders/shared';
 import { useGame } from '../../lib/useGame';
 
 export function LawsPanel({ you }: { you: PrivateCountryView }) {
-  const { adoptLaw, rejectLaw } = useGame();
+  const { adoptLaw, rejectLaw, cancelLaw } = useGame();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
