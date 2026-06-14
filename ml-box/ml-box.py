@@ -27,20 +27,46 @@ VOICE  = os.environ.get("ML_BOX_VOICE", "ru-RU-DmitryNeural")
 POLL_INTERVAL = 1
 
 
+def _clean_text(text: str) -> str:
+    """Заменяет символы, на которых edge-tts может упасть с NoAudioReceived."""
+    return (
+        text
+        .replace("—", ", ")
+        .replace("–", ", ")
+        .replace("«", '"')
+        .replace("»", '"')
+        .replace("…", "...")
+    )
+
+
 async def _synth(text: str) -> bytes:
     communicate = edge_tts.Communicate(text, VOICE)
     buf = b""
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
             buf += chunk["data"]
+    if not buf:
+        raise RuntimeError("No audio was received. Please verify that your parameters are correct.")
     return buf  # MP3
 
 
 def generate_tts(text: str) -> bytes:
-    try:
-        return asyncio.run(_synth(text))
-    except KeyboardInterrupt:
-        raise RuntimeError("edge-tts connection cancelled")
+    """Пробует до 3 раз; на 2-й попытке чистит спецсимволы."""
+    last_err: Exception = RuntimeError("unknown")
+    for attempt in range(3):
+        use_text = _clean_text(text) if attempt > 0 else text
+        try:
+            result = asyncio.run(_synth(use_text))
+            if attempt > 0:
+                print(f"  ok on attempt {attempt + 1} (cleaned text)")
+            return result
+        except KeyboardInterrupt:
+            raise RuntimeError("cancelled")
+        except Exception as e:
+            last_err = e
+            print(f"  attempt {attempt + 1} failed: {e}")
+            time.sleep(1 + attempt)
+    raise last_err
 
 
 def api(method: str, path: str, **kwargs):
