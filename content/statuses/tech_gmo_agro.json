@@ -1,0 +1,15 @@
+{
+  "id": "tech_gmo_agro",
+  "name": "ГМО-Агрокультуры",
+  "type": "tech",
+  "description": "Модифицированные семена, устойчивые ко всему. Урожаи бьют рекорды.",
+  "revocable": false,
+  "effects": {
+    "sectors": { "economy": 1 },
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.2
+      }
+    }
+  }
+}

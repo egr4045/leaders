@@ -2,17 +2,17 @@
   "id": "germany",
   "name": "Германия",
   "startResources": {
-    "money": 3000,
-    "gold": 60,
-    "food": 1200,
-    "influence": 600
+    "money": 2500,
+    "gold": 40,
+    "food": 800,
+    "influence": 100
   },
   "startPopulation": {
-    "rabotyagi": 5000,
-    "umniki": 2500,
-    "siloviki": 400,
-    "mediyshchiki": 1000,
-    "ministry": 100
+    "rabotyagi": 750,
+    "umniki": 300,
+    "siloviki": 60,
+    "mediyshchiki": 120,
+    "ministry": 10
   },
   "startSectors": {
     "economy": 8,

@@ -1,0 +1,22 @@
+{
+  "id": "wonder_firewall",
+  "name": "Абсолютный Файрвол",
+  "type": "wonder",
+  "description": "Непреодолимая цифровая стена, защищающая умы граждан от вредного влияния.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "mediyshchiki": 2.0
+      },
+      "forbesLegacy": 30
+    }
+  },
+  "globalEffects": {
+    "modifiers": {
+      "outputMult": {
+        "mediyshchiki": 0.8
+      }
+    }
+  },
+  "triggers": ["news_wonder"]
+}

@@ -2,17 +2,17 @@
   "id": "israel",
   "name": "Израиль",
   "startResources": {
-    "money": 1500,
+    "money": 1200,
     "gold": 20,
-    "food": 500,
-    "influence": 500
+    "food": 300,
+    "influence": 80
   },
   "startPopulation": {
-    "rabotyagi": 2000,
-    "umniki": 1500,
-    "siloviki": 1000,
-    "mediyshchiki": 800,
-    "ministry": 100
+    "rabotyagi": 500,
+    "umniki": 200,
+    "siloviki": 150,
+    "mediyshchiki": 80,
+    "ministry": 10
   },
   "startSectors": {
     "economy": 7,

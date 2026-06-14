@@ -2,17 +2,17 @@
   "id": "usa",
   "name": "США",
   "startResources": {
-    "money": 5000,
-    "gold": 100,
-    "food": 3000,
-    "influence": 1000
+    "money": 3500,
+    "gold": 30,
+    "food": 2000,
+    "influence": 200
   },
   "startPopulation": {
-    "rabotyagi": 10000,
-    "umniki": 3000,
-    "siloviki": 1500,
-    "mediyshchiki": 2000,
-    "ministry": 200
+    "rabotyagi": 950,
+    "umniki": 300,
+    "siloviki": 150,
+    "mediyshchiki": 200,
+    "ministry": 20
   },
   "startSectors": {
     "economy": 9,

@@ -3,16 +3,16 @@
   "name": "КНДР",
   "startResources": {
     "money": 100,
-    "gold": 10,
-    "food": 100,
-    "influence": 300
+    "gold": 20,
+    "food": 200,
+    "influence": 50
   },
   "startPopulation": {
-    "rabotyagi": 5000,
-    "umniki": 200,
-    "siloviki": 3000,
-    "mediyshchiki": 100,
-    "ministry": 50
+    "rabotyagi": 600,
+    "umniki": 30,
+    "siloviki": 300,
+    "mediyshchiki": 20,
+    "ministry": 10
   },
   "startSectors": {
     "economy": 1,

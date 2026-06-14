@@ -1,0 +1,20 @@
+{
+  "id": "wonder_quantum_ai",
+  "name": "Квантовый ИИ",
+  "type": "wonder",
+  "description": "Сверхразум, решающий сложнейшие задачи человечества. Умы со всего мира стремятся сюда.",
+  "effects": {
+    "modifiers": {
+      "scienceMult": 0.5,
+      "forbesLegacy": 40
+    }
+  },
+  "globalEffects": {
+    "modifiers": {
+      "emigration": {
+        "umniki": 0.05
+      }
+    }
+  },
+  "triggers": ["news_wonder"]
+}

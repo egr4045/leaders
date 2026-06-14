@@ -1,0 +1,12 @@
+{
+  "id": "tech_ai",
+  "name": "Машинное Обучение",
+  "type": "tech",
+  "description": "Нейросети, способные писать код и делать открытия быстрее людей.",
+  "revocable": false,
+  "effects": {
+    "modifiers": {
+      "scienceMult": 0.5
+    }
+  }
+}

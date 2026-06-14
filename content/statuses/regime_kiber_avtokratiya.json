@@ -1,0 +1,24 @@
+{
+  "id": "regime_kiber_avtokratiya",
+  "name": "Кибер-Автократия",
+  "type": "regime",
+  "description": "Алгоритмы управляют обществом. СМИ идеально подавляют инакомыслие.",
+  "exclusiveGroup": "regime",
+  "requires": {
+    "statuses": ["law_technokratiya"],
+    "conditions": ["smi_strong"]
+  },
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "umniki": 1.5,
+        "mediyshchiki": 1.5
+      },
+      "emigration": {
+        "rabotyagi": 0.05
+      }
+    }
+  },
+  "triggers": ["news_regime_change"],
+  "mediaIsLiberal": false
+}

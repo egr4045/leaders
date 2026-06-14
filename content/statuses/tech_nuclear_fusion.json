@@ -1,0 +1,13 @@
+{
+  "id": "tech_nuclear_fusion",
+  "name": "Ядерный Синтез",
+  "type": "tech",
+  "description": "Дешевая и чистая энергия. Вершина технологического прогресса.",
+  "revocable": false,
+  "effects": {
+    "sectors": { "economy": 2, "army": 2 },
+    "modifiers": {
+      "forbesLegacy": 100
+    }
+  }
+}

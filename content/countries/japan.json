@@ -2,17 +2,17 @@
   "id": "japan",
   "name": "Япония",
   "startResources": {
-    "money": 2500,
-    "gold": 50,
-    "food": 1000,
-    "influence": 600
+    "money": 2000,
+    "gold": 30,
+    "food": 500,
+    "influence": 150
   },
   "startPopulation": {
-    "rabotyagi": 6000,
-    "umniki": 3000,
-    "siloviki": 300,
-    "mediyshchiki": 1500,
-    "ministry": 100
+    "rabotyagi": 700,
+    "umniki": 350,
+    "siloviki": 50,
+    "mediyshchiki": 200,
+    "ministry": 10
   },
   "startSectors": {
     "economy": 8,

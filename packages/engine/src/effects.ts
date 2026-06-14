@@ -38,6 +38,9 @@ export function applyEffectsOnce(s: CountryState, effects: Effects): void {
   if (effects.dovolstvo !== undefined) {
     s.dovolstvo = clamp01_100(s.dovolstvo + effects.dovolstvo);
   }
+  if (effects.sciencePoints !== undefined) {
+    s.sciencePoints = Math.max(0, s.sciencePoints + effects.sciencePoints);
+  }
   if (effects.modifiers) {
     const { special, ...rest } = effects.modifiers;
     const keptSpecial: Record<string, number | boolean | string> = {};

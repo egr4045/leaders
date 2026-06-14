@@ -1,0 +1,69 @@
+{
+  "id": "law_chvk",
+  "name": "Закон о ЧВК",
+  "type": "law",
+  "description": "Разрешение на частные военные компании и агрессивную экспансию: Силовики приносят много Золота через контракты, но отбирают Еду и жестко подавляют свободу прессы.",
+  "revocable": true,
+  "levels": [
+    {
+      "name": "Легализация",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "siloviki": 1.2,
+            "mediyshchiki": 0.9
+          }
+        },
+        "resources": {
+          "gold": 20,
+          "food": -30
+        }
+      },
+      "cost": {
+        "money": 200,
+        "influence": 10
+      },
+      "minMinistry": 10
+    },
+    {
+      "name": "Гос. Контракты",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "siloviki": 1.5,
+            "mediyshchiki": 0.8
+          }
+        },
+        "resources": {
+          "gold": 50,
+          "food": -80
+        }
+      },
+      "cost": {
+        "money": 400,
+        "influence": 25
+      },
+      "minMinistry": 20
+    },
+    {
+      "name": "Мировые Операции",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "siloviki": 2,
+            "mediyshchiki": 0.6
+          }
+        },
+        "resources": {
+          "gold": 120,
+          "food": -200
+        }
+      },
+      "cost": {
+        "money": 800,
+        "influence": 50
+      },
+      "minMinistry": 35
+    }
+  ]
+}

@@ -5,13 +5,8 @@ import type { Rng } from './rng.js';
 
 export type SpyActionKind =
   | 'reveal'
-  | 'reveal_calls'
-  | 'wiretap'
   | 'steal_science'
-  | 'wreck_wonder'
-  | 'steal_money'
-  | 'steal_food'
-  | 'steal_gold'
+  | 'financial_sabotage'
   | 'provoke_riot'
   | 'assassinate_minister';
 
@@ -20,19 +15,44 @@ export interface SpyOutcome {
   chance: number;
 }
 
+const ACTION_BASE_CHANCES: Record<SpyActionKind, number> = {
+  reveal: 0.70,
+  steal_science: 0.50,
+  financial_sabotage: 0.40,
+  provoke_riot: 0.30,
+  assassinate_minister: 0.20,
+};
+
 export function spySuccessChance(
   attacker: CountryState,
   target: CountryState,
   content: GameContent,
+  kind?: SpyActionKind, // optional for backward compatibility in UI
 ): number {
   const t = content.tunables.spy;
   const aEff = aggregateModifiers(attacker, content);
   const dEff = aggregateModifiers(target, content);
-  const atk = effectiveSector(attacker, aEff, 'intel');
+
+  const getPopShare = (c: CountryState, key: keyof CountryState['population']) => {
+    const sum = c.population.rabotyagi + c.population.umniki + c.population.siloviki + c.population.mediyshchiki + c.population.ministry;
+    return sum > 0 ? c.population[key] / sum : 0;
+  };
+
+  const aUmnikiPts = getPopShare(attacker, 'umniki') * 10;
+  const atk = effectiveSector(attacker, aEff, 'intel') + aUmnikiPts;
+
+  let defSilovikiPts = getPopShare(target, 'siloviki') * 10;
+  if (target.dovolstvo < 30) {
+    defSilovikiPts -= 1; // народ сам сдает секреты
+  }
+
   const def =
     effectiveSector(target, dEff, 'intel') +
-    effectiveSector(target, dEff, 'smi') * t.defenseSmiWeight;
-  const chance = t.baseSuccess + (atk - def) * t.perLevelDelta;
+    effectiveSector(target, dEff, 'smi') * t.defenseSmiWeight +
+    defSilovikiPts;
+
+  const base = kind ? (ACTION_BASE_CHANCES[kind] ?? 0.5) : 0.5;
+  const chance = base + (atk - def) * 0.05; // 5% per level delta
   return Math.max(0.05, Math.min(0.95, chance));
 }
 
@@ -44,7 +64,7 @@ export function resolveSpyAction(
   content: GameContent,
   rng: Rng,
 ): SpyOutcome {
-  const chance = spySuccessChance(attacker, target, content);
+  const chance = spySuccessChance(attacker, target, content, kind);
   const success = rng() < chance;
   if (!success) return { success, chance };
 
@@ -55,34 +75,23 @@ export function resolveSpyAction(
       attacker.sciencePoints += stolen;
       break;
     }
-    case 'wreck_wonder': {
-      const wonderId = target.wondersBuilt.pop();
-      if (wonderId) {
-        target.activeStatuses = target.activeStatuses.filter((id) => id !== wonderId);
-        world.wondersTaken.delete(wonderId);
-      }
-      break;
-    }
-    case 'steal_money': {
-      const stolen = Math.round(target.resources.money * 0.15);
-      target.resources.money -= stolen;
-      attacker.resources.money += stolen;
-      break;
-    }
-    case 'steal_food': {
-      const stolen = Math.round(target.resources.food * 0.25);
-      target.resources.food -= stolen;
-      attacker.resources.food += stolen;
-      break;
-    }
-    case 'steal_gold': {
-      const stolen = Math.round(target.resources.gold * 0.1);
-      target.resources.gold -= stolen;
-      attacker.resources.gold += stolen;
+    case 'financial_sabotage': {
+      const stolenMoney = Math.round(target.resources.money * 0.15);
+      const stolenGold = Math.round(target.resources.gold * 0.10);
+      target.resources.money -= stolenMoney;
+      attacker.resources.money += stolenMoney;
+      target.resources.gold -= stolenGold;
+      attacker.resources.gold += stolenGold;
+      
+      target.delayed.push({
+        dueYear: world.year + 1,
+        effects: { resources: { money: 0 } } as unknown as import('@leaders/shared').Effects,
+        description: `⚠️ Внимание! В результате финансовой диверсии из казны пропало ${stolenMoney} денег и ${stolenGold} золота.`,
+      });
       break;
     }
     case 'provoke_riot': {
-      target.dovolstvo = Math.max(0, target.dovolstvo - 15);
+      target.dovolstvo = Math.max(0, target.dovolstvo - 20);
       break;
     }
     case 'assassinate_minister': {

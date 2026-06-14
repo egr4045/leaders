@@ -1,0 +1,14 @@
+{
+  "id": "wonder_mars_base",
+  "name": "Марсианская База",
+  "type": "wonder",
+  "description": "Первое постоянное поселение на Красной Планете. Человечество склоняет голову.",
+  "effects": {
+    "dovolstvo": 10,
+    "modifiers": {
+      "forbesLegacy": 100,
+      "populationMult": 0.1
+    }
+  },
+  "triggers": ["news_wonder"]
+}

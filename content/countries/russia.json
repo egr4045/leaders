@@ -2,17 +2,17 @@
   "id": "russia",
   "name": "Россия",
   "startResources": {
-    "money": 1000,
-    "gold": 50,
-    "food": 2000,
-    "influence": 500
+    "money": 800,
+    "gold": 80,
+    "food": 1200,
+    "influence": 60
   },
   "startPopulation": {
-    "rabotyagi": 7000,
-    "umniki": 1500,
-    "siloviki": 2000,
-    "mediyshchiki": 500,
-    "ministry": 100
+    "rabotyagi": 900,
+    "umniki": 180,
+    "siloviki": 250,
+    "mediyshchiki": 60,
+    "ministry": 12
   },
   "startSectors": {
     "economy": 4,

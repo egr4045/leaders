@@ -1,9 +1,0 @@
-{
-  "id": "wonder_lunar_flight",
-  "name": "Полёт на Луну",
-  "type": "wonder",
-  "description": "Народ гордится. Бюджет плачет. Флаг стоит.",
-  "effects": { "modifiers": { "dovolstvoDrift": 2, "forbesLegacy": 40 } },
-  "globalEffects": { "modifiers": { "dovolstvoDrift": -1 } },
-  "triggers": ["news_wonder"]
-}

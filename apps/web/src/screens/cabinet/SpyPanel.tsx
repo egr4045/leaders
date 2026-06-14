@@ -13,71 +13,36 @@ interface SpyAction {
 const ACTIONS: SpyAction[] = [
   {
     kind: 'reveal',
-    label: 'Разведка',
-    description: 'Вскрыть ресурсы, сектора и реальный Форбс соседа',
+    label: 'Глубокая разведка',
+    description: 'Вскрыть ресурсы, сектора и прослушать звонки цели',
     icon: '🔍',
     color: 'border-sky-700 bg-sky-950/30 hover:border-sky-500',
   },
   {
-    kind: 'reveal_calls',
-    label: 'Прослушка связи',
-    description: 'Узнать, кто с кем и как долго созванивался',
-    icon: '📞',
-    color: 'border-indigo-700 bg-indigo-950/30 hover:border-indigo-500',
-  },
-  {
-    kind: 'wiretap',
-    label: 'Внедрить жучок',
-    description: 'Скрытно слушать живой созвон цели в этом году',
-    icon: '🎧',
-    color: 'border-violet-700 bg-violet-950/30 hover:border-violet-500',
-  },
-  {
-    kind: 'steal_money',
-    label: 'Похитить деньги',
-    description: 'Украсть 15% казны цели',
-    icon: '💸',
-    color: 'border-amber-700 bg-amber-950/30 hover:border-amber-500',
-  },
-  {
-    kind: 'steal_food',
-    label: 'Похитить еду',
-    description: 'Украсть 25% продовольственных запасов цели',
-    icon: '🌾',
-    color: 'border-lime-700 bg-lime-950/30 hover:border-lime-500',
-  },
-  {
-    kind: 'steal_gold',
-    label: 'Похитить золото',
-    description: 'Украсть 10% золотого резерва цели',
-    icon: '🥇',
-    color: 'border-yellow-700 bg-yellow-950/30 hover:border-yellow-500',
-  },
-  {
     kind: 'steal_science',
-    label: 'Украсть науку',
+    label: 'Промышленный шпионаж',
     description: 'Похитить до 50 очков науки у цели',
     icon: '🔬',
     color: 'border-cyan-700 bg-cyan-950/30 hover:border-cyan-500',
   },
   {
+    kind: 'financial_sabotage',
+    label: 'Финансовая диверсия',
+    description: 'Украсть 15% казны и 10% золотого резерва',
+    icon: '💸',
+    color: 'border-amber-700 bg-amber-950/30 hover:border-amber-500',
+  },
+  {
     kind: 'provoke_riot',
-    label: 'Спровоцировать беспорядки',
-    description: 'Снизить довольство цели на 15',
+    label: 'Спонсировать оппозицию',
+    description: 'Снизить довольство цели на 20',
     icon: '🔥',
     color: 'border-orange-700 bg-orange-950/30 hover:border-orange-500',
   },
   {
-    kind: 'wreck_wonder',
-    label: 'Сорвать чудо',
-    description: 'Уничтожить последнее построенное чудо цели',
-    icon: '💣',
-    color: 'border-red-700 bg-red-950/30 hover:border-red-500',
-  },
-  {
     kind: 'assassinate_minister',
-    label: 'Устранить министра',
-    description: 'Убрать одного министра; аппарат цели год работает за двойную цену',
+    label: 'Устранить чиновника',
+    description: 'Убить министра; аппарат цели год обходится в 2 раза дороже',
     icon: '🗡️',
     color: 'border-rose-700 bg-rose-950/30 hover:border-rose-500',
   },
@@ -137,7 +102,7 @@ export function SpyPanel({
           {intel.slice().reverse().map((r, i) => (
             <div key={i} className="rounded-lg border border-slate-700 bg-slate-950/50 p-2 text-xs">
               <div className="mb-1 font-semibold text-sky-300">
-                {r.kind === 'reveal_calls' ? '📞 Связь' : '🔍 Разведка'}: {r.targetCountryName}
+                🔍 Глубокая разведка: {r.targetCountryName}
                 <span className="ml-1 font-normal text-slate-500">(год {r.year})</span>
               </div>
               {r.kind === 'reveal' && r.data && (
@@ -150,14 +115,13 @@ export function SpyPanel({
                     Форбс: {r.data.forbesTotal}
                     {r.data.declaredForbes != null && <span className="text-slate-500"> (заявлял {r.data.declaredForbes})</span>}
                   </div>
-                </div>
-              )}
-              {r.kind === 'reveal_calls' && (
-                <div className="text-slate-300">
-                  {(!r.calls || r.calls.length === 0) && <span className="text-slate-500">звонков не зафиксировано</span>}
-                  {r.calls?.map((c, j) => (
-                    <div key={j}>↔ {c.withCountryName} — {c.durationSec}с {c.ongoing && <span className="text-emerald-400">(идёт)</span>}</div>
-                  ))}
+                  {r.calls && (
+                    <div className="mt-1 pt-1 border-t border-slate-700/50">
+                      {r.calls.length === 0 ? <span className="text-slate-500">звонков не зафиксировано</span> : r.calls.map((c, j) => (
+                        <div key={j}>📞 ↔ {c.withCountryName} — {c.durationSec}с {c.ongoing && <span className="text-emerald-400">(идёт)</span>}</div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -183,7 +147,8 @@ export function SpyPanel({
             ))}
           </div>
           <p className="text-xs text-slate-600">
-            Шанс: ваша Разведка vs Разведка + СМИ цели. Операций: {snapshot?.you?.spyOrdersLeft ?? 0} осталось.
+            Шанс: зависит от вашей Разведки и Умников vs Разведка + СМИ + Силовики цели.
+            Операций: {snapshot?.you?.spyOrdersLeft ?? 0} осталось.
           </p>
         </>
       )}

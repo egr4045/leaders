@@ -1,9 +1,0 @@
-{
-  "id": "wonder_first_ai",
-  "name": "Первый ИИ",
-  "type": "wonder",
-  "description": "Искусственный интеллект пишет законы. Получается не хуже министров.",
-  "effects": { "modifiers": { "scienceMult": 0.2, "forbesLegacy": 40 } },
-  "globalEffects": { "modifiers": { "emigration": { "umniki": 0.04 } } },
-  "triggers": ["news_wonder"]
-}

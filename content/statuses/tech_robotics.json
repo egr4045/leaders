@@ -1,0 +1,15 @@
+{
+  "id": "tech_robotics",
+  "name": "Продвинутая Робототехника",
+  "type": "tech",
+  "description": "Роботы заменяют людей на заводах. Эффективно, но народ теряет работу.",
+  "revocable": false,
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.5
+      },
+      "dovolstvoDrift": -1
+    }
+  }
+}

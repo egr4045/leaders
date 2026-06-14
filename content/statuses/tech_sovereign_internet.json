@@ -1,0 +1,10 @@
+{
+  "id": "tech_sovereign_internet",
+  "name": "Суверенный Интернет",
+  "type": "tech",
+  "description": "Свои серверы, свой контроль. Информационная безопасность на максимуме.",
+  "revocable": false,
+  "effects": {
+    "sectors": { "smi": 1, "intel": 1 }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "wonder_mfc",
+  "name": "Глобальный МФЦ",
+  "type": "wonder",
+  "description": "Электронное правительство сокращает аппаратные издержки. Соседи смотрят и завидуют.",
+  "effects": {
+    "modifiers": {
+      "special": {
+        "ministerUpkeepMult": 0.5
+      },
+      "forbesLegacy": 30
+    }
+  },
+  "globalEffects": {
+    "modifiers": {
+      "dovolstvoDrift": -1
+    }
+  },
+  "triggers": ["news_wonder"]
+}

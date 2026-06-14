@@ -1,4 +1,4 @@
-import { SECTOR_KEYS, type AdvisorCard, type Country } from '@leaders/shared';
+import { SECTOR_KEYS, RESOURCE_KEYS, POPULATION_KEYS, type AdvisorCard, type Country } from '@leaders/shared';
 import type { GameContent } from './content/load.js';
 import type { CountryState } from './state.js';
 import { aggregateModifiers, effectiveSector } from './modifiers.js';
@@ -44,6 +44,21 @@ export function availableCards(
         const min = card.requires.minSectors[k];
         if (min !== undefined && effectiveSector(s, eff, k) < min) return false;
       }
+    }
+    if (card.requires?.minResources) {
+      for (const k of RESOURCE_KEYS) {
+        const min = card.requires.minResources[k];
+        if (min !== undefined && s.resources[k] < min) return false;
+      }
+    }
+    if (card.requires?.minPopulation) {
+      for (const k of POPULATION_KEYS) {
+        const min = card.requires.minPopulation[k];
+        if (min !== undefined && s.population[k] < min) return false;
+      }
+    }
+    if (card.requires?.minSciencePoints !== undefined) {
+      if (s.sciencePoints < card.requires.minSciencePoints) return false;
     }
     return true;
   });

@@ -2,17 +2,17 @@
   "id": "china",
   "name": "Китай",
   "startResources": {
-    "money": 4000,
-    "gold": 80,
-    "food": 4000,
-    "influence": 800
+    "money": 3000,
+    "gold": 50,
+    "food": 2500,
+    "influence": 100
   },
   "startPopulation": {
-    "rabotyagi": 20000,
-    "umniki": 2500,
-    "siloviki": 3000,
-    "mediyshchiki": 1000,
-    "ministry": 300
+    "rabotyagi": 1200,
+    "umniki": 150,
+    "siloviki": 200,
+    "mediyshchiki": 80,
+    "ministry": 20
   },
   "startSectors": {
     "economy": 9,

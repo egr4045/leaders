@@ -1,0 +1,69 @@
+{
+  "id": "law_technokratiya",
+  "name": "Технократия",
+  "type": "law",
+  "description": "Ставка на инновации и бизнес: Умники работают на пределе и приносят гигантские Деньги, но Влияние государства падает, а силовой блок недофинансирован.",
+  "revocable": true,
+  "levels": [
+    {
+      "name": "Гранты стартапам",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "umniki": 1.2,
+            "siloviki": 0.9
+          }
+        },
+        "resources": {
+          "money": 200,
+          "influence": -10
+        }
+      },
+      "cost": {
+        "money": 50,
+        "influence": 10
+      },
+      "minMinistry": 5
+    },
+    {
+      "name": "IT-Офшоры",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "umniki": 1.5,
+            "siloviki": 0.8
+          }
+        },
+        "resources": {
+          "money": 500,
+          "influence": -25
+        }
+      },
+      "cost": {
+        "money": 150,
+        "influence": 20
+      },
+      "minMinistry": 15
+    },
+    {
+      "name": "Государство-Корпорация",
+      "effects": {
+        "modifiers": {
+          "outputMult": {
+            "umniki": 2,
+            "siloviki": 0.6
+          }
+        },
+        "resources": {
+          "money": 1200,
+          "influence": -50
+        }
+      },
+      "cost": {
+        "money": 400,
+        "influence": 40
+      },
+      "minMinistry": 25
+    }
+  ]
+}

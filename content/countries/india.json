@@ -2,17 +2,17 @@
   "id": "india",
   "name": "Индия",
   "startResources": {
-    "money": 800,
-    "gold": 30,
-    "food": 5000,
-    "influence": 400
+    "money": 600,
+    "gold": 20,
+    "food": 1800,
+    "influence": 150
   },
   "startPopulation": {
-    "rabotyagi": 25000,
-    "umniki": 3000,
-    "siloviki": 1500,
-    "mediyshchiki": 2000,
-    "ministry": 200
+    "rabotyagi": 1000,
+    "umniki": 300,
+    "siloviki": 150,
+    "mediyshchiki": 200,
+    "ministry": 20
   },
   "startSectors": {
     "economy": 6,

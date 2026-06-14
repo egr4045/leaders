@@ -2,17 +2,17 @@
   "id": "uk",
   "name": "Великобритания",
   "startResources": {
-    "money": 2000,
-    "gold": 40,
-    "food": 800,
-    "influence": 700
+    "money": 1800,
+    "gold": 30,
+    "food": 400,
+    "influence": 180
   },
   "startPopulation": {
-    "rabotyagi": 4000,
-    "umniki": 2000,
-    "siloviki": 500,
-    "mediyshchiki": 1500,
-    "ministry": 150
+    "rabotyagi": 700,
+    "umniki": 200,
+    "siloviki": 80,
+    "mediyshchiki": 200,
+    "ministry": 15
   },
   "startSectors": {
     "economy": 7,

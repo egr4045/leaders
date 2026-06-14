@@ -1,0 +1,21 @@
+{
+  "id": "regime_agrarniy_sindikat",
+  "name": "Аграрный Синдикат",
+  "type": "regime",
+  "description": "Земля принадлежит работягам. Страна кормит весь мир, но наука в упадке.",
+  "exclusiveGroup": "regime",
+  "requires": {
+    "statuses": ["law_agrarnaya_reforma"],
+    "conditions": ["food_surplus"]
+  },
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.3
+      },
+      "scienceMult": -0.2
+    }
+  },
+  "triggers": ["news_regime_change"],
+  "mediaIsLiberal": false
+}

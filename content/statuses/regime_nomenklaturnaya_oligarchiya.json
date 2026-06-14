@@ -1,0 +1,22 @@
+{
+  "id": "regime_nomenklaturnaya_oligarchiya",
+  "name": "Номенклатурная Олигархия",
+  "type": "regime",
+  "description": "Элита поделила ресурсы. Государство стабильно, но народ стремительно беднеет.",
+  "exclusiveGroup": "regime",
+  "requires": {
+    "statuses": ["law_nomenklatura"],
+    "conditions": ["rich_exist"]
+  },
+  "effects": {
+    "modifiers": {
+      "forbesLegacy": 50,
+      "dovolstvoDrift": -2,
+      "special": {
+        "inflationImmunity": true
+      }
+    }
+  },
+  "triggers": ["news_regime_change"],
+  "mediaIsLiberal": true
+}

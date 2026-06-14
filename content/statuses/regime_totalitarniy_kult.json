@@ -1,0 +1,24 @@
+{
+  "id": "regime_totalitarniy_kult",
+  "name": "Тоталитарный Культ",
+  "type": "regime",
+  "description": "Вождь непогрешим. Мы отрезаны от мира, но едины в своей вере.",
+  "exclusiveGroup": "regime",
+  "requires": {
+    "statuses": ["law_gos_propaganda"],
+    "conditions": ["smi_strong"]
+  },
+  "effects": {
+    "modifiers": {
+      "dovolstvoDrift": 5,
+      "outputMult": {
+        "mediyshchiki": 2.0
+      },
+      "special": {
+        "moneyMode": "isolated"
+      }
+    }
+  },
+  "triggers": ["news_regime_change"],
+  "mediaIsLiberal": false
+}

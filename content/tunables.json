@@ -16,12 +16,12 @@
     "callsPerYear": 99
   },
   "production": {
-    "sciencePerSectorLevel": 200
+    "sciencePerSectorLevel": 800
   },
   "dovolstvo": {
     "smiCoef": 0.6,
     "wealthCoef": 0.15,
-    "foodSurplusCoef": 0.8,
+    "foodSurplusCoef": 0.3,
     "inflationPenalty": 4
   },
   "economy": {
@@ -29,5 +29,14 @@
   },
   "cabinet": {
     "cardsPerTurn": 5
+  },
+  "budget": {
+    "investPerLevel": 400
+  },
+  "un": {
+    "voteCostInfluence": 40
+  },
+  "war": {
+    "declareCostInfluence": 30
   }
 }

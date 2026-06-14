@@ -93,6 +93,7 @@ export const EffectsSchema = z
     sectors: SectorDeltasSchema,
     /** ± пунктов довольства (0..100) */
     dovolstvo: z.number(),
+    sciencePoints: z.number(),
     modifiers: ModifiersSchema,
   })
   .partial()

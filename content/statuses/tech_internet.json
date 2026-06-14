@@ -1,8 +1,0 @@
-{
-  "id": "tech_internet",
-  "name": "Интернет",
-  "type": "tech",
-  "description": "Народ узнаёт новости раньше телевизора. Опасная штука.",
-  "revocable": false,
-  "effects": { "sectors": { "smi": 1 }, "modifiers": { "scienceMult": 0.1 } }
-}

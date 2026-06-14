@@ -1,9 +1,0 @@
-{
-  "id": "wonder_first_aes",
-  "name": "Первая АЭС",
-  "type": "wonder",
-  "description": "Мирный атом: дешёвая энергия и уважительные взгляды соседей.",
-  "effects": { "modifiers": { "outputMult": { "rabotyagi": 1.15 }, "forbesLegacy": 30 } },
-  "globalEffects": { "modifiers": { "outputMult": { "rabotyagi": 0.95 } } },
-  "triggers": ["news_wonder"]
-}

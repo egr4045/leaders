@@ -1,0 +1,24 @@
+{
+  "id": "regime_korporatokratiya",
+  "name": "Военная Корпоратократия",
+  "type": "regime",
+  "description": "Страна превратилась в огромную ЧВК. Война — наш главный бизнес.",
+  "exclusiveGroup": "regime",
+  "requires": {
+    "statuses": ["law_chvk"],
+    "conditions": ["siloviki_dominate"]
+  },
+  "effects": {
+    "sectors": {
+      "army": 2
+    },
+    "modifiers": {
+      "special": {
+        "coupImmunity": true,
+        "ministerUpkeepMult": 2.0
+      }
+    }
+  },
+  "triggers": ["news_regime_change"],
+  "mediaIsLiberal": false
+}

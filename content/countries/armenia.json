@@ -3,16 +3,16 @@
   "name": "Армения",
   "startResources": {
     "money": 300,
-    "gold": 5,
-    "food": 300,
-    "influence": 200
+    "gold": 10,
+    "food": 200,
+    "influence": 80
   },
   "startPopulation": {
-    "rabotyagi": 1000,
-    "umniki": 500,
-    "siloviki": 200,
-    "mediyshchiki": 300,
-    "ministry": 50
+    "rabotyagi": 400,
+    "umniki": 120,
+    "siloviki": 80,
+    "mediyshchiki": 80,
+    "ministry": 15
   },
   "startSectors": {
     "economy": 3,

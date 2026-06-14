@@ -1,0 +1,78 @@
+{
+  "id": "law_gos_propaganda",
+  "name": "Министерство Правды",
+  "type": "law",
+  "description": "Огромные вливания в госСМИ: Медийщики промывают мозги и обеспечивают высокое Довольство, но это стоит колоссальных Денег, а Умники массово бегут из страны.",
+  "revocable": true,
+  "levels": [
+    {
+      "name": "Цензура",
+      "effects": {
+        "modifiers": {
+          "dovolstvoDrift": 3,
+          "outputMult": {
+            "mediyshchiki": 1.2,
+            "umniki": 0.9
+          },
+          "emigration": {
+            "umniki": 0.05
+          }
+        },
+        "resources": {
+          "money": -150
+        }
+      },
+      "cost": {
+        "money": 100,
+        "influence": 15
+      },
+      "minMinistry": 5
+    },
+    {
+      "name": "Единое Вещание",
+      "effects": {
+        "modifiers": {
+          "dovolstvoDrift": 6,
+          "outputMult": {
+            "mediyshchiki": 1.5,
+            "umniki": 0.7
+          },
+          "emigration": {
+            "umniki": 0.15
+          }
+        },
+        "resources": {
+          "money": -400
+        }
+      },
+      "cost": {
+        "money": 250,
+        "influence": 30
+      },
+      "minMinistry": 15
+    },
+    {
+      "name": "Абсолютный Контроль",
+      "effects": {
+        "modifiers": {
+          "dovolstvoDrift": 12,
+          "outputMult": {
+            "mediyshchiki": 2,
+            "umniki": 0.4
+          },
+          "emigration": {
+            "umniki": 0.3
+          }
+        },
+        "resources": {
+          "money": -1000
+        }
+      },
+      "cost": {
+        "money": 600,
+        "influence": 60
+      },
+      "minMinistry": 30
+    }
+  ]
+}

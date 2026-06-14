@@ -1,0 +1,72 @@
+{
+  "id": "law_agrarnaya_reforma",
+  "name": "Аграрная Реформа",
+  "type": "law",
+  "description": "Мобилизация ресурсов на сельское хозяйство: Работяги трудятся в полях, еды становится больше, но казна теряет золото, а министры лишаются привилегий.",
+  "revocable": true,
+  "levels": [
+    {
+      "name": "Поддержка фермеров",
+      "effects": {
+        "modifiers": {
+          "foodPerCapitaMult": -0.1,
+          "outputMult": {
+            "rabotyagi": 1.15,
+            "ministry": 0.9
+          }
+        },
+        "resources": {
+          "food": 50,
+          "gold": -10
+        }
+      },
+      "cost": {
+        "money": 100,
+        "influence": 5
+      },
+      "minMinistry": 5
+    },
+    {
+      "name": "Гос. Колхозы",
+      "effects": {
+        "modifiers": {
+          "foodPerCapitaMult": -0.2,
+          "outputMult": {
+            "rabotyagi": 1.3,
+            "ministry": 0.8
+          }
+        },
+        "resources": {
+          "food": 100,
+          "gold": -20
+        }
+      },
+      "cost": {
+        "money": 200,
+        "influence": 15
+      },
+      "minMinistry": 15
+    },
+    {
+      "name": "Продразверстка",
+      "effects": {
+        "modifiers": {
+          "foodPerCapitaMult": -0.4,
+          "outputMult": {
+            "rabotyagi": 1.5,
+            "ministry": 0.6
+          }
+        },
+        "resources": {
+          "food": 200,
+          "gold": -40
+        }
+      },
+      "cost": {
+        "money": 400,
+        "influence": 30
+      },
+      "minMinistry": 30
+    }
+  ]
+}

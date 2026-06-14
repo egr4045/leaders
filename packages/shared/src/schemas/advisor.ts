@@ -45,6 +45,26 @@ export const AdvisorCardSchema = z
           })
           .partial()
           .strict(),
+        minResources: z
+          .object({
+            money: z.number(),
+            gold: z.number(),
+            food: z.number(),
+            influence: z.number(),
+          })
+          .partial()
+          .strict(),
+        minPopulation: z
+          .object({
+            rabotyagi: z.number(),
+            umniki: z.number(),
+            siloviki: z.number(),
+            mediyshchiki: z.number(),
+            ministry: z.number(),
+          })
+          .partial()
+          .strict(),
+        minSciencePoints: z.number().int().nonnegative().optional(),
         conditions: z.array(z.string()).optional(),
       })
       .partial()

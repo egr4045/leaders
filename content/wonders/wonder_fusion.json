@@ -1,0 +1,22 @@
+{
+  "id": "wonder_fusion",
+  "name": "Термоядерный Реактор",
+  "type": "wonder",
+  "description": "Дешевая, бесконечная, чистая энергия. Заводские трубы не дымят, но производят всё.",
+  "effects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 1.5
+      },
+      "forbesLegacy": 40
+    }
+  },
+  "globalEffects": {
+    "modifiers": {
+      "outputMult": {
+        "rabotyagi": 0.9
+      }
+    }
+  },
+  "triggers": ["news_wonder"]
+}
