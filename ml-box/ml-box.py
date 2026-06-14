@@ -21,10 +21,12 @@ import time
 import requests
 import edge_tts
 
-SERVER = os.environ.get("ML_BOX_SERVER", "https://mygame-quiz.ru")
-TOKEN  = os.environ.get("ML_BOX_TOKEN", "")
-VOICE  = os.environ.get("ML_BOX_VOICE", "ru-RU-DmitryNeural")
+SERVER      = os.environ.get("ML_BOX_SERVER", "https://mygame-quiz.ru")
+TOKEN       = os.environ.get("ML_BOX_TOKEN", "")
+VOICE       = os.environ.get("ML_BOX_VOICE", "ru-RU-DmitryNeural")
 POLL_INTERVAL = 1
+CONCURRENCY = int(os.environ.get("ML_BOX_CONCURRENCY", "8"))
+BATCH_SIZE  = CONCURRENCY * 2   # сколько брать за раз из очереди
 
 
 def _clean_text(text: str) -> str:
@@ -47,25 +49,23 @@ async def _synth(text: str) -> bytes:
             buf += chunk["data"]
     if not buf:
         raise RuntimeError("No audio was received. Please verify that your parameters are correct.")
-    return buf  # MP3
+    return buf
 
 
-def generate_tts(text: str) -> bytes:
-    """Пробует до 3 раз; на 2-й попытке чистит спецсимволы."""
+async def _synth_with_retry(text: str) -> bytes:
     last_err: Exception = RuntimeError("unknown")
     for attempt in range(3):
         use_text = _clean_text(text) if attempt > 0 else text
         try:
-            result = asyncio.run(_synth(use_text))
-            if attempt > 0:
-                print(f"  ok on attempt {attempt + 1} (cleaned text)")
-            return result
-        except KeyboardInterrupt:
-            raise RuntimeError("cancelled")
+            return await _synth(use_text)
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
             last_err = e
             print(f"  attempt {attempt + 1} failed: {e}")
-            time.sleep(1 + attempt)
+            if attempt > 0:
+                print(f"  (cleaned text)")
+            await asyncio.sleep(1 + attempt)
     raise last_err
 
 
@@ -83,7 +83,7 @@ def api(method: str, path: str, **kwargs):
 
 def poll() -> list:
     try:
-        return api("get", "ml/jobs", params={"max": 10}).get("jobs", [])
+        return api("get", "ml/jobs", params={"max": BATCH_SIZE}).get("jobs", [])
     except Exception as e:
         print(f"\n[poll error] {e}")
         return []
@@ -105,13 +105,11 @@ def fail(job_id: str, error: str):
         print(f"  fail-report error: {e}")
 
 
-print(f"Voice: {VOICE}")
-print(f"Server: {SERVER}")
-print("Waiting for jobs...")
+sem = asyncio.Semaphore(CONCURRENCY)
 
-while True:
-    jobs = poll()
-    for job in jobs:
+
+async def handle_job(job):
+    async with sem:
         jid     = job.get("id", "?")
         jtype   = job.get("type", "")
         payload = job.get("payload", {})
@@ -120,25 +118,38 @@ while True:
         if jtype == "tts":
             text = payload.get("text", "").strip()
             if not text:
-                fail(jid, "empty text")
-                continue
+                await asyncio.to_thread(fail, jid, "empty text")
+                return
             try:
                 t0  = time.time()
-                mp3 = generate_tts(text)
+                mp3 = await _synth_with_retry(text)
                 dt  = time.time() - t0
-                print(f"  {dt:.2f}s  {len(mp3)//1024} KB")
-                submit(jid, "mp3", mp3)
+                print(f"  {dt:.2f}s  {len(mp3) // 1024} KB")
+                await asyncio.to_thread(submit, jid, "mp3", mp3)
             except Exception as e:
                 print(f"  TTS error: {e}")
-                fail(jid, str(e))
+                await asyncio.to_thread(fail, jid, str(e))
 
         elif jtype == "image":
-            fail(jid, "image not supported")
+            await asyncio.to_thread(fail, jid, "image not supported")
         else:
-            fail(jid, f"unknown type: {jtype}")
+            await asyncio.to_thread(fail, jid, f"unknown type: {jtype}")
 
-    if not jobs:
-        sys.stdout.write(".")
-        sys.stdout.flush()
 
-    time.sleep(POLL_INTERVAL)
+async def main():
+    print(f"Voice: {VOICE}  |  Concurrency: {CONCURRENCY}  |  Batch: {BATCH_SIZE}")
+    print(f"Server: {SERVER}")
+    print("Waiting for jobs...")
+
+    while True:
+        jobs = await asyncio.to_thread(poll)
+        if jobs:
+            print(f"\n--- batch: {len(jobs)} jobs ---")
+            await asyncio.gather(*[handle_job(j) for j in jobs])
+        else:
+            sys.stdout.write(".")
+            sys.stdout.flush()
+        await asyncio.sleep(POLL_INTERVAL)
+
+
+asyncio.run(main())
