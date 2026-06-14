@@ -214,8 +214,8 @@ export interface RoomSnapshot {
         countryId: string;
         countryName: string;
         lines: string[];
-        /** озвучка диктора (когда сгенерирована) */
-        audioUrl: string | null;
+        /** озвучка диктора — per строке (null пока не сгенерировано) */
+        lineAudioUrls: (string | null)[];
         /** картинка-вставка (когда сгенерирована) */
         imageUrl: string | null;
       }[]

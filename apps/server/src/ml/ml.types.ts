@@ -10,6 +10,8 @@ export interface MlJob {
     prompt?: string;
     /** подсказка голоса/стиля (свободная строка, интерпретирует ML-коробка) */
     style?: string;
+    /** для per-line TTS: индекс строки новостей */
+    lineIndex?: number;
   };
   /** контекст для маршрутизации результата */
   roomCode: string;

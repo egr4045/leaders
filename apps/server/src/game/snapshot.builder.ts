@@ -325,7 +325,7 @@ export function buildSnapshot(
             countryId,
             countryName: content.countries.get(countryId)?.name ?? countryId,
             lines,
-            audioUrl: room.newsAssets[countryId]?.audioUrl ?? null,
+            lineAudioUrls: lines.map((_, i) => room.newsAssets[countryId]?.lineAudioUrls?.[i] ?? null),
             imageUrl: room.newsAssets[countryId]?.imageUrl ?? null,
           }))
         : null,

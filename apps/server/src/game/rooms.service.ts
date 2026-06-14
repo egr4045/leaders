@@ -55,8 +55,13 @@ export class RoomsService {
       const room = this.rooms.get(job.roomCode);
       if (!room || !room.world || room.world.year !== job.year) return;
       const slot = (room.newsAssets[job.countryId] ??= {});
-      if (job.type === 'tts') slot.audioUrl = assetUrl;
-      else slot.imageUrl = assetUrl;
+      if (job.type === 'tts') {
+        const lineIndex = job.payload.lineIndex ?? 0;
+        const arr = (slot.lineAudioUrls ??= []);
+        arr[lineIndex] = assetUrl;
+      } else {
+        slot.imageUrl = assetUrl;
+      }
       this.persist(room);
       this.broadcast(room);
     });
@@ -724,22 +729,21 @@ export class RoomsService {
 
     room.news = news;
 
-    // Э8: в момент конца Кабинета сервер знает все решения → сразу ставим задания
-    // на TTS и картинки; пока идёт переход и заставка, ассеты успевают сгенериться.
+    // Э8: в момент конца Кабинета ставим задания на TTS (по одному на строку) и картинки.
+    // Per-line TTS: клиент синхронизирует субтитры с audio.onended (каraoke-режим).
     room.newsAssets = {};
     for (const [countryId, lines] of Object.entries(news)) {
       const countryName = this.content.countries.get(countryId)?.name ?? countryId;
-      void this.ml.enqueue({
-        type: 'tts',
-        priority: 'high',
-        payload: {
-          text: `Новости страны ${countryName}, год ${year}. ${lines.join('. ')}.`,
-          style: 'новостной диктор, ироничный',
-        },
-        roomCode: room.code,
-        year,
-        countryId,
-      });
+      for (const [lineIndex, line] of lines.entries()) {
+        void this.ml.enqueue({
+          type: 'tts',
+          priority: 'high',
+          payload: { text: line, style: 'новостной диктор, ироничный', lineIndex },
+          roomCode: room.code,
+          year,
+          countryId,
+        });
+      }
       void this.ml.enqueue({
         type: 'image',
         priority: 'normal',
@@ -1048,10 +1052,6 @@ export class RoomsService {
 
     const rng = makeRng(room.world.seed + room.rngNonce++);
     const outcome = resolveSpyAction(attacker, target, kind, room.world, this.content, rng);
-    // слом чуда снимает его глобальную ауру (Э10)
-    if (kind === 'wreck_wonder' && outcome.success) {
-      recomputeAuras(room.world, this.content);
-    }
     room.spyOrdersLeft[player.countryId] = left - 1;
     room.spyOrders.push({
       year: room.world.year,
@@ -1061,8 +1061,18 @@ export class RoomsService {
       outcome,
     });
 
-    // успешный reveal сразу даёт донесение
+    // успешный reveal сразу даёт донесение (и по ресурсам, и по звонками)
     if (kind === 'reveal' && outcome.success) {
+      const now = Date.now();
+      const calls = room.callLog
+        .filter((e) => e.fromCountryId === targetCountryId || e.toCountryId === targetCountryId)
+        .map((e) => ({
+          withCountryId: e.fromCountryId === targetCountryId ? e.toCountryId : e.fromCountryId,
+          year: e.year,
+          durationSec: Math.max(1, Math.round(((e.endedAt ?? now) - e.startedAt) / 1000)),
+          ongoing: e.endedAt === null,
+        }));
+
       (room.intel[playerId] ??= []).push({
         year: room.world.year,
         targetCountryId,
@@ -1074,31 +1084,8 @@ export class RoomsService {
           forbesTotal: Math.round(computeForbes(target, this.content).total),
           declaredForbes: target.declaredForbes,
         },
-      });
-    }
-    // успешная прослушка: кто с кем и как долго созванивался (фича 10)
-    if (kind === 'reveal_calls' && outcome.success) {
-      const now = Date.now();
-      const calls = room.callLog
-        .filter((e) => e.fromCountryId === targetCountryId || e.toCountryId === targetCountryId)
-        .map((e) => ({
-          withCountryId: e.fromCountryId === targetCountryId ? e.toCountryId : e.fromCountryId,
-          year: e.year,
-          durationSec: Math.max(1, Math.round(((e.endedAt ?? now) - e.startedAt) / 1000)),
-          ongoing: e.endedAt === null,
-        }));
-      (room.intel[playerId] ??= []).push({
-        year: room.world.year,
-        targetCountryId,
-        kind: 'reveal_calls',
         calls,
       });
-    }
-    // успешная прослушка: право скрыто слушать активные созвоны цели в этом году (фича 12)
-    if (kind === 'wiretap' && outcome.success) {
-      if (!room.wiretaps.some((w) => w.spyPlayerId === playerId && w.targetCountryId === targetCountryId)) {
-        room.wiretaps.push({ spyPlayerId: playerId, targetCountryId, year: room.world.year });
-      }
     }
 
     this.persist(room);
@@ -1472,7 +1459,7 @@ export class RoomsService {
     // 3) шпионаж
     if (roll < 0.87 && others.length > 0) {
       const target = others[Math.floor(Math.random() * others.length)]!;
-      const kinds = ['reveal', 'steal_science', 'steal_money', 'provoke_riot'] as const;
+      const kinds = ['reveal', 'steal_science', 'financial_sabotage', 'provoke_riot'] as const;
       const kind = kinds[Math.floor(Math.random() * kinds.length)]!;
       const out = this.spyOrder(room.code, bot.playerId, kind, target.countryId!);
       this.botLog(room, `${bot.name} шпионит (${kind}) против ${this.content.countries.get(target.countryId!)!.name}: ${out.success ? 'успех' : 'провал'}`);

@@ -4,15 +4,13 @@ import { Anchor } from './Anchor';
 
 type NewsItem = NonNullable<RoomSnapshot['news']>[number];
 
-
 const MS_PER_CHAR = 55;
 const FALLBACK_MS = 2800;
 
 function playIntroJingle() {
   try {
     const ctx = new AudioContext();
-    // Rising 3-note arpeggio then a held chord
-    const arpNotes = [523, 659, 784]; // C5, E5, G5
+    const arpNotes = [523, 659, 784];
     let t = ctx.currentTime + 0.05;
     for (const freq of arpNotes) {
       const osc = ctx.createOscillator();
@@ -28,7 +26,6 @@ function playIntroJingle() {
       osc.stop(t + 0.55);
       t += 0.22;
     }
-    // Final chord (C major + octave)
     for (const freq of [523, 659, 784, 1047]) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -44,7 +41,7 @@ function playIntroJingle() {
     }
     setTimeout(() => ctx.close(), 3500);
   } catch {
-    // AudioContext not available (e.g. in tests)
+    // AudioContext not available
   }
 }
 
@@ -56,7 +53,6 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
   const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
   const jinglePlayed = useRef(false);
 
-  // Play intro jingle once on mount
   useEffect(() => {
     if (!jinglePlayed.current) {
       jinglePlayed.current = true;
@@ -77,13 +73,18 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
   const idx = typeof stage === 'number' ? stage : -1;
   const item = idx >= 0 && idx < news.length ? news[idx]! : null;
 
-  // typewriter + auto-advance per line
+  // Per-line playback: if lineAudioUrls[lineIdx] is ready → karaoke sync via onended;
+  // otherwise → character-count timer (fallback).
   useEffect(() => {
     if (!item) return;
     const line = item.lines[lineIdx] ?? null;
     if (!line) return;
-    setSubtitleText('');
 
+    setSubtitleText('');
+    const el = audioRef.current;
+    const audioUrl = item.lineAudioUrls?.[lineIdx] ?? null;
+
+    // typewriter runs regardless of audio
     let charI = 0;
     const iv = setInterval(() => {
       charI++;
@@ -91,42 +92,43 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       if (charI >= line.length) clearInterval(iv);
     }, MS_PER_CHAR);
 
-    const ms = item.audioUrl
-      ? Math.max(line.length * MS_PER_CHAR + 600, FALLBACK_MS)
-      : FALLBACK_MS;
-    const timer = setTimeout(() => {
-      if (lineIdx + 1 < item.lines.length) {
-        setLineIdx((l) => l + 1);
-      }
-    }, ms);
-
-    return () => {
-      clearInterval(iv);
-      clearTimeout(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lineIdx, idx]);
-
-  // audio playback when country changes
-  useEffect(() => {
-    if (!item) return;
-    const el = audioRef.current;
-    if (item.audioUrl && el) {
+    if (audioUrl && el) {
       setAudioEl(el);
-      el.src = item.audioUrl;
-      el.onended = null;
+      el.src = audioUrl;
+      el.onended = () => {
+        clearInterval(iv);
+        setSubtitleText(line);
+        if (lineIdx + 1 < item.lines.length) {
+          setLineIdx((l) => l + 1);
+        }
+      };
       void el.play().catch(() => {});
       return () => {
+        clearInterval(iv);
         el.pause();
         el.onended = null;
       };
+    } else {
+      setAudioEl(null);
+      if (el) { el.pause(); el.onended = null; }
+      const ms = Math.max(line.length * MS_PER_CHAR + 600, FALLBACK_MS);
+      const timer = setTimeout(() => {
+        if (lineIdx + 1 < item.lines.length) {
+          setLineIdx((l) => l + 1);
+        }
+      }, ms);
+      return () => {
+        clearInterval(iv);
+        clearTimeout(timer);
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx]);
+  }, [lineIdx, idx]);
 
   const goNext = () => {
+    const el = audioRef.current;
+    if (el) { el.pause(); el.onended = null; }
     setAudioEl(null);
-    audioRef.current?.pause();
     if (idx + 1 < news.length) {
       setStage(idx + 1);
       setLineIdx(0);
@@ -167,7 +169,7 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       <div className="relative w-full" style={{ minHeight: 'min(55vw, 42vh)', maxHeight: '48vh' }}>
         <div className="absolute inset-0 flex items-center justify-center bg-slate-950">
           <Anchor
-            audioEl={item.audioUrl ? audioEl : null}
+            audioEl={audioEl}
             currentLine={subtitleText || currentLine}
           />
         </div>
@@ -216,7 +218,6 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
           style={{ width: `${lineProgress * 100}%` }}
         />
       </div>
-
     </div>
   );
 }

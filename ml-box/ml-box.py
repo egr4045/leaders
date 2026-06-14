@@ -24,7 +24,7 @@ import edge_tts
 SERVER = os.environ.get("ML_BOX_SERVER", "https://mygame-quiz.ru")
 TOKEN  = os.environ.get("ML_BOX_TOKEN", "")
 VOICE  = os.environ.get("ML_BOX_VOICE", "ru-RU-DmitryNeural")
-POLL_INTERVAL = 5
+POLL_INTERVAL = 1
 
 
 async def _synth(text: str) -> bytes:
@@ -57,7 +57,7 @@ def api(method: str, path: str, **kwargs):
 
 def poll() -> list:
     try:
-        return api("get", "ml/jobs", params={"max": 3}).get("jobs", [])
+        return api("get", "ml/jobs", params={"max": 10}).get("jobs", [])
     except Exception as e:
         print(f"\n[poll error] {e}")
         return []
