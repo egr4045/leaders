@@ -164,7 +164,7 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       <audio ref={audioRef} crossOrigin="anonymous" />
 
       {/* Anchor fill area */}
-      <div className="relative w-full" style={{ minHeight: '55vw', maxHeight: '60vh' }}>
+      <div className="relative w-full" style={{ minHeight: 'min(55vw, 42vh)', maxHeight: '48vh' }}>
         <div className="absolute inset-0 flex items-center justify-center bg-slate-950">
           <Anchor
             audioEl={item.audioUrl ? audioEl : null}
