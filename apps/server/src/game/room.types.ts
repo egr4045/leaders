@@ -72,7 +72,7 @@ export interface RoomState {
   /** ящик предложений: все сделки партии */
   tradeOffers: TradeOfferView[];
   /** решения карт за текущий год (для сводки новостей) */
-  choicesThisYear: Record<string, { speaker: string; label: string; newsLines?: { liberal: string; state: string } }[]>;
+  choicesThisYear: Record<string, { speaker: string; label: string; newsLines?: { liberal: string; state: string }; cardId?: string; choiceIdx?: number }[]>;
   /** голоса ООН текущего года */
   votes: { voterCountryId: string; targetCountryId: string; kind: 'sanction' | 'support' }[];
   /** сводка новостей текущего года (с искажениями), по странам */

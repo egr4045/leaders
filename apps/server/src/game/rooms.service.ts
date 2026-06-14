@@ -1017,6 +1017,8 @@ export class RoomsService {
       speaker: card.speaker,
       label: choiceData.label,
       newsLines: (choiceData as Record<string, unknown>).newsLines as { liberal: string; state: string } | undefined,
+      cardId: card.id,
+      choiceIdx: choiceIndex,
     });
     room.cardsChosenThisYear[player.countryId] = (room.cardsChosenThisYear[player.countryId] ?? 0) + 1;
     const cardsPerTurn = this.content.tunables.cabinet?.cardsPerTurn ?? 5;

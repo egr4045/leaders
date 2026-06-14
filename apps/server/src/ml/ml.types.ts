@@ -12,6 +12,8 @@ export interface MlJob {
     style?: string;
     /** для per-line TTS: индекс строки новостей */
     lineIndex?: number;
+    /** для pre-render: детерминированный ключ файла (pr_{cardId}_{choiceIdx}_{kind}) */
+    prerenderKey?: string;
   };
   /** контекст для маршрутизации результата */
   roomCode: string;
