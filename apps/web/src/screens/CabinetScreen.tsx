@@ -398,7 +398,6 @@ export function CabinetScreen() {
   const { snapshot, chooseCard, markReady } = useGame();
   const [tab, setTab] = useState<Tab>('advisor');
   const [readyClicked, setReadyClicked] = useState(false);
-  const [countryNotified, setCountryNotified] = useState(false);
   const [showReadyConfirm, setShowReadyConfirm] = useState(false);
   const [pendingResult, setPendingResult] = useState<PendingResult | null>(null);
   // Drawer state lifted here so tab switches always close open drawers
@@ -418,7 +417,6 @@ export function CabinetScreen() {
   };
 
   const handleSetTab = (t: Tab) => {
-    if (t === 'country') setCountryNotified(true);
     closeDrawer();
     setTab(t);
   };
@@ -437,7 +435,7 @@ export function CabinetScreen() {
   const lawsBadge = (you.availableLaws ?? []).filter((l) => !l.isAdopted).length;
   const tabBadges: Partial<Record<Tab, number | boolean>> = {
     advisor: you.cardsLeft > 0 ? you.cardsLeft : false,
-    country: !countryNotified && budgetReserve > 0 ? true : false,
+    country: budgetReserve > 0 ? true : false,
     laws: lawsBadge > 0 ? lawsBadge : false,
     intel: intelBadge > 0 ? intelBadge : false,
     diplomacy: pendingTrades > 0 ? pendingTrades : false,
