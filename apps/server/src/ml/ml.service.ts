@@ -52,6 +52,16 @@ export class MlService {
     return { ready, total: keys.length };
   }
 
+  /** Удаляет все пре-рендеры, имя которых начинается с prefix. Возвращает кол-во удалённых. */
+  deletePrerenders(prefix: string): number {
+    const dir = path.join(this.assetDir, 'prerenders');
+    if (!fs.existsSync(dir)) return 0;
+    const safePrefix = prefix.replace(/[^a-z0-9_-]/gi, '');
+    const files = fs.readdirSync(dir).filter((f) => f.startsWith(safePrefix));
+    for (const f of files) fs.unlinkSync(path.join(dir, f));
+    return files.length;
+  }
+
   async enqueue(partial: Omit<MlJob, 'id' | 'createdAt'>): Promise<MlJob> {
     const job: MlJob = { ...partial, id: randomUUID(), createdAt: Date.now() };
     if (this.mockMode) {

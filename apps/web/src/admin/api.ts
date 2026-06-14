@@ -53,7 +53,7 @@ export const adminApi = {
     apiFetch<{ ok: boolean }>('/api/admin/countries/' + id, { method: 'PUT', body: JSON.stringify(raw) }),
   // пре-рендер TTS
   getPrerenderStatus: () => apiFetch<{ ready: number; total: number }>('/api/admin/ml/prerender-status'),
-  prerenderAll: () => apiFetch<{ ok: boolean; enqueued: number; skipped: number; total: number }>('/api/admin/ml/prerender-all', { method: 'POST' }),
+  prerenderAll: (force = false) => apiFetch<{ ok: boolean; enqueued: number; skipped: number; total: number }>(`/api/admin/ml/prerender-all${force ? '?force=1' : ''}`, { method: 'POST' }),
   // контент / tunables
   reload: () => apiFetch<{ ok: boolean }>('/api/admin/reload', { method: 'POST' }),
   getTunables: () => apiFetch<TunablesView>('/api/admin/tunables'),

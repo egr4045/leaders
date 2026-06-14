@@ -80,11 +80,11 @@ export function AdminPage() {
       setPrerenderStatus(s);
     } catch { /* ignore */ }
   };
-  const handlePrerenderAll = async () => {
-    setPrerenderMsg('Ставлю в очередь…');
+  const handlePrerenderAll = async (force = false) => {
+    setPrerenderMsg(force ? 'Пересобираю всё…' : 'Ставлю в очередь…');
     try {
-      const r = await adminApi.prerenderAll();
-      setPrerenderMsg(`✓ +${r.enqueued} / ${r.total} (${r.skipped} уже есть)`);
+      const r = await adminApi.prerenderAll(force);
+      setPrerenderMsg(`✓ +${r.enqueued} в очереди / ${r.skipped} уже есть`);
       void loadPrerenderStatus();
     } catch (e) {
       setPrerenderMsg('Ошибка: ' + (e as Error).message);
@@ -151,10 +151,17 @@ export function AdminPage() {
             )}
             <button
               onClick={() => void handlePrerenderAll()}
-              title="Пре-рендерить все TTS-фразы карточек заранее (требует ML-box)"
+              title="Сгенерировать TTS для новых/изменённых карточек (пропускает уже готовые)"
               className="rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-sky-600"
             >
               🎙 Пре-рендер TTS
+            </button>
+            <button
+              onClick={() => { if (confirm('Пересобрать все TTS с нуля? Займёт время.')) void handlePrerenderAll(true); }}
+              title="Удалить кэш и перегенерировать весь TTS"
+              className="rounded-lg border border-sky-800 px-2 py-1.5 text-xs text-sky-500 hover:text-sky-300"
+            >
+              ↺
             </button>
             {applyMsg && <span className="text-xs text-emerald-300">{applyMsg}</span>}
             <button

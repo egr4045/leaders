@@ -5,6 +5,7 @@ import {
   Put,
   Delete,
   Param,
+  Query,
   Body,
   UseGuards,
   UseInterceptors,
@@ -144,12 +145,13 @@ export class AdminController {
   }
 
   @Post('ml/prerender-all')
-  async prerenderAll() {
+  async prerenderAll(@Query('force') force?: string) {
     const all = this.buildPrerenderJobs();
+    const forceAll = force === '1';
     let enqueued = 0;
     let skipped = 0;
     for (const { key, text } of all) {
-      if (this.ml.getPrerenderUrl(key)) {
+      if (!forceAll && this.ml.getPrerenderUrl(key)) {
         skipped++;
         continue;
       }
@@ -354,6 +356,8 @@ export class AdminController {
       if (idx >= 0) {
         deck.cards[idx] = { ...deck.cards[idx], ...body, id };
         fs.writeFileSync(filePath, JSON.stringify(deck, null, 2), 'utf8');
+        // speaker входит в текст default-строки — инвалидируем все пре-рендеры карточки
+        this.ml.deletePrerenders(`pr_${id}_`);
         return { ok: true };
       }
     }
@@ -384,6 +388,8 @@ export class AdminController {
         choices[idx] = { ...choices[idx], ...body };
         deck.cards[cardIdx] = { ...card, choices };
         fs.writeFileSync(filePath, JSON.stringify(deck, null, 2), 'utf8');
+        // текст выбора изменился — удаляем пре-рендеры только этого варианта
+        this.ml.deletePrerenders(`pr_${id}_${idx}_`);
         return { ok: true };
       }
     }
@@ -407,6 +413,8 @@ export class AdminController {
       if (idx >= 0) {
         deck.cards[idx] = { ...body, id };
         fs.writeFileSync(filePath, JSON.stringify(deck, null, 2), 'utf8');
+        // raw-замена может поменять любой текст — удаляем все пре-рендеры карточки
+        this.ml.deletePrerenders(`pr_${id}_`);
         return { ok: true };
       }
     }
