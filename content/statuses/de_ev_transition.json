@@ -1,0 +1,6 @@
+{
+  "id": "de_ev_transition",
+  "name": "Переход на ЭТ",
+  "type": "state",
+  "effects": {}
+}

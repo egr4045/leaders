@@ -1,0 +1,6 @@
+{
+  "id": "ru_parallel_import",
+  "name": "Параллельный Импорт",
+  "type": "state",
+  "effects": {}
+}
