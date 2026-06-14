@@ -40,6 +40,20 @@ export function effectSummary(choice: AdvisorChoice): string[] {
     }
   }
 
+  if (e?.modifiers) {
+    const m = e.modifiers as Record<string, unknown>;
+    if (typeof m.inflationDelta === 'number' && m.inflationDelta !== 0)
+      parts.push(`${m.inflationDelta > 0 ? '+' : ''}${(m.inflationDelta * 100).toFixed(0)}% инф.`);
+    if (typeof m.dovolstvoDrift === 'number' && m.dovolstvoDrift !== 0)
+      parts.push(`${m.dovolstvoDrift > 0 ? '+' : ''}${m.dovolstvoDrift} дов./год`);
+    if (typeof m.populationMult === 'number' && m.populationMult !== 0)
+      parts.push(`${m.populationMult > 0 ? '+' : ''}${(m.populationMult * 100).toFixed(0)}% нас.`);
+    if (typeof m.foodPerCapitaMult === 'number' && m.foodPerCapitaMult !== 0)
+      parts.push(`×${m.foodPerCapitaMult} еда/чел`);
+    const sp = m.special as Record<string, unknown> | undefined;
+    if (sp?.buildWonder) parts.push(`🏆 чудо`);
+  }
+
   const addSt = (choice as Record<string, unknown>).addStatuses as string[] | undefined;
   if (addSt?.length) parts.push(`+статус×${addSt.length}`);
   if ((choice as Record<string, unknown>).delayed) parts.push('откл.эфф');

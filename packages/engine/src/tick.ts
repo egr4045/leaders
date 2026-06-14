@@ -182,6 +182,7 @@ export function tick(world: WorldState, content: GameContent, rng?: Rng): TickRe
     // --- 9. Сброс годовых счётчиков ---
     s.printedThisYear = 0;
     s.repressionsThisYear = 0;
+    s.usedCards = [];
   }
 
   world.year += 1;
