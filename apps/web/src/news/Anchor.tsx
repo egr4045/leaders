@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function MouthShape({ state }: { state: number }) {
   if (state === 0)
@@ -36,41 +36,33 @@ export function Anchor({
   currentLine?: string;
 }) {
   const [mouth, setMouth] = useState(0);
-  const ctxRef = useRef<AudioContext | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
+  // Time-based lip-sync. We deliberately do NOT route the audio through
+  // Web Audio (createMediaElementSource) — that takes over the element's
+  // output and goes silent whenever the AudioContext is suspended (common
+  // for clients who entered the phase via socket without a user gesture).
+  // The <audio> element plays directly; the mouth is animated off its clock.
   useEffect(() => {
     if (!audioEl) {
       setMouth(0);
       return;
     }
-    const ctx = ctxRef.current ?? new AudioContext();
-    ctxRef.current = ctx;
-    if (!sourceRef.current) {
-      sourceRef.current = ctx.createMediaElementSource(audioEl);
-    }
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    sourceRef.current.connect(analyser);
-    analyser.connect(ctx.destination);
-    const buf = new Uint8Array(analyser.frequencyBinCount);
-
     let raf = 0;
     const loop = () => {
-      analyser.getByteFrequencyData(buf);
-      let sum = 0;
-      for (let i = 0; i < buf.length; i++) sum += buf[i]!;
-      const vol = sum / buf.length / 255;
-      setMouth(vol < 0.03 ? 0 : vol < 0.1 ? 1 : vol < 0.2 ? 2 : 3);
+      if (audioEl.paused || audioEl.ended) {
+        setMouth(0);
+      } else {
+        const t = audioEl.currentTime;
+        const v =
+          Math.abs(Math.sin(t * 19)) * 0.55 +
+          Math.abs(Math.sin(t * 11 + 1.3)) * 0.3 +
+          Math.abs(Math.sin(t * 4)) * 0.15;
+        setMouth(v < 0.18 ? 0 : v < 0.42 ? 1 : v < 0.66 ? 2 : 3);
+      }
       raf = requestAnimationFrame(loop);
     };
-    void ctx.resume();
     loop();
-    return () => {
-      cancelAnimationFrame(raf);
-      analyser.disconnect();
-      sourceRef.current?.disconnect();
-    };
+    return () => cancelAnimationFrame(raf);
   }, [audioEl]);
 
   const ticker = currentLine ?? 'ПРЯМОЙ ЭФИР • МИРОВЫЕ НОВОСТИ • ЛИДЕРЫ';
@@ -130,9 +122,9 @@ export function Anchor({
       </text>
 
       {/* Suit / body */}
-      <path d="M155 235 L170 152 Q200 139 220 137 Q240 139 270 152 L285 235 Z" fill="#0d1e3d" />
+      <path d="M155 235 L170 152 Q200 139 220 137 Q240 139 270 152 L285 235 Z" fill="#33548a" />
       {/* Shirt collar whites */}
-      <path d="M207 153 L220 139 L233 153 L220 166 Z" fill="white" opacity="0.88" />
+      <path d="M205 152 L220 138 L235 152 L220 167 Z" fill="white" opacity="1" />
       {/* Tie */}
       <path d="M217 165 L223 165 L225 202 L220 207 L215 202 Z" fill="#cc0000" />
 
