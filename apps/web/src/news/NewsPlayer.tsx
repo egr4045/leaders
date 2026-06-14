@@ -6,6 +6,7 @@ type NewsItem = NonNullable<RoomSnapshot['news']>[number];
 
 const MS_PER_CHAR = 55;
 const FALLBACK_MS = 2800;
+const MAX_WAIT_MS = 18000; // max wait for audio before starting anyway
 
 function playIntroJingle() {
   try {
@@ -46,35 +47,38 @@ function playIntroJingle() {
 }
 
 export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?: boolean }) {
-  const [stage, setStage] = useState<'intro' | number>('intro');
+  const [started, setStarted] = useState(false);
+  const [countryIdx, setCountryIdx] = useState(0);
   const [lineIdx, setLineIdx] = useState(0);
   const [subtitleText, setSubtitleText] = useState('');
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
   const jinglePlayed = useRef(false);
 
+  // Track audio generation progress
+  const totalLines = news.reduce((sum, n) => sum + n.lines.length, 0);
+  const readyLines = news.reduce((sum, n) => sum + n.lineAudioUrls.filter(Boolean).length, 0);
+  const allReady = totalLines === 0 || readyLines >= totalLines;
+  const loadPct = totalLines > 0 ? readyLines / totalLines : 1;
+
+  // Auto-start: when all audio ready, or after MAX_WAIT_MS
   useEffect(() => {
-    if (!jinglePlayed.current) {
-      jinglePlayed.current = true;
-      playIntroJingle();
+    if (started) return;
+    if (allReady) {
+      if (!jinglePlayed.current) { jinglePlayed.current = true; playIntroJingle(); }
+      setStarted(true);
+      return;
     }
-  }, []);
-
-  // intro → first item
-  useEffect(() => {
-    if (stage !== 'intro') return;
     const id = setTimeout(() => {
-      setStage(0);
-      setLineIdx(0);
-    }, 2800);
+      if (!jinglePlayed.current) { jinglePlayed.current = true; playIntroJingle(); }
+      setStarted(true);
+    }, MAX_WAIT_MS);
     return () => clearTimeout(id);
-  }, [stage]);
+  }, [allReady, started]);
 
-  const idx = typeof stage === 'number' ? stage : -1;
-  const item = idx >= 0 && idx < news.length ? news[idx]! : null;
+  const item = started && countryIdx < news.length ? news[countryIdx]! : null;
 
-  // Per-line playback: if lineAudioUrls[lineIdx] is ready → karaoke sync via onended;
-  // otherwise → character-count timer (fallback).
+  // Per-line playback: audio → onended sync; else → char-count timer
   useEffect(() => {
     if (!item) return;
     const line = item.lines[lineIdx] ?? null;
@@ -84,7 +88,6 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
     const el = audioRef.current;
     const audioUrl = item.lineAudioUrls?.[lineIdx] ?? null;
 
-    // typewriter runs regardless of audio
     let charI = 0;
     const iv = setInterval(() => {
       charI++;
@@ -123,31 +126,73 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lineIdx, idx]);
+  }, [lineIdx, countryIdx]);
 
   const goNext = () => {
     const el = audioRef.current;
     if (el) { el.pause(); el.onended = null; }
     setAudioEl(null);
-    if (idx + 1 < news.length) {
-      setStage(idx + 1);
+    setSubtitleText('');
+    if (countryIdx + 1 < news.length) {
+      setCountryIdx((i) => i + 1);
       setLineIdx(0);
     } else {
-      setStage(news.length);
+      setCountryIdx(news.length);
     }
   };
 
-  if (stage === 'intro') {
+  // ── Loading screen ──────────────────────────────────────────────────────────
+  if (!started) {
     return (
-      <div className="flex w-full flex-col items-center justify-center gap-4 rounded-2xl bg-slate-900 p-10">
-        <div className="animate-ping text-5xl">🌍</div>
-        <div className="animate-pulse text-center text-3xl font-black tracking-widest text-amber-400">
-          НОВОСТИ НАЧИНАЮТСЯ
+      <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-2xl bg-slate-950"
+           style={{ minHeight: 'min(55vw, 42vh)', maxHeight: '48vh' }}>
+        {/* Globe wireframe */}
+        <svg className="absolute inset-0 h-full w-full opacity-10" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice">
+          <circle cx="200" cy="130" r="160" fill="none" stroke="#1e4b7a" strokeWidth="1.5" />
+          <ellipse cx="200" cy="130" rx="160" ry="65" fill="none" stroke="#1e4b7a" strokeWidth="1" />
+          <ellipse cx="200" cy="130" rx="160" ry="120" fill="none" stroke="#1e4b7a" strokeWidth="0.8" />
+          <line x1="200" y1="-30" x2="200" y2="290" stroke="#1e4b7a" strokeWidth="1" />
+          <line x1="40" y1="130" x2="360" y2="130" stroke="#1e4b7a" strokeWidth="1" />
+        </svg>
+
+        {/* Channel logo */}
+        <div className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-xl font-bold text-white">①</div>
+
+        {/* Live dot */}
+        <div className="absolute left-4 top-4 flex items-center gap-2">
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
+          <span className="text-xs font-semibold tracking-widest text-white/70">ПРЯМОЙ ЭФИР</span>
+        </div>
+
+        {/* Main text */}
+        <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
+          <div className="text-5xl font-black tracking-[0.15em] text-white">НОВОСТИ</div>
+          <div className="text-sm tracking-widest text-white/50">
+            {readyLines < totalLines
+              ? `Идёт загрузка голоса… ${readyLines} из ${totalLines}`
+              : 'Готово — начинаем'}
+          </div>
+
+          {/* Progress bar */}
+          <div className="mt-2 h-1 w-64 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-red-500 transition-all duration-500"
+              style={{ width: `${loadPct * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Red bottom stripe */}
+        <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 bg-red-600 px-4 py-2">
+          <span className="text-base font-bold tracking-wider text-white">ВЕСТИ</span>
+          <span className="text-white/60">•</span>
+          <span className="text-sm text-white/80">Лидеры нации</span>
         </div>
       </div>
     );
   }
 
+  // ── Finished ────────────────────────────────────────────────────────────────
   if (!item) {
     return (
       <div className="w-full rounded-2xl bg-slate-900 p-6 text-center text-slate-400">
@@ -157,21 +202,16 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
   }
 
   const currentLine = item.lines[lineIdx] ?? '';
-  const lineProgress = currentLine.length > 0 ? subtitleText.length / currentLine.length : 1;
-  const allLinesShown =
-    lineIdx >= item.lines.length - 1 && subtitleText.length >= currentLine.length;
+  const allLinesShown = lineIdx >= item.lines.length - 1 && subtitleText.length >= currentLine.length;
 
   return (
     <div className="flex w-full flex-col gap-0 overflow-hidden rounded-2xl bg-slate-900">
       <audio ref={audioRef} crossOrigin="anonymous" />
 
-      {/* Anchor fill area */}
+      {/* Anchor area */}
       <div className="relative w-full" style={{ minHeight: 'min(55vw, 42vh)', maxHeight: '48vh' }}>
         <div className="absolute inset-0 flex items-center justify-center bg-slate-950">
-          <Anchor
-            audioEl={audioEl}
-            currentLine={subtitleText || currentLine}
-          />
+          <Anchor audioEl={audioEl} currentLine={subtitleText || currentLine} />
         </div>
         {item.imageUrl && (
           <img
@@ -180,25 +220,17 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
             className="absolute inset-0 h-full w-full object-cover opacity-25 pointer-events-none"
           />
         )}
-        {/* Country + episode label */}
+        {/* Country label */}
         <div className="absolute left-3 top-3 rounded bg-slate-950/70 px-2 py-1 text-xs uppercase tracking-widest text-amber-400">
-          {item.countryName} — выпуск {idx + 1}/{news.length}
+          {item.countryName} — выпуск {countryIdx + 1}/{news.length}
         </div>
-        {/* Subtitles */}
-        {subtitleText && (
-          <div className="absolute bottom-12 left-0 right-0 px-4 text-center">
-            <span className="rounded bg-slate-950/80 px-2 py-1 text-lg font-bold leading-relaxed text-white drop-shadow-lg">
-              {subtitleText}
-            </span>
-          </div>
-        )}
-        {/* Host: skip / next */}
+        {/* Host controls */}
         {isHost && allLinesShown && (
           <button
             onClick={goNext}
             className="absolute bottom-3 right-3 rounded-lg bg-amber-500 px-4 py-1.5 text-sm font-bold text-slate-950 hover:bg-amber-400"
           >
-            {idx + 1 < news.length ? 'Следующая страна →' : 'Завершить выпуск ✓'}
+            {countryIdx + 1 < news.length ? 'Следующая страна →' : 'Завершить выпуск ✓'}
           </button>
         )}
         {isHost && !allLinesShown && (
@@ -215,7 +247,7 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       <div className="h-1 w-full bg-slate-800">
         <div
           className="h-full bg-amber-400 transition-all duration-100"
-          style={{ width: `${lineProgress * 100}%` }}
+          style={{ width: `${currentLine.length > 0 ? subtitleText.length / currentLine.length * 100 : 100}%` }}
         />
       </div>
     </div>
