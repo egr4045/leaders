@@ -6,7 +6,7 @@ type NewsItem = NonNullable<RoomSnapshot['news']>[number];
 
 const MS_PER_CHAR = 55;
 const FALLBACK_MS = 2800;
-const MAX_WAIT_MS = 18000; // max wait for audio before starting anyway
+const INTRO_MS = 5000; // news opening duration before playback starts
 
 function playIntroJingle() {
   try {
@@ -51,30 +51,23 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
   const [countryIdx, setCountryIdx] = useState(0);
   const [lineIdx, setLineIdx] = useState(0);
   const [subtitleText, setSubtitleText] = useState('');
+  const [introElapsed, setIntroElapsed] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
   const jinglePlayed = useRef(false);
 
-  // Track audio generation progress
-  const totalLines = news.reduce((sum, n) => sum + n.lines.length, 0);
-  const readyLines = news.reduce((sum, n) => sum + n.lineAudioUrls.filter(Boolean).length, 0);
-  const allReady = totalLines === 0 || readyLines >= totalLines;
-  const loadPct = totalLines > 0 ? readyLines / totalLines : 1;
-
-  // Auto-start: when all audio ready, or after MAX_WAIT_MS
+  // Fixed 5-second intro, then start news
   useEffect(() => {
     if (started) return;
-    if (allReady) {
-      if (!jinglePlayed.current) { jinglePlayed.current = true; playIntroJingle(); }
-      setStarted(true);
-      return;
-    }
+    if (!jinglePlayed.current) { jinglePlayed.current = true; playIntroJingle(); }
+    const tick = setInterval(() => setIntroElapsed((p) => p + 100), 100);
     const id = setTimeout(() => {
-      if (!jinglePlayed.current) { jinglePlayed.current = true; playIntroJingle(); }
+      clearInterval(tick);
       setStarted(true);
-    }, MAX_WAIT_MS);
-    return () => clearTimeout(id);
-  }, [allReady, started]);
+    }, INTRO_MS);
+    return () => { clearInterval(tick); clearTimeout(id); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const item = started && countryIdx < news.length ? news[countryIdx]! : null;
 
@@ -141,52 +134,57 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
     }
   };
 
-  // ── Loading screen ──────────────────────────────────────────────────────────
+  // ── Intro screen (5 seconds) ────────────────────────────────────────────────
   if (!started) {
+    const introPct = Math.min(1, introElapsed / INTRO_MS);
+    const secsLeft = Math.max(0, Math.ceil((INTRO_MS - introElapsed) / 1000));
     return (
       <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-2xl bg-slate-950"
            style={{ minHeight: 'min(55vw, 42vh)', maxHeight: '48vh' }}>
-        {/* Globe wireframe */}
-        <svg className="absolute inset-0 h-full w-full opacity-10" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice">
-          <circle cx="200" cy="130" r="160" fill="none" stroke="#1e4b7a" strokeWidth="1.5" />
-          <ellipse cx="200" cy="130" rx="160" ry="65" fill="none" stroke="#1e4b7a" strokeWidth="1" />
-          <ellipse cx="200" cy="130" rx="160" ry="120" fill="none" stroke="#1e4b7a" strokeWidth="0.8" />
-          <line x1="200" y1="-30" x2="200" y2="290" stroke="#1e4b7a" strokeWidth="1" />
-          <line x1="40" y1="130" x2="360" y2="130" stroke="#1e4b7a" strokeWidth="1" />
+        {/* Animated globe */}
+        <svg className="absolute inset-0 h-full w-full opacity-[0.08]" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice"
+             style={{ animation: 'spin 8s linear infinite', transformOrigin: '50% 50%' }}>
+          <circle cx="200" cy="130" r="160" fill="none" stroke="#60a5fa" strokeWidth="1.5" />
+          <ellipse cx="200" cy="130" rx="160" ry="65" fill="none" stroke="#60a5fa" strokeWidth="1" />
+          <ellipse cx="200" cy="130" rx="160" ry="120" fill="none" stroke="#60a5fa" strokeWidth="0.8" />
+          <ellipse cx="200" cy="130" rx="90" ry="160" fill="none" stroke="#60a5fa" strokeWidth="0.6" />
+          <line x1="200" y1="-30" x2="200" y2="290" stroke="#60a5fa" strokeWidth="1" />
+          <line x1="40" y1="130" x2="360" y2="130" stroke="#60a5fa" strokeWidth="1" />
+          <line x1="60" y1="70" x2="340" y2="190" stroke="#60a5fa" strokeWidth="0.5" />
+          <line x1="60" y1="190" x2="340" y2="70" stroke="#60a5fa" strokeWidth="0.5" />
         </svg>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
         {/* Channel logo */}
-        <div className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-xl font-bold text-white">①</div>
+        <div className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-xl font-bold text-white shadow-lg shadow-red-900">①</div>
 
-        {/* Live dot */}
+        {/* Live indicator */}
         <div className="absolute left-4 top-4 flex items-center gap-2">
           <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
           <span className="text-xs font-semibold tracking-widest text-white/70">ПРЯМОЙ ЭФИР</span>
         </div>
 
-        {/* Main text */}
-        <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
-          <div className="text-5xl font-black tracking-[0.15em] text-white">НОВОСТИ</div>
-          <div className="text-sm tracking-widest text-white/50">
-            {readyLines < totalLines
-              ? `Идёт загрузка голоса… ${readyLines} из ${totalLines}`
-              : 'Готово — начинаем'}
-          </div>
+        {/* Main title */}
+        <div className="relative z-10 flex flex-col items-center gap-4 px-6 text-center"
+             style={{ opacity: Math.min(1, introPct * 4), transform: `scale(${0.85 + introPct * 0.15})`, transition: 'none' }}>
+          <div className="text-6xl font-black tracking-[0.2em] text-white drop-shadow-lg">НОВОСТИ</div>
+          <div className="text-xs tracking-[0.4em] text-white/40 uppercase">Лидеры нации</div>
+          {/* Countdown */}
+          <div className="mt-1 text-3xl font-mono font-bold text-red-500/80">{secsLeft > 0 ? secsLeft : ''}</div>
+        </div>
 
-          {/* Progress bar */}
-          <div className="mt-2 h-1 w-64 overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full bg-red-500 transition-all duration-500"
-              style={{ width: `${loadPct * 100}%` }}
-            />
-          </div>
+        {/* Progress sweep */}
+        <div className="absolute bottom-10 left-8 right-8 h-0.5 overflow-hidden rounded-full bg-white/10">
+          <div className="h-full rounded-full bg-red-500 transition-none" style={{ width: `${introPct * 100}%` }} />
         </div>
 
         {/* Red bottom stripe */}
         <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 bg-red-600 px-4 py-2">
           <span className="text-base font-bold tracking-wider text-white">ВЕСТИ</span>
           <span className="text-white/60">•</span>
-          <span className="text-sm text-white/80">Лидеры нации</span>
+          <span className="overflow-hidden whitespace-nowrap text-sm text-white/80" style={{ maxWidth: '70%' }}>
+            {news[0]?.countryName ?? 'Специальный выпуск'}
+          </span>
         </div>
       </div>
     );

@@ -51,6 +51,9 @@ export const adminApi = {
   getCountries: () => apiFetch<CountryEntry[]>('/api/admin/countries'),
   updateCountry: (id: string, raw: Record<string, unknown>) =>
     apiFetch<{ ok: boolean }>('/api/admin/countries/' + id, { method: 'PUT', body: JSON.stringify(raw) }),
+  // пре-рендер TTS
+  getPrerenderStatus: () => apiFetch<{ ready: number; total: number }>('/api/admin/ml/prerender-status'),
+  prerenderAll: () => apiFetch<{ ok: boolean; enqueued: number; skipped: number; total: number }>('/api/admin/ml/prerender-all', { method: 'POST' }),
   // контент / tunables
   reload: () => apiFetch<{ ok: boolean }>('/api/admin/reload', { method: 'POST' }),
   getTunables: () => apiFetch<TunablesView>('/api/admin/tunables'),

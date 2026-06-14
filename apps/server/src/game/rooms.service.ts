@@ -692,18 +692,33 @@ export class RoomsService {
     }
 
     const news: Record<string, string[]> = {};
+    const newsPrerenderKeys: Record<string, (string | undefined)[]> = {};
     const year = room.world.year;
 
     for (const [countryId] of room.world.countries) {
       const s = room.world.countries.get(countryId)!;
       const liberal = this.isSmiLiberal(s);
       const lines: string[] = [];
-      for (const ev of room.lastTickEvents?.[countryId] ?? []) lines.push(ev);
+      const keys: (string | undefined)[] = [];
+      for (const ev of room.lastTickEvents?.[countryId] ?? []) {
+        lines.push(ev);
+        keys.push(undefined);
+      }
       for (const ch of room.choicesThisYear[countryId] ?? []) {
         if (ch.newsLines) {
           lines.push(liberal ? ch.newsLines.liberal : ch.newsLines.state);
+          if (ch.cardId !== undefined && ch.choiceIdx !== undefined) {
+            keys.push(`pr_${ch.cardId}_${ch.choiceIdx}_${liberal ? 'liberal' : 'state'}`);
+          } else {
+            keys.push(undefined);
+          }
         } else {
           lines.push(`${ch.speaker} предложил — лидер решил: «${ch.label}»`);
+          if (ch.cardId !== undefined && ch.choiceIdx !== undefined) {
+            keys.push(`pr_${ch.cardId}_${ch.choiceIdx}_default`);
+          } else {
+            keys.push(undefined);
+          }
         }
       }
       // войны, объявленные в этом году, и заключённый мир — в сводку агрессора/сторон
@@ -712,29 +727,48 @@ export class RoomsService {
           const targetName =
             this.content.countries.get(war.defender.countryIds[0]!)?.name ?? '?';
           lines.push(`Объявлена война «${targetName}». Обоснование: «${war.casusBelli}»`);
+          keys.push(undefined);
         }
         if (war.endedYear === year && war.winnerSide === null && sideOf(war, countryId)) {
           lines.push('Подписан мирный договор — война окончена');
+          keys.push(undefined);
         }
       }
       // публичные обещания этого года (фича 11) — оглашаем в сводке давшего
       for (const pr of room.promises) {
         if (pr.year === year && pr.public && pr.fromCountryId === countryId) {
           lines.push(`Публичное обещание стране «${pr.toName}»: «${pr.text}»`);
+          keys.push(undefined);
         }
       }
-      if (lines.length === 0) lines.push('Год прошёл тихо. Подозрительно тихо.');
+      if (lines.length === 0) {
+        lines.push('Год прошёл тихо. Подозрительно тихо.');
+        keys.push(undefined);
+      }
       news[countryId] = lines;
+      newsPrerenderKeys[countryId] = keys;
     }
 
     room.news = news;
 
     // Э8: в момент конца Кабинета ставим задания на TTS (по одному на строку) и картинки.
     // Per-line TTS: клиент синхронизирует субтитры с audio.onended (каraoke-режим).
+    // Если для строки есть пре-рендер — используем его напрямую, не ставим новое задание.
     room.newsAssets = {};
     for (const [countryId, lines] of Object.entries(news)) {
       const countryName = this.content.countries.get(countryId)?.name ?? countryId;
+      const slot = (room.newsAssets[countryId] ??= {});
+      slot.lineAudioUrls = new Array(lines.length).fill(null) as (string | null)[];
+      const keys = newsPrerenderKeys[countryId] ?? [];
       for (const [lineIndex, line] of lines.entries()) {
+        const key = keys[lineIndex];
+        if (key) {
+          const url = this.ml.getPrerenderUrl(key);
+          if (url) {
+            slot.lineAudioUrls[lineIndex] = url;
+            continue;
+          }
+        }
         void this.ml.enqueue({
           type: 'tts',
           priority: 'high',

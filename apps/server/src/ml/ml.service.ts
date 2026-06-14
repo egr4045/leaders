@@ -24,6 +24,7 @@ export class MlService {
 
   constructor(private readonly redis: RedisService) {
     fs.mkdirSync(this.assetDir, { recursive: true });
+    fs.mkdirSync(path.join(this.assetDir, 'prerenders'), { recursive: true });
   }
 
   get mockMode(): boolean {
@@ -32,6 +33,23 @@ export class MlService {
 
   onDone(handler: (done: MlJobDone) => void) {
     this.onDoneHandlers.push(handler);
+  }
+
+  /** Проверяет, существует ли пре-рендер для ключа (любой поддерживаемый формат). */
+  getPrerenderUrl(key: string): string | null {
+    const safeKey = key.replace(/[^a-z0-9_-]/gi, '');
+    for (const ext of ['mp3', 'wav', 'ogg']) {
+      if (fs.existsSync(path.join(this.assetDir, 'prerenders', `${safeKey}.${ext}`))) {
+        return `/media/prerenders/${safeKey}.${ext}`;
+      }
+    }
+    return null;
+  }
+
+  /** Считает, сколько из переданных ключей уже имеют готовые пре-рендеры. */
+  getPrerenderCount(keys: string[]): { ready: number; total: number } {
+    const ready = keys.filter((k) => this.getPrerenderUrl(k) !== null).length;
+    return { ready, total: keys.length };
   }
 
   async enqueue(partial: Omit<MlJob, 'id' | 'createdAt'>): Promise<MlJob> {
@@ -71,10 +89,21 @@ export class MlService {
     if (!raw) throw new Error('Неизвестное задание');
     const job: MlJob = JSON.parse(raw);
     const safeExt = ext.replace(/[^a-z0-9]/gi, '').toLowerCase() || 'bin';
-    const file = `${id}.${safeExt}`;
-    fs.writeFileSync(path.join(this.assetDir, file), data);
-    await this.redis.client.hset(JOB_KEY(id), 'status', 'done' satisfies MlJobStatus, 'asset', file);
-    this.emitDone({ job, assetUrl: `/media/${file}` });
+
+    let filePath: string;
+    let assetUrl: string;
+    if (job.payload.prerenderKey) {
+      const safeKey = job.payload.prerenderKey.replace(/[^a-z0-9_-]/gi, '');
+      filePath = path.join(this.assetDir, 'prerenders', `${safeKey}.${safeExt}`);
+      assetUrl = `/media/prerenders/${safeKey}.${safeExt}`;
+    } else {
+      filePath = path.join(this.assetDir, `${id}.${safeExt}`);
+      assetUrl = `/media/${id}.${safeExt}`;
+    }
+
+    fs.writeFileSync(filePath, data);
+    await this.redis.client.hset(JOB_KEY(id), 'status', 'done' satisfies MlJobStatus, 'asset', path.basename(filePath));
+    this.emitDone({ job, assetUrl });
   }
 
   async failJob(id: string, error: string): Promise<void> {
@@ -99,9 +128,18 @@ export class MlService {
       if (job.type === 'tts') {
         const seconds = Math.min(20, Math.max(2, (job.payload.text?.length ?? 50) / 25));
         const wav = makeMockSpeechWav(seconds);
-        const file = `${job.id}.wav`;
-        fs.writeFileSync(path.join(this.assetDir, file), wav);
-        this.emitDone({ job, assetUrl: `/media/${file}` });
+        let filePath: string;
+        let assetUrl: string;
+        if (job.payload.prerenderKey) {
+          const safeKey = job.payload.prerenderKey.replace(/[^a-z0-9_-]/gi, '');
+          filePath = path.join(this.assetDir, 'prerenders', `${safeKey}.wav`);
+          assetUrl = `/media/prerenders/${safeKey}.wav`;
+        } else {
+          filePath = path.join(this.assetDir, `${job.id}.wav`);
+          assetUrl = `/media/${job.id}.wav`;
+        }
+        fs.writeFileSync(filePath, wav);
+        this.emitDone({ job, assetUrl });
       } else {
         const file = `${job.id}.svg`;
         fs.writeFileSync(path.join(this.assetDir, file), makeMockImageSvg(job.payload.prompt ?? ''));

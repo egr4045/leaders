@@ -72,6 +72,31 @@ export function AdminPage() {
     setTimeout(() => setApplyMsg(''), 4000);
   };
 
+  const [prerenderStatus, setPrerenderStatus] = useState<{ ready: number; total: number } | null>(null);
+  const [prerenderMsg, setPrerenderMsg] = useState('');
+  const loadPrerenderStatus = async () => {
+    try {
+      const s = await adminApi.getPrerenderStatus();
+      setPrerenderStatus(s);
+    } catch { /* ignore */ }
+  };
+  const handlePrerenderAll = async () => {
+    setPrerenderMsg('Ставлю в очередь…');
+    try {
+      const r = await adminApi.prerenderAll();
+      setPrerenderMsg(`✓ +${r.enqueued} / ${r.total} (${r.skipped} уже есть)`);
+      void loadPrerenderStatus();
+    } catch (e) {
+      setPrerenderMsg('Ошибка: ' + (e as Error).message);
+    }
+    setTimeout(() => setPrerenderMsg(''), 6000);
+  };
+
+  useEffect(() => {
+    if (authed) void loadPrerenderStatus();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed]);
+
   const handleLogin = async () => {
     saveSecret(input);
     setSecret(input);
@@ -118,6 +143,19 @@ export function AdminPage() {
         <div className="mb-4 flex items-center justify-between gap-2">
           <h1 className="text-xl font-black text-amber-400">Админка Leaders</h1>
           <div className="flex items-center gap-3">
+            {prerenderMsg && <span className="text-xs text-sky-300">{prerenderMsg}</span>}
+            {prerenderStatus && !prerenderMsg && (
+              <span className="text-xs text-slate-500">
+                TTS: {prerenderStatus.ready}/{prerenderStatus.total}
+              </span>
+            )}
+            <button
+              onClick={() => void handlePrerenderAll()}
+              title="Пре-рендерить все TTS-фразы карточек заранее (требует ML-box)"
+              className="rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-sky-600"
+            >
+              🎙 Пре-рендер TTS
+            </button>
             {applyMsg && <span className="text-xs text-emerald-300">{applyMsg}</span>}
             <button
               onClick={() => void handleApply()}

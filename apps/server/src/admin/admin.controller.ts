@@ -18,6 +18,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { ContentService } from '../content.service.js';
 import { RoomsService } from '../game/rooms.service.js';
+import { MlService } from '../ml/ml.service.js';
 import { AdminGuard } from './admin.guard.js';
 
 /** Глубокий мёрж простых JSON-объектов (для патча tunables). */
@@ -99,9 +100,70 @@ export class AdminController {
   constructor(
     private readonly contentService: ContentService,
     private readonly rooms: RoomsService,
+    private readonly ml: MlService,
   ) {
     this.contentDir = process.env.CONTENT_DIR ?? path.resolve(process.cwd(), '../../content');
     this.assetDir = process.env.ASSET_DIR ?? path.resolve(process.cwd(), '../../assets-cache');
+  }
+
+  // ---------- пре-рендер TTS ----------
+
+  /** Список всех возможных ключей пре-рендера из текущего контента. */
+  private buildPrerenderJobs(): { key: string; text: string }[] {
+    const jobs: { key: string; text: string }[] = [];
+    const advisorsDir = path.join(this.contentDir, 'advisors');
+    if (!fs.existsSync(advisorsDir)) return jobs;
+    for (const file of fs.readdirSync(advisorsDir).filter((f) => f.endsWith('.json'))) {
+      const deck = JSON.parse(fs.readFileSync(path.join(advisorsDir, file), 'utf8')) as {
+        cards: { id: string; speaker: string; choices: Record<string, unknown>[] }[];
+      };
+      for (const card of deck.cards ?? []) {
+        (card.choices ?? []).forEach((ch, idx) => {
+          const nl = ch.newsLines as { liberal: string; state: string } | undefined;
+          if (nl) {
+            jobs.push({ key: `pr_${card.id}_${idx}_liberal`, text: nl.liberal });
+            jobs.push({ key: `pr_${card.id}_${idx}_state`, text: nl.state });
+          } else {
+            const label = (ch.label as string) ?? '';
+            jobs.push({
+              key: `pr_${card.id}_${idx}_default`,
+              text: `${card.speaker} предложил — лидер решил: «${label}»`,
+            });
+          }
+        });
+      }
+    }
+    return jobs;
+  }
+
+  @Get('ml/prerender-status')
+  getPrerenderStatus() {
+    const all = this.buildPrerenderJobs();
+    const { ready, total } = this.ml.getPrerenderCount(all.map((j) => j.key));
+    return { ready, total };
+  }
+
+  @Post('ml/prerender-all')
+  async prerenderAll() {
+    const all = this.buildPrerenderJobs();
+    let enqueued = 0;
+    let skipped = 0;
+    for (const { key, text } of all) {
+      if (this.ml.getPrerenderUrl(key)) {
+        skipped++;
+        continue;
+      }
+      await this.ml.enqueue({
+        type: 'tts',
+        priority: 'normal',
+        payload: { text, style: 'новостной диктор, ироничный', prerenderKey: key },
+        roomCode: '__prerender__',
+        year: 0,
+        countryId: '__prerender__',
+      });
+      enqueued++;
+    }
+    return { ok: true, enqueued, skipped, total: all.length };
   }
 
   // ---------- сессии (комнаты) ----------
