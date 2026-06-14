@@ -17,7 +17,7 @@ export function BottomDrawer({
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-40 bg-black/60"
+            className="fixed inset-0 z-[55] bg-black/60"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -25,7 +25,7 @@ export function BottomDrawer({
             onClick={onClose}
           />
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 flex max-h-[85dvh] flex-col rounded-t-2xl border-t border-slate-700 bg-slate-950"
+            className="fixed bottom-0 left-0 right-0 z-[60] flex max-h-[85dvh] flex-col rounded-t-2xl border-t border-slate-700 bg-slate-950"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}

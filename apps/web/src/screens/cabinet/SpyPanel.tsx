@@ -109,7 +109,7 @@ export function SpyPanel({
     if (!action || !targetId) return;
     setBusy(true);
     setResult(null);
-    const res = await spyOrder(action.kind, targetId);
+    const res = await spyOrder(targetId, action.kind);
     const targetName = others.find((o) => o.countryId === targetId)?.countryName ?? targetId;
     if (res !== null) {
       const spyData = res.data as { success?: boolean } | undefined;
@@ -206,7 +206,7 @@ export function SpyPanel({
             return t && (
               <div className="flex items-center justify-between rounded-lg bg-slate-900 px-3 py-2 text-sm">
                 <span className="text-slate-400">Цель: <b className="text-slate-200">{t.countryName}</b></span>
-                <span className={`text-xs ${(t.spyChance ?? 0) > 50 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                <span className={`text-xs ${(t.spyChance ?? 0) >= 70 ? 'text-emerald-400' : (t.spyChance ?? 0) >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
                   Шанс {t.spyChance ?? 0}%
                 </span>
               </div>
@@ -249,7 +249,7 @@ export function SpyPanel({
                   <span className="font-medium">{o.countryName}</span>
                   <span className="ml-2 text-xs text-slate-400">{o.playerName}</span>
                 </div>
-                <div className={`text-xs ${o.spyChance && o.spyChance > 50 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                <div className={`text-xs ${(o.spyChance ?? 0) >= 70 ? 'text-emerald-400' : (o.spyChance ?? 0) >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
                   Шанс: {o.spyChance ?? 0}%
                 </div>
               </button>

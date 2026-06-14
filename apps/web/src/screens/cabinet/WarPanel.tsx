@@ -8,7 +8,7 @@ function sideLabel(w: WarView, side: 'attacker' | 'defender'): string {
 }
 
 function ChanceBar({ pct }: { pct: number }) {
-  const color = pct >= 60 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500';
+  const color = pct >= 70 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500';
   return (
     <div className="flex items-center gap-2">
       <div className="h-2 flex-1 overflow-hidden rounded bg-slate-800">

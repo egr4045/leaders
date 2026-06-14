@@ -17,7 +17,7 @@ import { BudgetPanel } from './cabinet/BudgetPanel';
 import { LawsPanel } from './cabinet/LawsPanel';
 import type { AdvisorCard } from '@leaders/shared';
 
-type Tab = 'advisor' | 'country' | 'intel' | 'diplomacy';
+type Tab = 'advisor' | 'country' | 'laws' | 'intel' | 'diplomacy';
 
 interface PendingResult {
   card: AdvisorCard;
@@ -222,7 +222,7 @@ function DiplomacyTab({
 
   return (
     <>
-      <div className="flex flex-col gap-4 overflow-y-auto p-4">
+      <div className="flex h-full flex-col gap-4 overflow-y-auto p-4 pb-6">
         {others.length === 0 ? (
           <div className="py-8 text-center text-slate-500">Нет других стран</div>
         ) : (
@@ -349,6 +349,7 @@ function ReadyButton({
 const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'advisor', icon: '🃏', label: 'Советник' },
   { id: 'country', icon: '🏛️', label: 'Страна' },
+  { id: 'laws', icon: '⚖️', label: 'Законы' },
   { id: 'intel', icon: '🕵️', label: 'Разведка' },
   { id: 'diplomacy', icon: '🤝', label: 'Дипломатия' },
 ];
@@ -433,9 +434,11 @@ export function CabinetScreen() {
   const warsWithPoints = (snapshot.wars ?? []).filter((w) => (w.victorPointsRemaining ?? 0) > 0);
   const intelBadge = myActiveWars.length + warsWithPoints.length;
 
+  const lawsBadge = (you.availableLaws ?? []).filter((l) => !l.isAdopted).length;
   const tabBadges: Partial<Record<Tab, number | boolean>> = {
     advisor: you.cardsLeft > 0 ? you.cardsLeft : false,
     country: !countryNotified && budgetReserve > 0 ? true : false,
+    laws: lawsBadge > 0 ? lawsBadge : false,
     intel: intelBadge > 0 ? intelBadge : false,
     diplomacy: pendingTrades > 0 ? pendingTrades : false,
   };
@@ -462,7 +465,7 @@ export function CabinetScreen() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.12 }}
-        className="h-full"
+        className="absolute inset-0 overflow-hidden"
       >
         {tab === 'advisor' && (
           <div className="flex h-full flex-col overflow-y-auto px-4 py-3">
@@ -519,6 +522,11 @@ export function CabinetScreen() {
               <div className="my-3 border-t border-slate-800" />
             </div>
             <BudgetPanel you={you} />
+          </div>
+        )}
+
+        {tab === 'laws' && (
+          <div className="flex h-full flex-col overflow-y-auto p-3">
             <LawsPanel you={you} />
           </div>
         )}
@@ -546,7 +554,7 @@ export function CabinetScreen() {
         )}
 
         {tab === 'diplomacy' && (
-          <div className="h-full">
+          <div className="h-full overflow-hidden">
             <DiplomacyTab
               you={you}
               others={snapshot.others}
@@ -627,7 +635,7 @@ export function CabinetScreen() {
         )}
 
         {/* Tab content */}
-        <div className="min-h-0 flex-1">{tabContent}</div>
+        <div className="relative min-h-0 flex-1">{tabContent}</div>
 
         {/* Mobile ready button */}
         <div className="shrink-0 border-t border-slate-800 px-4 py-3 md:hidden">
@@ -637,23 +645,6 @@ export function CabinetScreen() {
         {/* Tab bar */}
         <TabBar tab={tab} setTab={handleSetTab} badges={tabBadges} />
       </div>
-
-      {/* ── LG+ Right panel: always-visible diplomacy ── */}
-      <aside className="hidden lg:flex w-80 shrink-0 flex-col overflow-hidden border-l border-slate-800">
-        <div className="shrink-0 border-b border-slate-800 px-4 py-2.5">
-          <div className="font-semibold text-slate-300">🤝 Дипломатия</div>
-        </div>
-        <div className="min-h-0 flex-1 overflow-hidden">
-          <DiplomacyTab
-            you={you}
-            others={snapshot.others}
-            selectedCountry={drawerCountry}
-            drawerMode={drawerMode}
-            onOpenDrawer={openDrawer}
-            onCloseDrawer={closeDrawer}
-          />
-        </div>
-      </aside>
 
       {/* Ready confirm modal */}
       {showReadyConfirm && (
