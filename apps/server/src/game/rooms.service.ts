@@ -1459,7 +1459,7 @@ export class RoomsService {
     // 3) шпионаж
     if (roll < 0.87 && others.length > 0) {
       const target = others[Math.floor(Math.random() * others.length)]!;
-      const kinds = ['reveal', 'steal_science', 'financial_sabotage', 'provoke_riot'] as const;
+      const kinds = ['reveal', 'steal_science', 'provoke_riot'] as const;
       const kind = kinds[Math.floor(Math.random() * kinds.length)]!;
       const out = this.spyOrder(room.code, bot.playerId, kind, target.countryId!);
       this.botLog(room, `${bot.name} шпионит (${kind}) против ${this.content.countries.get(target.countryId!)!.name}: ${out.success ? 'успех' : 'провал'}`);
