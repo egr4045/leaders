@@ -1122,6 +1122,24 @@ export class RoomsService {
         },
         calls,
       });
+
+      // Включаем прослушку для этого игрока на цель в текущем году (фича 12)
+      room.wiretaps.push({
+        spyPlayerId: playerId,
+        targetCountryId,
+        year: room.world.year,
+      });
+    }
+
+    if (kind === 'financial_sabotage' && outcome.success) {
+      const targetSocketId = room.players.find((p) => p.countryId === targetCountryId)?.socketId;
+      if (targetSocketId) {
+        const text = target.delayed[target.delayed.length - 1]?.description ?? 'Ваша казна была ограблена!';
+        this.server?.to(targetSocketId).emit('game:announcement', {
+          title: '💸 ФИНАНСОВАЯ ДИВЕРСИЯ',
+          text,
+        });
+      }
     }
 
     this.persist(room);

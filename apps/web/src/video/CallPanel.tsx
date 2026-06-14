@@ -145,7 +145,7 @@ export function CallPanel({
 
       {/* активный звонок */}
       {activeCallId && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-slate-950/95 p-3">
+        <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-slate-950/95 p-3">
           {/* Уведомления о входящих во время звонка */}
           {incomingCalls.length > 0 && (
             <div className="absolute right-4 top-4 z-50 flex flex-col gap-2">

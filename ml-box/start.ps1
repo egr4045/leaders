@@ -39,13 +39,21 @@ if (-not (Test-Path $VenvPy)) {
     & $Py -m venv $Venv
 }
 
-# --- Dependencies (edge-tts + requests, installs in seconds) ---
-$Marker = Join-Path $Root ".deps_ok"
+# --- Dependencies ---
+$Marker = Join-Path $Root ".deps_ok_v2"
 if (-not (Test-Path $Marker)) {
-    Write-Host "Installing dependencies..."
-    & $VenvPip install --upgrade pip -q 2>$null
-    & $VenvPip install edge-tts requests -q
-    Set-Content $Marker "ok" -Encoding utf8
+    Write-Host "Installing dependencies from requirements.txt..."
+    $OldErr = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    & $VenvPip install --upgrade pip -q
+    & $VenvPip install -r (Join-Path $Root "requirements.txt")
+    $ErrorActionPreference = $OldErr
+    if ($LASTEXITCODE -eq 0) {
+        Set-Content $Marker "ok" -Encoding utf8
+    } else {
+        Write-Error "pip install failed with code $LASTEXITCODE"
+        exit 1
+    }
 }
 
 # --- Run ---

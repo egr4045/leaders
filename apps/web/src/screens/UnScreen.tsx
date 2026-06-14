@@ -611,7 +611,7 @@ export function UnScreen() {
           </div>
 
           {/* Phase content: below video (mobile) or right sidebar (md+) */}
-          <div className="max-h-[44dvh] shrink-0 overflow-y-auto border-t border-slate-800 md:max-h-none md:w-72 md:border-l md:border-t-0">
+          <div className="max-h-[30dvh] shrink-0 overflow-y-auto border-t border-slate-800 md:max-h-none md:w-72 md:border-l md:border-t-0">
             <div className="px-4 py-3">{phaseContent}</div>
           </div>
         </>

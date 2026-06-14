@@ -14,3 +14,5 @@ ml-box/.deps_xtts_ok
 ml-box/reference.wav
 ml-box/reference.webm
 ml-box/test_output.*
+
+ml-box/output/

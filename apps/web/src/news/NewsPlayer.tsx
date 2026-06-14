@@ -81,18 +81,29 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
     const el = audioRef.current;
     const audioUrl = item.lineAudioUrls?.[lineIdx] ?? null;
 
-    let charI = 0;
-    const iv = setInterval(() => {
-      charI++;
-      setSubtitleText(line.slice(0, charI));
-      if (charI >= line.length) clearInterval(iv);
-    }, MS_PER_CHAR);
-
     if (audioUrl && el) {
       setAudioEl(el);
       el.src = audioUrl;
+      
+      let rAF = 0;
+      let lastCharI = -1;
+      const updateSubtitle = () => {
+        if (el.duration > 0) {
+          const charI = Math.floor((el.currentTime / el.duration) * line.length);
+          if (charI !== lastCharI) {
+            lastCharI = charI;
+            setSubtitleText(line.slice(0, charI));
+          }
+        }
+        rAF = requestAnimationFrame(updateSubtitle);
+      };
+      
+      el.onplay = () => {
+        updateSubtitle();
+      };
+      
       el.onended = () => {
-        clearInterval(iv);
+        cancelAnimationFrame(rAF);
         setSubtitleText(line);
         if (lineIdx + 1 < item.lines.length) {
           setLineIdx((l) => l + 1);
@@ -100,13 +111,22 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       };
       void el.play().catch(() => {});
       return () => {
-        clearInterval(iv);
+        cancelAnimationFrame(rAF);
         el.pause();
         el.onended = null;
+        el.onplay = null;
       };
     } else {
       setAudioEl(null);
       if (el) { el.pause(); el.onended = null; }
+      
+      let charI = 0;
+      const iv = setInterval(() => {
+        charI++;
+        setSubtitleText(line.slice(0, charI));
+        if (charI >= line.length) clearInterval(iv);
+      }, MS_PER_CHAR);
+
       const ms = Math.max(line.length * MS_PER_CHAR + 600, FALLBACK_MS);
       const timer = setTimeout(() => {
         if (lineIdx + 1 < item.lines.length) {

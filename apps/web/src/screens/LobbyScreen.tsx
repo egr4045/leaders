@@ -273,7 +273,7 @@ export function LobbyScreen() {
         </div>
 
         {/* Scrollable content with fade hint */}
-        <div className="relative min-h-0 flex-1 overflow-y-auto bg-slate-900" style={{ maxHeight: '45dvh' }}>
+        <div className="relative min-h-0 flex-1 overflow-y-auto bg-slate-900 max-h-[30dvh] md:max-h-[45dvh]">
           {tabContent}
           <div className="pointer-events-none sticky bottom-0 h-6 bg-gradient-to-t from-slate-900 to-transparent" />
         </div>

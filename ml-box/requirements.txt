@@ -1,2 +1,7 @@
-TTS>=0.22
-requests>=2.28
+torch
+torchaudio
+pydub
+requests
+soundfile
+imageio-ffmpeg
+audioop-lts

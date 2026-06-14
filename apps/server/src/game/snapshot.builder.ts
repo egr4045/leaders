@@ -289,18 +289,28 @@ export function buildSnapshot(
       (p) => p.public || p.fromCountryId === myCountryId || p.toCountryId === myCountryId,
     ),
     // личные разведдонесения (reveal + прослушка звонков, фича 10)
-    spyIntel: (room.intel?.[forPlayerId] ?? []).map((r) => ({
-      year: r.year,
-      targetCountryName: content.countries.get(r.targetCountryId)?.name ?? r.targetCountryId,
-      kind: r.kind ?? 'reveal',
-      data: r.data,
-      calls: r.calls?.map((c) => ({
-        withCountryName: content.countries.get(c.withCountryId)?.name ?? c.withCountryId,
-        year: c.year,
-        durationSec: c.durationSec,
-        ongoing: c.ongoing,
-      })),
-    })),
+    spyIntel: (room.intel?.[forPlayerId] ?? []).map((r) => {
+      const now = Date.now();
+      const calls = room.callLog
+        .filter((c) => (c.fromCountryId === r.targetCountryId || c.toCountryId === r.targetCountryId) && c.year === r.year)
+        .map((c) => {
+          const withId = c.fromCountryId === r.targetCountryId ? c.toCountryId : c.fromCountryId;
+          return {
+            withCountryName: content.countries.get(withId)?.name ?? withId,
+            year: c.year,
+            durationSec: Math.max(1, Math.round(((c.endedAt ?? now) - c.startedAt) / 1000)),
+            ongoing: c.endedAt === null,
+          };
+        });
+
+      return {
+        year: r.year,
+        targetCountryName: content.countries.get(r.targetCountryId)?.name ?? r.targetCountryId,
+        kind: r.kind ?? 'reveal',
+        data: r.data,
+        calls,
+      };
+    }),
     // активная прослушка: цель сейчас на связи → клиент скрыто подключится (фича 12)
     wiretap: (() => {
       for (const w of room.wiretaps ?? []) {
