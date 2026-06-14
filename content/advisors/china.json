@@ -21,7 +21,7 @@
             "sectors": {
               "economy": 1
             },
-            "dovolstvo": 15
+            "dovolstvo": 28
           },
           "newsLines": {
             "state": "Партия не бросает своих",
@@ -37,7 +37,7 @@
             "sectors": {
               "intel": 1
             },
-            "dovolstvo": -10
+            "dovolstvo": 3
           },
           "newsLines": {
             "state": "Борьба с коррупцией в строительстве",
@@ -66,7 +66,7 @@
             "resources": {
               "money": -1000
             },
-            "dovolstvo": 30
+            "dovolstvo": 43
           },
           "newsLines": {
             "state": "Беспрецедентная социальная программа",
@@ -79,7 +79,7 @@
             "sectors": {
               "economy": 1
             },
-            "dovolstvo": -15
+            "dovolstvo": -2
           },
           "newsLines": {
             "state": "Регулирование рынка недвижимости",
@@ -103,7 +103,8 @@
             "resources": {
               "money": -2000,
               "influence": 200
-            }
+            },
+            "dovolstvo": 13
           },
           "newsLines": {
             "state": "Глобальное лидерство Китая",
@@ -116,7 +117,11 @@
             "sectors": {
               "economy": 1
             },
-            "dovolstvo": 10
+            "dovolstvo": 23
+          },
+          "newsLines": {
+            "state": "Ориентация на внутренний рынок - залог стабильности",
+            "liberal": "Отказ от глобальных амбиций из-за нехватки средств"
           }
         }
       ]
@@ -140,7 +145,8 @@
             },
             "sectors": {
               "economy": 1
-            }
+            },
+            "dovolstvo": 13
           },
           "newsLines": {
             "state": "Расширение стратегических активов",
@@ -154,7 +160,11 @@
               "money": -1000,
               "influence": 50
             },
-            "dovolstvo": -10
+            "dovolstvo": 3
+          },
+          "newsLines": {
+            "state": "Китай - истинный друг африканского народа",
+            "liberal": "Списанные миллиарды могли бы пойти на пенсии"
           }
         }
       ]
@@ -179,7 +189,7 @@
             "sectors": {
               "science": -1
             },
-            "dovolstvo": -20
+            "dovolstvo": -7
           },
           "newsLines": {
             "state": "Молодежь будет больше учиться",
@@ -194,7 +204,12 @@
             },
             "sectors": {
               "smi": 1
-            }
+            },
+            "dovolstvo": 13
+          },
+          "newsLines": {
+            "state": "Государство берет воспитание молодежи под контроль",
+            "liberal": "Унылая госпропаганда вместо нормальных игр"
           }
         }
       ]
@@ -217,7 +232,7 @@
               "intel": 1,
               "economy": -2
             },
-            "dovolstvo": 10
+            "dovolstvo": 23
           },
           "newsLines": {
             "state": "Никто не выше закона",
@@ -232,7 +247,12 @@
             },
             "sectors": {
               "economy": -1
-            }
+            },
+            "dovolstvo": 13
+          },
+          "newsLines": {
+            "state": "Капиталисты должны знать свое место",
+            "liberal": "Очередной удар по IT-сектору и инновациям"
           }
         }
       ]
@@ -258,7 +278,7 @@
               "intel": 2,
               "science": 1
             },
-            "dovolstvo": -15
+            "dovolstvo": -2
           },
           "newsLines": {
             "state": "Цифровая стена стала надежнее",
@@ -272,7 +292,11 @@
               "economy": -3,
               "intel": 3
             },
-            "dovolstvo": -30
+            "dovolstvo": -17
+          },
+          "newsLines": {
+            "state": "Полный цифровой суверенитет достигнут",
+            "liberal": "Страна окончательно превратилась в цифровую тюрьму"
           }
         }
       ]
@@ -289,7 +313,7 @@
             "cn_demographic_crisis"
           ],
           "effects": {
-            "dovolstvo": -10
+            "dovolstvo": 3
           },
           "newsLines": {
             "state": "Необходимы меры стимулирования",
@@ -299,10 +323,14 @@
         {
           "label": "Запретить аборты",
           "effects": {
-            "dovolstvo": -30,
+            "dovolstvo": -17,
             "sectors": {
               "economy": -1
             }
+          },
+          "newsLines": {
+            "state": "Защита традиционных ценностей и права на жизнь",
+            "liberal": "Нарушение базовых прав женщин ради демографии"
           }
         }
       ]
@@ -327,7 +355,7 @@
             "resources": {
               "money": -3000
             },
-            "dovolstvo": 30
+            "dovolstvo": 43
           },
           "newsLines": {
             "state": "Семья — основа государства",
@@ -340,7 +368,11 @@
             "resources": {
               "money": 1000
             },
-            "dovolstvo": -25
+            "dovolstvo": -12
+          },
+          "newsLines": {
+            "state": "Стимулирование рождаемости через налоговую ответственность",
+            "liberal": "Налог на бедность и отсутствие выбора"
           }
         }
       ]
@@ -365,7 +397,8 @@
             "sectors": {
               "science": 2,
               "economy": 1
-            }
+            },
+            "dovolstvo": 13
           },
           "newsLines": {
             "state": "Переход к Индустрии 4.0",
@@ -378,7 +411,11 @@
             "sectors": {
               "economy": 1
             },
-            "dovolstvo": -15
+            "dovolstvo": -2
+          },
+          "newsLines": {
+            "state": "Дружественные мигранты помогут нашей экономике",
+            "liberal": "Замещение коренного населения ради дешевой рабочей силы"
           }
         }
       ]
@@ -401,7 +438,7 @@
             "sectors": {
               "smi": 1
             },
-            "dovolstvo": 15
+            "dovolstvo": 28
           },
           "newsLines": {
             "state": "Наш голос звучит громко",
@@ -416,7 +453,12 @@
             },
             "resources": {
               "influence": -50
-            }
+            },
+            "dovolstvo": 13
+          },
+          "newsLines": {
+            "state": "Прагматизм и экономический рост превыше всего",
+            "liberal": "Партия прогнулась под давлением Запада"
           }
         }
       ]
@@ -444,7 +486,7 @@
             "sectors": {
               "army": 2
             },
-            "dovolstvo": 20
+            "dovolstvo": 33
           },
           "newsLines": {
             "state": "Армия демонстрирует мощь",
@@ -457,7 +499,11 @@
             "resources": {
               "influence": -100
             },
-            "dovolstvo": -20
+            "dovolstvo": -7
+          },
+          "newsLines": {
+            "state": "Мы не поддадимся на провокации",
+            "liberal": "Слабость Пекина стала очевидна всему миру"
           }
         }
       ]
@@ -481,7 +527,8 @@
             },
             "sectors": {
               "science": 2
-            }
+            },
+            "dovolstvo": 13
           },
           "newsLines": {
             "state": "Полная технологическая независимость близка",
@@ -496,7 +543,12 @@
             },
             "sectors": {
               "economy": -1
-            }
+            },
+            "dovolstvo": 13
+          },
+          "newsLines": {
+            "state": "Успешный обход несправедливых санкций",
+            "liberal": "Коррупционные схемы в закупках устаревших чипов"
           }
         }
       ]
@@ -517,7 +569,7 @@
               "economy": -2,
               "science": 1
             },
-            "dovolstvo": -15
+            "dovolstvo": -2
           },
           "newsLines": {
             "state": "Жизнь людей важнее экономики",
@@ -530,10 +582,14 @@
             "sectors": {
               "economy": 1
             },
-            "dovolstvo": -20,
+            "dovolstvo": -7,
             "modifiers": {
               "populationMult": -0.05
             }
+          },
+          "newsLines": {
+            "state": "Экономика важнее паники, фабрики работают",
+            "liberal": "Власти скрывают реальную смертность от новой болезни"
           }
         }
       ]
@@ -558,7 +614,7 @@
             "sectors": {
               "economy": 2
             },
-            "dovolstvo": 30
+            "dovolstvo": 43
           },
           "newsLines": {
             "state": "Партия слышит народ",
@@ -572,7 +628,11 @@
               "army": 1,
               "intel": 1
             },
-            "dovolstvo": -40
+            "dovolstvo": -27
+          },
+          "newsLines": {
+            "state": "Беспорядки, спонсируемые Западом, подавлены",
+            "liberal": "Кровавый разгон мирных демонстрантов"
           }
         }
       ]

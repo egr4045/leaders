@@ -2,364 +2,64 @@
   "country": "uk",
   "cards": [
     {
-      "id": "uk_lorry_drivers",
-      "speaker": "Министр Транспорта",
-      "situation": "Из-за выхода из ЕС мы лишились польских дальнобойщиков. Полки супермаркетов пустеют.",
-      "requires": {
-        "statuses": [
-          "brexit_legacy"
-        ]
-      },
+      "id": "uk_nhs_crisis",
+      "speaker": "Министр Здравоохранения",
+      "situation": "Очереди в NHS достигают 18 месяцев. Врачи и медсестры объявляют бессрочную забастовку.",
       "weight": 1,
       "choices": [
         {
-          "label": "Привлечь армию для доставки продуктов",
-          "effects": {
-            "sectors": {
-              "army": -1,
-              "economy": 1
-            },
-            "dovolstvo": 10
-          },
-          "newsLines": {
-            "state": "Армия спасает логистику страны",
-            "liberal": "Военные развозят туалетную бумагу"
-          }
-        },
-        {
-          "label": "Выдать временные визы мигрантам (отмена принципов)",
-          "effects": {
-            "resources": {
-              "money": 500
-            },
-            "dovolstvo": -20
-          },
-          "newsLines": {
-            "state": "Прагматичный подход к логистике",
-            "liberal": "Обещания Брексита были ложью"
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_nhs_strike",
-      "speaker": "Глава Профсоюза Медсестер",
-      "situation": "Медсестры бастуют из-за низких зарплат. Очереди в скорую помощь достигают 12 часов.",
-      "requires": {
-        "statuses": [
-          "brexit_legacy"
-        ]
-      },
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Мы не поддадимся шантажу! Пусть бастуют",
+          "label": "Поднять зарплаты на 20% (Огромный долг)",
           "addStatuses": [
-            "uk_nhs_collapse"
+            "uk_nhs_saved"
           ],
-          "effects": {
-            "resources": {
-              "money": 500
-            },
-            "dovolstvo": -30
-          },
-          "newsLines": {
-            "state": "Бюджет здравоохранения сохранен",
-            "liberal": "Люди умирают в коридорах больниц"
-          }
-        },
-        {
-          "label": "Повысить зарплаты на 15%",
           "effects": {
             "resources": {
               "money": -2000
-            },
-            "dovolstvo": 20
-          },
-          "newsLines": {
-            "state": "Герои нации получили заслуженное",
-            "liberal": "Инфляционная спираль раскручивается"
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_private_healthcare",
-      "speaker": "Инвестор из США",
-      "situation": "Система NHS разваливается. Давайте мы приватизируем часть клиник?",
-      "requires": {
-        "statuses": [
-          "uk_nhs_collapse"
-        ]
-      },
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Начать приватизацию",
-          "removeStatuses": [
-            "uk_nhs_collapse"
-          ],
-          "effects": {
-            "resources": {
-              "money": 2000
-            },
-            "sectors": {
-              "economy": 1
-            },
-            "dovolstvo": -20
-          },
-          "newsLines": {
-            "state": "Модернизация медицины частным капиталом",
-            "liberal": "Конец бесплатной медицины"
-          }
-        },
-        {
-          "label": "Медицина должна быть бесплатной (печатать деньги)",
-          "effects": {
-            "resources": {
-              "money": -1500
-            },
-            "modifiers": {
-              "inflationDelta": 0.05
-            },
-            "dovolstvo": 15
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_scotland_referendum",
-      "speaker": "Первый Министр Шотландии",
-      "situation": "Мы не голосовали за Брексит! Шотландия требует нового референдума о независимости.",
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Отказать. Вопрос был закрыт в 2014 году",
-          "addStatuses": [
-            "uk_scottish_independence"
-          ],
-          "effects": {
-            "dovolstvo": -15
-          },
-          "newsLines": {
-            "state": "Соединенное Королевство останется единым",
-            "liberal": "Лондон игнорирует демократию"
-          }
-        },
-        {
-          "label": "Дать им больше автономии и денег",
-          "effects": {
-            "resources": {
-              "money": -1000
-            },
-            "dovolstvo": 10
-          },
-          "newsLines": {
-            "state": "Деволюция спасает Союз",
-            "liberal": "Шантажисты снова получили выкуп"
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_north_sea_oil",
-      "speaker": "Лидер Шотландских Националистов",
-      "situation": "Нефть Северного моря принадлежит Шотландии! Мы останавливаем добычу в знак протеста.",
-      "requires": {
-        "statuses": [
-          "uk_scottish_independence"
-        ]
-      },
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Ввести прямое правление Лондона",
-          "addStatuses": [
-            "uk_energy_crisis"
-          ],
-          "effects": {
-            "sectors": {
-              "intel": 1
-            },
-            "dovolstvo": -25
-          },
-          "newsLines": {
-            "state": "Восстановление конституционного порядка",
-            "liberal": "Оккупация собственного севера"
-          }
-        },
-        {
-          "label": "Отдать им 50% доходов",
-          "effects": {
-            "resources": {
-              "money": -1500
-            },
-            "sectors": {
-              "economy": -1
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_winter_heating",
-      "speaker": "Мэр Лондона",
-      "situation": "Из-за кризиса людям нечем платить за отопление. Впереди суровая зима.",
-      "requires": {
-        "statuses": [
-          "uk_energy_crisis"
-        ]
-      },
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Ввести субсидии на коммуналку",
-          "effects": {
-            "resources": {
-              "money": -2500
-            },
-            "dovolstvo": 25
-          },
-          "newsLines": {
-            "state": "Правительство греет народ",
-            "liberal": "Государственный долг пробил небеса"
-          }
-        },
-        {
-          "label": "Посоветовать людям надеть свитера",
-          "effects": {
-            "dovolstvo": -35
-          },
-          "newsLines": {
-            "state": "Бережливость — национальная черта",
-            "liberal": "Старики замерзают в своих домах"
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_royal_interview",
-      "speaker": "Опальный Принц",
-      "situation": "Принц дал скандальное интервью американскому ТВ, обвинив Семью в расизме.",
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Лишить его всех титулов и содержания",
-          "addStatuses": [
-            "uk_royal_scandal"
-          ],
-          "effects": {
-            "sectors": {
-              "smi": 1
-            },
-            "dovolstvo": -5
-          },
-          "newsLines": {
-            "state": "Монархия очищается от предателей",
-            "liberal": "Институт монархии трещит по швам"
-          }
-        },
-        {
-          "label": "Хранить королевское молчание (Никогда не жалуйся)",
-          "effects": {
-            "resources": {
-              "influence": -50
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_republican_movement",
-      "speaker": "Глава 'Антимонархистов'",
-      "situation": "Скандалы доказали, что корона устарела. Мы собираем подписи за Республику.",
-      "requires": {
-        "statuses": [
-          "uk_royal_scandal"
-        ]
-      },
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Арестовать лидеров движения за измену",
-          "effects": {
-            "sectors": {
-              "intel": 2
-            },
-            "dovolstvo": -20
-          },
-          "newsLines": {
-            "state": "Корона защищена законом",
-            "liberal": "Свобода слова отменена во имя короля"
-          }
-        },
-        {
-          "label": "Запустить позитивную PR-кампанию Короны",
-          "effects": {
-            "resources": {
-              "money": -500
-            },
-            "sectors": {
-              "smi": 2
-            },
-            "dovolstvo": 15
-          },
-          "newsLines": {
-            "state": "Любовь народа к Монархии непоколебима",
-            "liberal": "Пропаганда за наши налоги"
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_tea_shortage",
-      "speaker": "Министр Торговли",
-      "situation": "Проблемы с логистикой в Суэцком канале оставили страну без свежего чая!",
-      "requires": {
-        "statuses": [
-          "tea_5_oclock"
-        ]
-      },
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Опустошить стратегические резервы чая!",
-          "effects": {
-            "resources": {
-              "money": -500
             },
             "dovolstvo": 30
           },
           "newsLines": {
-            "state": "Традиции 5 o'clock спасены",
-            "liberal": "Страна живет в иллюзии нормальности"
+            "state": "Гордость нации спасена ценой огромных вливаний",
+            "liberal": "Долг страны улетел в космос ради неэффективной системы"
           }
         },
         {
-          "label": "Призвать пить кофе",
+          "label": "Ввести элементы платной медицины",
+          "addStatuses": [
+            "uk_private_health"
+          ],
           "effects": {
-            "dovolstvo": -40
+            "resources": {
+              "money": 1000
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": -10
           },
           "newsLines": {
-            "state": "Модернизация вкусовых привычек",
-            "liberal": "Конец британской цивилизации"
+            "state": "Необходимая модернизация системы здравоохранения",
+            "liberal": "Конец бесплатной медицины: бедные могут умирать дома"
           }
         }
       ]
     },
     {
-      "id": "uk_dirty_money",
-      "speaker": "Глава МИД",
-      "situation": "Иностранные олигархи скупают особняки в Челси. Это грязные деньги, но они питают нашу экономику.",
+      "id": "uk_health_tax",
+      "speaker": "Канцлер Казначейства",
+      "situation": "Чтобы оплатить повышение зарплат в NHS, нам придется поднять налоги до рекордного уровня.",
       "requires": {
         "statuses": [
-          "financial_hub"
+          "uk_nhs_saved"
         ]
       },
       "weight": 1,
       "choices": [
         {
-          "label": "Добро пожаловать в Лондонград! (Закрыть глаза)",
+          "label": "Повысить налоги",
+          "addStatuses": [
+            "uk_tax_revolt"
+          ],
           "effects": {
             "resources": {
               "money": 2000
@@ -370,214 +70,600 @@
             "dovolstvo": -10
           },
           "newsLines": {
-            "state": "Лондон остается финансовой столицей мира",
-            "liberal": "Прачечная для коррупционеров"
+            "state": "Патриотичный долг каждого — поддержать нашу медицину",
+            "liberal": "Грабительские налоги окончательно добьют средний класс"
           }
         },
         {
-          "label": "Ввести санкции и арестовать их яхты!",
+          "label": "Взять в долг, пусть платят дети",
           "effects": {
             "resources": {
-              "influence": 150
-            },
-            "sectors": {
-              "economy": -1,
-              "intel": 1
+              "money": -500,
+              "influence": 50
             },
             "dovolstvo": 10
           },
           "newsLines": {
-            "state": "Очищение от грязных денег",
-            "liberal": "Олигархи бегут в Дубай"
+            "state": "Мы сохранили налоги низкими ради экономического роста",
+            "liberal": "Преступное перекладывание долгов на неродившиеся поколения"
           }
         }
       ]
     },
     {
-      "id": "uk_fintech_boom",
-      "speaker": "Министр Цифровизации",
-      "situation": "Финансовый сектор хочет инвестировать в ИИ и финтех, чтобы обогнать Европу.",
+      "id": "uk_tax_protests",
+      "speaker": "Лидер Профсоюзов",
+      "situation": "Из-за рекордных налогов на спасение NHS начались массовые протесты среднего класса.",
       "requires": {
         "statuses": [
-          "financial_hub"
+          "uk_tax_revolt"
         ]
       },
       "weight": 1,
       "choices": [
         {
-          "label": "Снять все регуляции. Дать налоговые льготы!",
-          "addStatuses": [
-            "uk_tech_hub"
-          ],
+          "label": "Ввести налог на богатство вместо этого",
           "effects": {
             "resources": {
-              "money": -1000
+              "influence": 50
             },
             "sectors": {
-              "science": 2,
               "economy": 1
-            }
-          },
-          "newsLines": {
-            "state": "Британия — лидер цифровой революции",
-            "liberal": "Техногиганты не платят налоги"
-          }
-        },
-        {
-          "label": "Это слишком рискованно",
-          "effects": {
-            "resources": {
-              "money": 500
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_ai_summit",
-      "speaker": "Основатель Стартапа",
-      "situation": "Благодаря статусу хаба мы можем провести глобальный саммит по безопасности ИИ.",
-      "requires": {
-        "statuses": [
-          "uk_tech_hub"
-        ]
-      },
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Провести саммит в Блетчли-Парке",
-          "effects": {
-            "resources": {
-              "money": -500,
-              "influence": 200
-            },
-            "sectors": {
-              "science": 1
-            }
-          },
-          "newsLines": {
-            "state": "Британия диктует правила для ИИ",
-            "liberal": "Пиар-акция без реальных дел"
-          }
-        },
-        {
-          "label": "Не тратить на это деньги",
-          "effects": {
-            "resources": {
-              "money": 200
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_channel_boats",
-      "speaker": "Министр Внутренних Дел",
-      "situation": "Нелегалы массово переплывают Ла-Манш на резиновых лодках. Отели переполнены.",
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Запретить им подавать на убежище",
-          "addStatuses": [
-            "uk_immigration_tensions"
-          ],
-          "effects": {
-            "sectors": {
-              "intel": 1
-            },
-            "dovolstvo": 10,
-            "resources": {
-              "influence": -100
-            }
-          },
-          "newsLines": {
-            "state": "Жесткая остановка лодок",
-            "liberal": "Нарушение международных конвенций"
-          }
-        },
-        {
-          "label": "Разместить их на плавучих баржах",
-          "effects": {
-            "resources": {
-              "money": -1000
-            },
-            "dovolstvo": -15
-          },
-          "newsLines": {
-            "state": "Временное решение проблемы размещения",
-            "liberal": "Плавучие тюрьмы"
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_rwanda_plan",
-      "speaker": "Генеральный Прокурор",
-      "situation": "Чтобы остановить лодки, мы можем платить африканской стране за прием нелегалов.",
-      "requires": {
-        "statuses": [
-          "uk_immigration_tensions"
-        ]
-      },
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Запустить 'План Руанда'! Платим миллионы",
-          "removeStatuses": [
-            "uk_immigration_tensions"
-          ],
-          "effects": {
-            "resources": {
-              "money": -2000
-            },
-            "sectors": {
-              "intel": 1
-            },
-            "dovolstvo": 20
-          },
-          "newsLines": {
-            "state": "Нелегалы отправляются в Африку",
-            "liberal": "Слепые траты на бесчеловечный план"
-          }
-        },
-        {
-          "label": "Отменить план, это слишком дорого",
-          "effects": {
-            "dovolstvo": -20
-          }
-        }
-      ]
-    },
-    {
-      "id": "uk_falklands_rhetoric",
-      "speaker": "Глава ВМФ",
-      "situation": "Аргентина снова начала говорить о возврате Фолклендских островов.",
-      "weight": 1,
-      "choices": [
-        {
-          "label": "Отправить туда авианосец для демонстрации силы!",
-          "effects": {
-            "resources": {
-              "money": -1000,
-              "influence": 150
-            },
-            "sectors": {
-              "army": 1
             },
             "dovolstvo": 15
           },
           "newsLines": {
-            "state": "Мы защитим наших граждан везде",
-            "liberal": "Игра мускулами ради рейтингов"
+            "state": "Справедливое налогообложение: богатые заплатят за всех",
+            "liberal": "Миллиардеры пакуют чемоданы и увозят капитал"
           }
         },
         {
-          "label": "Предложить дипломатические переговоры",
+          "label": "Подавить протесты полицией",
+          "effects": {
+            "sectors": {
+              "siloviki": 2
+            },
+            "dovolstvo": -20
+          },
+          "newsLines": {
+            "state": "Порядок восстановлен: протестующие экстремисты разогнаны",
+            "liberal": "Конная полиция топчет средний класс, требующий справедливости"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_scotland_ref",
+      "speaker": "Первый министр Шотландии",
+      "situation": "Мы требуем второй референдум о независимости! Брексит изменил всё.",
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Разрешить референдум",
+          "addStatuses": [
+            "uk_scot_ref_active"
+          ],
           "effects": {
             "resources": {
-              "influence": -50
+              "influence": 50
+            },
+            "dovolstvo": 10
+          },
+          "newsLines": {
+            "state": "Демократический процесс покажет, что мы сильны вместе",
+            "liberal": "Слабость Вестминстера: они позволили стране развалиться"
+          }
+        },
+        {
+          "label": "Отказать жестко (Это незаконно!)",
+          "addStatuses": [
+            "uk_scot_anger"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 200
+            },
+            "dovolstvo": -20
+          },
+          "newsLines": {
+            "state": "Британия едина и неделима. Точка.",
+            "liberal": "Подавление воли народа: мы стали диктатурой"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_scotland_leaves",
+      "speaker": "BBC News",
+      "situation": "Шотландия проголосовала ЗА выход! Нам придется делить армию и ядерные подлодки.",
+      "requires": {
+        "statuses": [
+          "uk_scot_ref_active"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Мирное расставание",
+          "addStatuses": [
+            "uk_border_crisis"
+          ],
+          "effects": {
+            "resources": {
+              "money": -1000,
+              "influence": 50
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 0
+          },
+          "newsLines": {
+            "state": "Мы расстаемся друзьями и партнерами",
+            "liberal": "Брексит 2.0: полная катастрофа и распад страны"
+          }
+        },
+        {
+          "label": "Ввести войска в Эдинбург (Отменить итоги)",
+          "effects": {
+            "resources": {
+              "influence": 100
+            },
+            "sectors": {
+              "siloviki": 2
+            },
+            "dovolstvo": -30
+          },
+          "newsLines": {
+            "state": "Армия восстановила конституционный порядок на севере",
+            "liberal": "Война с собственным народом: Эдинбург в осаде"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_scot_border",
+      "speaker": "Пограничная Служба",
+      "situation": "Между Англией и независимой Шотландией теперь жесткая граница. Торговля встала.",
+      "requires": {
+        "statuses": [
+          "uk_border_crisis"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Подписать договор о свободной торговле",
+          "effects": {
+            "resources": {
+              "money": 500
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 10
+          },
+          "newsLines": {
+            "state": "Прагматичный подход сохранил рабочие места",
+            "liberal": "Очередной 'мягкий' выход, лишенный всякого смысла"
+          }
+        },
+        {
+          "label": "Ввести пошлины, пусть платят",
+          "effects": {
+            "resources": {
+              "influence": 100
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 0
+          },
+          "newsLines": {
+            "state": "Наши рынки надежно защищены от недобросовестной конкуренции",
+            "liberal": "Экономическое самоубийство ради пограничной показухи"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_trade_deal",
+      "speaker": "Министр Торговли",
+      "situation": "Нам нужно торговое соглашение с США. Но они требуют открыть рынок для хлорированной курицы и приватизировать NHS.",
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Согласиться. Нам нужны деньги",
+          "addStatuses": [
+            "uk_us_vassal"
+          ],
+          "effects": {
+            "resources": {
+              "money": 2000,
+              "influence": 50
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 0
+          },
+          "newsLines": {
+            "state": "Грандиозная сделка с США откроет новые возможности",
+            "liberal": "Хлорированная курица и распродажа больниц за копейки"
+          }
+        },
+        {
+          "label": "Отказать. Британия не продается",
+          "addStatuses": [
+            "uk_trade_iso"
+          ],
+          "effects": {
+            "resources": {
+              "money": -1000,
+              "influence": 100
+            },
+            "dovolstvo": 10
+          },
+          "newsLines": {
+            "state": "Наши стандарты не продаются: мы защитили фермеров",
+            "liberal": "Гордая изоляция ведет к пустым полкам супермаркетов"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_us_buyout",
+      "speaker": "Аналитик",
+      "situation": "Американские корпорации скупили половину британских брендов. Мы теряем экономический суверенитет.",
+      "requires": {
+        "statuses": [
+          "uk_us_vassal"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Ввести закон о защите нац. интересов",
+          "addStatuses": [
+            "uk_us_trade_war"
+          ],
+          "effects": {
+            "resources": {
+              "money": -1500,
+              "influence": 100
+            },
+            "dovolstvo": 10
+          },
+          "newsLines": {
+            "state": "Национальные чемпионы останутся в британских руках",
+            "liberal": "Антирыночные законы отпугнули последних инвесторов"
+          }
+        },
+        {
+          "label": "Продолжать продавать активы",
+          "effects": {
+            "resources": {
+              "money": 2000
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 0
+          },
+          "newsLines": {
+            "state": "Иностранный капитал спасет наши убыточные заводы",
+            "liberal": "Британия стала дешевым аутсорсом для американцев"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_us_sanctions",
+      "speaker": "Посол США",
+      "situation": "Закон о защите национальных интересов нарушает нашу сделку. Мы вводим тарифы на британские товары.",
+      "requires": {
+        "statuses": [
+          "uk_us_trade_war"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Подать жалобу в ВТО",
+          "effects": {
+            "resources": {
+              "influence": 100
+            },
+            "sectors": {
+              "economy": 1
+            }
+          },
+          "newsLines": {
+            "state": "Британия не потерпит издевательств: мы будем судиться",
+            "liberal": "Мы затеяли торговую войну с единственным союзником"
+          }
+        },
+        {
+          "label": "Отменить закон",
+          "removeStatuses": [
+            "uk_us_trade_war"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 50
+            },
+            "dovolstvo": 0
+          },
+          "newsLines": {
+            "state": "Здравый смысл возобладал, рынки снова открыты",
+            "liberal": "Полная и безоговорочная капитуляция перед Вашингтоном"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_royal_scandal",
+      "speaker": "Главред Таблоида",
+      "situation": "Очередной член королевской семьи оказался в центре грязного скандала. Рейтинги монархии на дне.",
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Лишить его титулов и содержания",
+          "addStatuses": [
+            "uk_modern_monarchy"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 50
+            },
+            "dovolstvo": 15
+          },
+          "newsLines": {
+            "state": "Монархия модернизируется и очищается от недостойных",
+            "liberal": "Показательная порка не исправит прогнивший институт"
+          }
+        },
+        {
+          "label": "Замять скандал, надавив на прессу",
+          "addStatuses": [
+            "uk_republican_rise"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 50
+            },
+            "sectors": {
+              "smi": 1
+            },
+            "dovolstvo": 0
+          },
+          "newsLines": {
+            "state": "Частная жизнь королевской семьи неприкосновенна",
+            "liberal": "Цензура в прессе защищает преступников с титулами"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_abolish_monarchy",
+      "speaker": "Лидер Оппозиции",
+      "situation": "Скандалы переполнили чашу. Половина страны требует провозгласить Республику!",
+      "requires": {
+        "statuses": [
+          "uk_republican_rise"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Провести референдум о Монархии",
+          "addStatuses": [
+            "uk_republic_vote"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 50
+            },
+            "dovolstvo": 20
+          },
+          "newsLines": {
+            "state": "Народ имеет право сам решить судьбу своих институтов",
+            "liberal": "Популисты раскачивают тысячелетние устои государства"
+          }
+        },
+        {
+          "label": "Корона священна! Подавить протесты",
+          "effects": {
+            "resources": {
+              "influence": 200
+            },
+            "sectors": {
+              "siloviki": 1
             },
             "dovolstvo": -10
+          },
+          "newsLines": {
+            "state": "Корона — это сердце нации. Мятеж подавлен",
+            "liberal": "Жестокие репрессии против тех, кто требует республики"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_new_republic",
+      "speaker": "Премьер-Министр",
+      "situation": "Народ проголосовал за Республику! Королевские дворцы теперь музеи. Нужно выбрать Президента.",
+      "requires": {
+        "statuses": [
+          "uk_republic_vote"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Перейти к президентской республике",
+          "effects": {
+            "resources": {
+              "influence": 50
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 10
+          },
+          "newsLines": {
+            "state": "Новая эпоха: Британия выбирает сильного лидера",
+            "liberal": "Диктаторские замашки президента без сдержек и противовесов"
+          }
+        },
+        {
+          "label": "Оставить парламентскую систему",
+          "effects": {
+            "resources": {
+              "influence": 100
+            },
+            "dovolstvo": 10
+          },
+          "newsLines": {
+            "state": "Традиции парламентаризма сохранены без монархов",
+            "liberal": "Ничего не изменилось: те же элиты, только без корон"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_channel_crisis",
+      "speaker": "Министр Внутренних Дел",
+      "situation": "Рекордное число лодок с нелегалами пересекает Ла-Манш. Отели переполнены беженцами.",
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Отправлять их всех в Руанду!",
+          "addStatuses": [
+            "uk_rwanda_plan"
+          ],
+          "effects": {
+            "resources": {
+              "money": -1000,
+              "influence": 50
+            },
+            "dovolstvo": 20
+          },
+          "newsLines": {
+            "state": "Наш жесткий план с Руандой остановит лодочный бизнес",
+            "liberal": "Позорное нарушение прав человека и пустая трата миллионов"
+          }
+        },
+        {
+          "label": "Упростить выдачу убежища",
+          "addStatuses": [
+            "uk_open_doors"
+          ],
+          "effects": {
+            "resources": {
+              "money": 1000
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": -10
+          },
+          "newsLines": {
+            "state": "Мы — сострадательная нация, помогающая беженцам",
+            "liberal": "Открытые границы уничтожат систему социального жилья"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_echr_exit",
+      "speaker": "Европейский Суд по ПЧ",
+      "situation": "Ваш план с Руандой незаконен! Мы запрещаем депортационные рейсы.",
+      "requires": {
+        "statuses": [
+          "uk_rwanda_plan"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Выйти из ЕСПЧ и депортировать!",
+          "addStatuses": [
+            "uk_pariah_state"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 100
+            },
+            "sectors": {
+              "siloviki": 1
+            },
+            "dovolstvo": 20
+          },
+          "newsLines": {
+            "state": "Мы вернули суверенитет: иностранные судьи нам не указ",
+            "liberal": "Британия встала в один ряд с диктатурами-изгоями"
+          }
+        },
+        {
+          "label": "Подчиниться суду (Отменить план)",
+          "removeStatuses": [
+            "uk_rwanda_plan"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 200
+            },
+            "dovolstvo": 0
+          },
+          "newsLines": {
+            "state": "Мы остаемся верны верховенству международного права",
+            "liberal": "Слабохарактерное правительство прогнулось под евробюрократов"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uk_global_sanctions",
+      "speaker": "ООН",
+      "situation": "Выход из ЕСПЧ и жесткие депортации привели к санкциям со стороны правозащитных организаций.",
+      "requires": {
+        "statuses": [
+          "uk_pariah_state"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Мы гордая независимая нация!",
+          "effects": {
+            "resources": {
+              "influence": 50
+            },
+            "sectors": {
+              "economy": -1
+            },
+            "dovolstvo": 10
+          },
+          "newsLines": {
+            "state": "Британия выстоит: мы не позволим правозащитникам шантажировать нас",
+            "liberal": "Политическая изоляция ведет нас к экономическому краху"
+          }
+        },
+        {
+          "label": "Вернуться в юрисдикцию ЕСПЧ",
+          "removeStatuses": [
+            "uk_pariah_state"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 200
+            },
+            "dovolstvo": 0
+          },
+          "newsLines": {
+            "state": "Возврат в цивилизованный мир прошел успешно",
+            "liberal": "Очередной позорный разворот на 180 градусов"
           }
         }
       ]

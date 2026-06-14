@@ -5,13 +5,38 @@
       "id": "stroim_youtube",
       "speaker": "Молодой министр цифры",
       "situation": "Весь мир сидит без видеохостинга. Кто первый построит — у того вся реклама планеты!",
-      "requires": { "minSectors": { "science": 6, "smi": 5 } },
+      "requires": {
+        "minSectors": {
+          "science": 6,
+          "smi": 5
+        }
+      },
       "choices": [
         {
           "label": "Строим Первый YouTube",
-          "effects": { "resources": { "money": -400 }, "modifiers": { "special": { "buildWonder": "wonder_first_youtube" } } }
+          "effects": {
+            "resources": {
+              "money": -400
+            },
+            "modifiers": {
+              "special": {
+                "buildWonder": "wonder_first_youtube"
+              }
+            }
+          },
+          "newsLines": {
+            "state": "Национальная платформа — залог нашего информационного суверенитета",
+            "liberal": "Миллиарды распилены на лагающий клон западного сервиса"
+          }
         },
-        { "label": "Интернет — это мода", "effects": {} }
+        {
+          "label": "Интернет — это мода",
+          "effects": {},
+          "newsLines": {
+            "state": "Деньги налогоплательщиков спасены от бессмысленных проектов",
+            "liberal": "Мы продолжаем кормить иностранные монополии нашими данными"
+          }
+        }
       ],
       "weight": 2
     },
@@ -19,13 +44,37 @@
       "id": "stroim_aes",
       "speaker": "Седой академик",
       "situation": "Мирный атом, товарищ лидер. Дешёвая энергия. Ну, почти наверняка мирный.",
-      "requires": { "minSectors": { "science": 6 } },
+      "requires": {
+        "minSectors": {
+          "science": 6
+        }
+      },
       "choices": [
         {
           "label": "Строим Первую АЭС",
-          "effects": { "resources": { "money": -400 }, "modifiers": { "special": { "buildWonder": "wonder_first_aes" } } }
+          "effects": {
+            "resources": {
+              "money": -400
+            },
+            "modifiers": {
+              "special": {
+                "buildWonder": "wonder_first_aes"
+              }
+            }
+          },
+          "newsLines": {
+            "state": "Шаг в светлое будущее с надежным атомом",
+            "liberal": "Потенциальный Чернобыль в нашем заднем дворе"
+          }
         },
-        { "label": "Уголёк надёжнее", "effects": {} }
+        {
+          "label": "Уголёк надёжнее",
+          "effects": {},
+          "newsLines": {
+            "state": "Безопасность граждан важнее энергетических амбиций",
+            "liberal": "Прогресс остановлен ради поддержки грязного угольного лобби"
+          }
+        }
       ],
       "weight": 2
     },
@@ -33,13 +82,39 @@
       "id": "letim_na_lunu",
       "speaker": "Главный конструктор",
       "situation": "Соседи смотрят в небо. Если на Луне будет наш флаг — народ простит вам всё. Почти.",
-      "requires": { "minSectors": { "science": 8 } },
+      "requires": {
+        "minSectors": {
+          "science": 8
+        }
+      },
       "choices": [
         {
           "label": "Летим на Луну!",
-          "effects": { "resources": { "money": -600 }, "modifiers": { "special": { "buildWonder": "wonder_lunar_flight" } } }
+          "effects": {
+            "resources": {
+              "money": -600
+            },
+            "modifiers": {
+              "special": {
+                "buildWonder": "wonder_lunar_flight"
+              }
+            }
+          },
+          "newsLines": {
+            "state": "Исторический шаг: наш флаг теперь на Луне!",
+            "liberal": "Огромная трата денег на мертвый камень в космосе"
+          }
         },
-        { "label": "На Земле дел хватает", "effects": { "dovolstvo": -1 } }
+        {
+          "label": "На Земле дел хватает",
+          "effects": {
+            "dovolstvo": -1
+          },
+          "newsLines": {
+            "state": "Прагматичный отказ от дорогостоящего пиара",
+            "liberal": "Нация без мечты: мы остаемся на дне технологической эволюции"
+          }
+        }
       ],
       "weight": 2
     },
@@ -47,13 +122,37 @@
       "id": "stroim_ii",
       "speaker": "Стартапер в худи",
       "situation": "Дайте денег на Первый ИИ. Он заменит министров. Министры против, но они и должны быть против.",
-      "requires": { "minSectors": { "science": 9 } },
+      "requires": {
+        "minSectors": {
+          "science": 9
+        }
+      },
       "choices": [
         {
           "label": "Строим Первый ИИ",
-          "effects": { "resources": { "money": -700 }, "modifiers": { "special": { "buildWonder": "wonder_first_ai" } } }
+          "effects": {
+            "resources": {
+              "money": -700
+            },
+            "modifiers": {
+              "special": {
+                "buildWonder": "wonder_first_ai"
+              }
+            }
+          },
+          "newsLines": {
+            "state": "Наш Национальный ИИ станет самым умным в мире",
+            "liberal": "Алгоритм для слежки за гражданами и промывки мозгов"
+          }
         },
-        { "label": "Министры дешевле", "effects": {} }
+        {
+          "label": "Министры дешевле",
+          "effects": {},
+          "newsLines": {
+            "state": "Государственное управление должно оставаться в руках людей",
+            "liberal": "Отказ от технологий приведет к нашему отставанию навсегда"
+          }
+        }
       ],
       "weight": 2
     }

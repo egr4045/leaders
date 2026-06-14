@@ -1,0 +1,73 @@
+armenia am_premium_cognac_success 1: Пусть развиваются за свой счет
+russia ru_sanctions_hit 0: Запустить параллельный импорт
+russia ru_sanctions_hit 1: Опираться только на свои силы (Импортозамещение)
+russia ru_import_crisis 0: Ввести жесткий валютный контроль
+russia ru_import_crisis 1: Переключиться на китайских поставщиков
+russia ru_tech_sovereignty 0: Влить миллиарды в госзаказ
+russia ru_tech_sovereignty 1: Слишком дорого, купим у Азии
+russia ru_oligarchs_loyalty 0: Национализировать их активы!
+russia ru_oligarchs_loyalty 1: Предложить им налоговую амнистию
+russia ru_state_corp_inefficiency 0: Начать массовые посадки директоров
+russia ru_state_corp_inefficiency 1: Заливать убытки деньгами
+russia ru_capital_flight 0: Создать национальную криптобиржу под контролем ФСБ
+russia ru_capital_flight 1: Разорвать пакт и начать конфискации
+russia ru_demographics_drop 0: Увеличить Материнский Капитал
+russia ru_demographics_drop 1: Завезти миллионы мигрантов
+russia ru_migrant_crime 0: Ужесточить визовый режим и начать депортации
+russia ru_migrant_crime 1: Подавлять дружины, нам нужны рабочие руки
+russia ru_baby_boom 0: Развернуть мега-стройку инфраструктуры
+russia ru_baby_boom 1: Сэкономить, пусть учатся в три смены
+russia ru_gas_pivot 0: Строить 'Силу Сибири-2' в Китай
+russia ru_gas_pivot 1: Переориентироваться на внутреннюю газификацию
+russia ru_china_price 0: Согласиться, выбора нет
+russia ru_china_price 1: Заморозить стройку и шантажировать Азию
+russia ru_gas_boom 0: Дать регионам больше автономии и налогов
+russia ru_gas_boom 1: Забрать сверхдоходы в федеральный центр
+russia ru_internet_control 0: Включить 'Чебурнет' (изолированный интернет)
+russia ru_internet_control 1: Ограничиться блокировкой отдельных сервисов
+russia ru_it_brain_drain 0: Запретить выезд IT-специалистам!
+russia ru_it_brain_drain 1: Снять блокировки для 'своих' компаний
+russia ru_vpn_ban 0: Сажать за использование VPN
+russia ru_vpn_ban 1: Создать свои удобные аналоги сервисов
+uk uk_nhs_crisis 0: Поднять зарплаты на 20% (Огромный долг)
+uk uk_nhs_crisis 1: Ввести элементы платной медицины
+uk uk_health_tax 0: Повысить налоги
+uk uk_health_tax 1: Взять в долг, пусть платят дети
+uk uk_tax_protests 0: Ввести налог на богатство вместо этого
+uk uk_tax_protests 1: Подавить протесты полицией
+uk uk_scotland_ref 0: Разрешить референдум
+uk uk_scotland_ref 1: Отказать жестко (Это незаконно!)
+uk uk_scotland_leaves 0: Мирное расставание
+uk uk_scotland_leaves 1: Ввести войска в Эдинбург (Отменить итоги)
+uk uk_scot_border 0: Подписать договор о свободной торговле
+uk uk_scot_border 1: Ввести пошлины, пусть платят
+uk uk_trade_deal 0: Согласиться. Нам нужны деньги
+uk uk_trade_deal 1: Отказать. Британия не продается
+uk uk_us_buyout 0: Ввести закон о защите нац. интересов
+uk uk_us_buyout 1: Продолжать продавать активы
+uk uk_us_sanctions 0: Подать жалобу в ВТО
+uk uk_us_sanctions 1: Отменить закон
+uk uk_royal_scandal 0: Лишить его титулов и содержания
+uk uk_royal_scandal 1: Замять скандал, надавив на прессу
+uk uk_abolish_monarchy 0: Провести референдум о Монархии
+uk uk_abolish_monarchy 1: Корона священна! Подавить протесты
+uk uk_new_republic 0: Перейти к президентской республике
+uk uk_new_republic 1: Оставить парламентскую систему
+uk uk_channel_crisis 0: Отправлять их всех в Руанду!
+uk uk_channel_crisis 1: Упростить выдачу убежища
+uk uk_echr_exit 0: Выйти из ЕСПЧ и депортировать!
+uk uk_echr_exit 1: Подчиниться суду (Отменить план)
+uk uk_global_sanctions 0: Мы гордая независимая нация!
+uk uk_global_sanctions 1: Вернуться в юрисдикцию ЕСПЧ
+usa us_ai_regulation 1: Оставить алгоритмы в покое, свобода слова превыше всего
+usa us_crypto_bros 1: Никаких поблажек
+usa us_cartels 1: Это проблема местных властей
+usa us_space_force 1: Космос должен быть мирным
+null stroim_youtube 0: Строим Первый YouTube
+null stroim_youtube 1: Интернет — это мода
+null stroim_aes 0: Строим Первую АЭС
+null stroim_aes 1: Уголёк надёжнее
+null letim_na_lunu 0: Летим на Луну!
+null letim_na_lunu 1: На Земле дел хватает
+null stroim_ii 0: Строим Первый ИИ
+null stroim_ii 1: Министры дешевле

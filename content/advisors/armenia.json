@@ -2,90 +2,693 @@
   "country": "armenia",
   "cards": [
     {
-      "id": "am_diaspora",
-      "speaker": "Представитель Диаспоры",
-      "situation": "Ахпер джан, мы собрали фонды в Калифорнии и Париже. Куда перевести деньги?",
-      "requires": {
-        "statuses": [
-          "diaspora"
-        ]
-      },
+      "id": "am_it_arrival",
+      "speaker": "Мэр Еревана",
+      "situation": "В страну хлынули десятки тысяч айтишников-релокантов. Цены на аренду жилья улетели в космос.",
       "weight": 1,
       "choices": [
         {
-          "label": "Отправить на строительство дорог! [СМИ: Инфраструктура обновляется]",
+          "label": "Ввести налоговые льготы для IT-компаний",
+          "addStatuses": [
+            "am_it_hub"
+          ],
           "effects": {
             "resources": {
               "money": 1500
             },
             "sectors": {
-              "economy": 1
-            }
+              "science": 1
+            },
+            "dovolstvo": 2
+          },
+          "newsLines": {
+            "state": "Армения становится Силиконовой Долиной Кавказа",
+            "liberal": "Местные жители не могут снять квартиру"
           }
         },
         {
-          "label": "Потратить на праздник! Шашлык всем! [СМИ: Народ гуляет до утра]",
+          "label": "Ограничить въезд и повысить налоги нерезидентам",
+          "addStatuses": [
+            "am_it_left"
+          ],
           "effects": {
-            "dovolstvo": 30
+            "resources": {
+              "money": 0
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 17
+          },
+          "newsLines": {
+            "state": "Защита рынка жилья для граждан",
+            "liberal": "Мы упустили исторический шанс"
           }
         }
       ]
     },
     {
-      "id": "am_nardy",
-      "speaker": "Чемпион по Нардам",
-      "situation": "Назревает дипломатический конфликт с соседями. Я предлагаю решить его броском зар.",
+      "id": "am_it_hub_crisis",
+      "speaker": "Глава Центробанка",
+      "situation": "Из-за притока валюты от айтишников драм сильно укрепился. Наши экспортеры разоряются!",
       "requires": {
         "statuses": [
-          "nardy"
+          "am_it_hub"
         ]
       },
       "weight": 1,
       "choices": [
         {
-          "label": "Выпускайте мастера! Шеш-Беш! [СМИ: Спор разрешен за игровой доской]",
+          "label": "Искусственно ослабить драм (интервенции)",
+          "addStatuses": [
+            "am_export_saved"
+          ],
+          "effects": {
+            "resources": {
+              "money": -500
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "modifiers": {
+              "inflationDelta": 0.05
+            },
+            "dovolstvo": 2
+          },
+          "newsLines": {
+            "state": "ЦБ поддерживает отечественного производителя",
+            "liberal": "Опасные игры с валютным курсом"
+          }
+        },
+        {
+          "label": "Ничего не делать, рынок сам разберется",
+          "addStatuses": [
+            "am_export_crisis"
+          ],
+          "effects": {
+            "resources": {
+              "money": 1000
+            },
+            "sectors": {
+              "economy": -1
+            },
+            "dovolstvo": -8
+          },
+          "newsLines": {
+            "state": "Крепкая валюта - признак стабильности",
+            "liberal": "Экспорт встал, фабрики закрываются"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_it_citizenship",
+      "speaker": "Министр Юстиции",
+      "situation": "Релоканты просят упростить получение гражданства. Националисты против.",
+      "requires": {
+        "statuses": [
+          "am_it_hub"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Выдавать паспорта за инвестиции",
+          "effects": {
+            "resources": {
+              "money": 2000,
+              "influence": -50
+            },
+            "dovolstvo": 2
+          },
+          "newsLines": {
+            "state": "Новые граждане укрепляют экономику",
+            "liberal": "Паспорта продаются как горячие пирожки"
+          }
+        },
+        {
+          "label": "Отказать. Гражданство нужно заслужить",
           "effects": {
             "resources": {
               "influence": 150
             },
-            "dovolstvo": 10
-          }
-        },
-        {
-          "label": "Мы проиграли партию... Придется уступить. [СМИ: Дипломатическое фиаско]",
-          "effects": {
-            "resources": {
-              "influence": -100
+            "sectors": {
+              "science": 1
             },
-            "dovolstvo": -10
+            "dovolstvo": 12
+          },
+          "newsLines": {
+            "state": "Национальные интересы превыше всего",
+            "liberal": "Релоканты начинают уезжать"
           }
         }
       ]
     },
     {
-      "id": "am_radio",
-      "speaker": "Ведущий Армянского Радио",
-      "situation": "Нас спрашивают: 'Правда ли, что экономика падает?'",
+      "id": "am_diaspora_fund",
+      "speaker": "Представитель Диаспоры",
+      "situation": "Диаспора в США и Франции собрала огромный фонд. Они хотят инвестировать, но требуют мест в правительстве.",
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Дать им министерские кресла",
+          "addStatuses": [
+            "am_diaspora_in_power"
+          ],
+          "effects": {
+            "resources": {
+              "money": 2500,
+              "influence": 50
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 7
+          },
+          "newsLines": {
+            "state": "Единство нации по всему миру",
+            "liberal": "Страной управляют люди с чужими паспортами"
+          }
+        },
+        {
+          "label": "Взять только деньги, власть не отдадим",
+          "addStatuses": [
+            "am_diaspora_angry"
+          ],
+          "effects": {
+            "resources": {
+              "money": 500,
+              "influence": 150
+            },
+            "dovolstvo": 7
+          },
+          "newsLines": {
+            "state": "Суверенитет не продается",
+            "liberal": "Мы отвернулись от своих же братьев"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_diaspora_scandal",
+      "speaker": "Журналист-расследователь",
+      "situation": "Министры из диаспоры замешаны в отмывании денег через благотворительные фонды!",
       "requires": {
         "statuses": [
-          "radio_erevan"
+          "am_diaspora_in_power"
         ]
       },
       "weight": 1,
       "choices": [
         {
-          "label": "Ответить шуткой! [СМИ: Армянское радио снова жжет глаголом]",
+          "label": "Замять скандал, они нам нужны",
+          "addStatuses": [
+            "am_corruption_high"
+          ],
           "effects": {
+            "resources": {
+              "influence": -50
+            },
+            "dovolstvo": -8,
             "sectors": {
               "smi": 1
-            },
-            "dovolstvo": 15
+            }
+          },
+          "newsLines": {
+            "state": "Атака на правительство отражена",
+            "liberal": "Коррупция процветает открыто"
           }
         },
         {
-          "label": "Ответить честно [СМИ: Унылые новости огорчают граждан]",
+          "label": "Громко уволить и посадить",
+          "addStatuses": [
+            "am_diaspora_angry"
+          ],
           "effects": {
-            "dovolstvo": -10
+            "resources": {
+              "influence": 200,
+              "money": 0
+            },
+            "dovolstvo": 12,
+            "sectors": {
+              "smi": 1
+            }
+          },
+          "newsLines": {
+            "state": "Закон един для всех",
+            "liberal": "Политическая чистка или борьба за справедливость?"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_diaspora_boycott",
+      "speaker": "Министр Финансов",
+      "situation": "Диаспора обиделась и призывает бойкотировать наши товары за рубежом.",
+      "requires": {
+        "statuses": [
+          "am_diaspora_angry"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Извиниться на высшем уровне",
+          "removeStatuses": [
+            "am_diaspora_angry"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 0
+            },
+            "dovolstvo": 2
+          },
+          "newsLines": {
+            "state": "Примирение ради будущего",
+            "liberal": "Унизительное покаяние"
+          }
+        },
+        {
+          "label": "Справимся без них! Искать новые рынки",
+          "addStatuses": [
+            "am_self_reliant"
+          ],
+          "effects": {
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 12
+          },
+          "newsLines": {
+            "state": "Курс на опору на собственные силы",
+            "liberal": "Спад экспорта из-за ссоры со своими"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_border_tensions",
+      "speaker": "Министр Обороны",
+      "situation": "На границе участились перестрелки. Соседи стягивают войска. Нам нужны союзники.",
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Просить помощи у традиционного северного союзника",
+          "addStatuses": [
+            "am_north_ally"
+          ],
+          "effects": {
+            "resources": {
+              "influence": -50
+            },
+            "sectors": {
+              "army": 2
+            },
+            "dovolstvo": 7
+          },
+          "newsLines": {
+            "state": "Старые друзья пришли на помощь",
+            "liberal": "Мы теряем суверенитет"
+          }
+        },
+        {
+          "label": "Искать поддержки на Западе (Франция, США)",
+          "addStatuses": [
+            "am_west_ally"
+          ],
+          "effects": {
+            "resources": {
+              "money": 500
+            },
+            "sectors": {
+              "intel": 1
+            },
+            "dovolstvo": 17
+          },
+          "newsLines": {
+            "state": "Новый вектор внешней политики",
+            "liberal": "Опасная геополитическая игра"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_north_betrayal",
+      "speaker": "Посол",
+      "situation": "Северный союзник занят своими делами и не реагирует на наши просьбы о поставках оружия.",
+      "requires": {
+        "statuses": [
+          "am_north_ally"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Сделать резкое заявление и выйти из союза!",
+          "removeStatuses": [
+            "am_north_ally"
+          ],
+          "addStatuses": [
+            "am_isolated"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 150
+            },
+            "sectors": {
+              "army": -1
+            },
+            "dovolstvo": 2
+          },
+          "newsLines": {
+            "state": "Исторический разворот",
+            "liberal": "Мы остались один на один с врагом"
+          }
+        },
+        {
+          "label": "Продолжать унизительно просить",
+          "effects": {
+            "resources": {
+              "influence": -50
+            },
+            "dovolstvo": -8
+          },
+          "newsLines": {
+            "state": "Сложные дипломатические маневры",
+            "liberal": "Предательство интересов нации"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_west_weapons",
+      "speaker": "Министр Обороны",
+      "situation": "Франция предлагает продать нам современные радары и броневики, но это разозлит Север.",
+      "requires": {
+        "statuses": [
+          "am_west_ally"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Купить французское оружие",
+          "addStatuses": [
+            "am_modern_army"
+          ],
+          "effects": {
+            "resources": {
+              "money": -1000
+            },
+            "sectors": {
+              "army": 2
+            },
+            "dovolstvo": 17
+          },
+          "newsLines": {
+            "state": "Армия переходит на стандарты НАТО",
+            "liberal": "Риск ответных санкций с Севера"
+          }
+        },
+        {
+          "label": "Отказаться, чтобы не дразнить соседей",
+          "effects": {
+            "resources": {
+              "influence": -50
+            },
+            "sectors": {
+              "army": 1
+            },
+            "dovolstvo": -3
+          },
+          "newsLines": {
+            "state": "Осторожность — залог выживания",
+            "liberal": "Мы упустили шанс усилить оборону"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_cognac_export",
+      "speaker": "Глава Союза Виноделов",
+      "situation": "Основной рынок сбыта нашего коньяка грозит ввести новые пошлины. Что делать с продукцией?",
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Снизить цены, чтобы сохранить долю рынка",
+          "addStatuses": [
+            "am_cheap_cognac"
+          ],
+          "effects": {
+            "resources": {
+              "money": 0
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 2
+          },
+          "newsLines": {
+            "state": "Заводы продолжают работать",
+            "liberal": "Мы продаем нашу гордость за бесценок"
+          }
+        },
+        {
+          "label": "Переориентироваться на новые премиальные рынки",
+          "addStatuses": [
+            "am_premium_cognac"
+          ],
+          "effects": {
+            "resources": {
+              "money": -500
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 17
+          },
+          "newsLines": {
+            "state": "Выход на европейские рынки",
+            "liberal": "Сложный переходный период для фермеров"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_cheap_cognac_scandal",
+      "speaker": "Роспотреб... Иностранный Регулятор",
+      "situation": "Наш коньяк признали подделкой в стране назначения! Это удар по репутации всей отрасли.",
+      "requires": {
+        "statuses": [
+          "am_cheap_cognac"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Жестко наказать бракоделов",
+          "addStatuses": [
+            "am_cognac_regulated"
+          ],
+          "effects": {
+            "resources": {
+              "influence": 0
+            },
+            "sectors": {
+              "economy": -1
+            },
+            "dovolstvo": 17
+          },
+          "newsLines": {
+            "state": "Очищение рынка от контрафакта",
+            "liberal": "Многие заводы обанкротятся"
+          }
+        },
+        {
+          "label": "Списать на политическое давление",
+          "effects": {
+            "resources": {
+              "influence": 150
+            },
+            "dovolstvo": 2
+          },
+          "newsLines": {
+            "state": "Недобросовестная конкуренция из-за рубежа",
+            "liberal": "Отрицание очевидных проблем качества"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_premium_cognac_success",
+      "speaker": "Глава Союза Виноделов",
+      "situation": "Наш премиальный бренд взял золото в Париже! Мы можем расширить производство.",
+      "requires": {
+        "statuses": [
+          "am_premium_cognac"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Дать госгарантии под новые виноградники",
+          "effects": {
+            "resources": {
+              "money": 0
+            },
+            "sectors": {
+              "economy": 2
+            },
+            "dovolstvo": 22
+          },
+          "newsLines": {
+            "state": "Золотая эра армянского коньяка",
+            "liberal": "Инвестиции в перспективную отрасль"
+          }
+        },
+        {
+          "label": "Пусть развиваются за свой счет",
+          "effects": {
+            "resources": {
+              "money": 500,
+              "influence": 50
+            },
+            "dovolstvo": 7
+          },
+          "newsLines": {
+            "state": "Вместо субсидий мы поддержим другие, более важные отрасли",
+            "liberal": "Отказ от развития успешного бренда лишает страну экспортной выручки"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_yerevan_traffic",
+      "speaker": "Мэр Еревана",
+      "situation": "Город стоит в мертвых пробках. Дышать нечем, люди опаздывают на работу.",
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Закупить сотни новых автобусов",
+          "addStatuses": [
+            "am_new_buses"
+          ],
+          "effects": {
+            "resources": {
+              "money": -1000
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 22
+          },
+          "newsLines": {
+            "state": "Масштабная реформа общественного транспорта",
+            "liberal": "Многомиллионные контракты без конкурса"
+          }
+        },
+        {
+          "label": "Убрать выделенные полосы, пусть все едут",
+          "addStatuses": [
+            "am_car_chaos"
+          ],
+          "effects": {
+            "sectors": {
+              "economy": -1
+            },
+            "dovolstvo": 7
+          },
+          "newsLines": {
+            "state": "Власти пошли навстречу автомобилистам",
+            "liberal": "Город окончательно превратился в парковку"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_bus_strike",
+      "speaker": "Водители Маршруток",
+      "situation": "Из-за новых автобусов частные маршрутчики теряют работу. Они перекрыли главные улицы!",
+      "requires": {
+        "statuses": [
+          "am_new_buses"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Разогнать силой и лишить лицензий",
+          "addStatuses": [
+            "am_transport_monopoly"
+          ],
+          "effects": {
+            "resources": {
+              "influence": -50
+            },
+            "sectors": {
+              "economy": 1
+            },
+            "dovolstvo": 2
+          },
+          "newsLines": {
+            "state": "Конец мафии маршрутчиков",
+            "liberal": "Тысячи людей остались без работы"
+          }
+        },
+        {
+          "label": "Трудоустроить их в госкомпанию с двойной зарплатой",
+          "effects": {
+            "resources": {
+              "money": -500
+            },
+            "dovolstvo": 22
+          },
+          "newsLines": {
+            "state": "Социальный компромисс найден",
+            "liberal": "Огромная нагрузка на городской бюджет"
+          }
+        }
+      ]
+    },
+    {
+      "id": "am_smog_crisis",
+      "speaker": "Министр Экологии",
+      "situation": "Из-за огромного количества машин над городом повис токсичный смог. Больницы переполнены.",
+      "requires": {
+        "statuses": [
+          "am_car_chaos"
+        ]
+      },
+      "weight": 1,
+      "choices": [
+        {
+          "label": "Ввести платный въезд в центр",
+          "addStatuses": [
+            "am_paid_parking"
+          ],
+          "effects": {
+            "resources": {
+              "money": 1000,
+              "influence": -100
+            },
+            "dovolstvo": -18
+          },
+          "newsLines": {
+            "state": "Непопулярные, но необходимые меры",
+            "liberal": "Очередной налог на бедных"
+          }
+        },
+        {
+          "label": "Посоветовать всем носить маски",
+          "effects": {
+            "sectors": {
+              "science": 1
+            },
+            "dovolstvo": -8
+          },
+          "newsLines": {
+            "state": "Минздрав предупреждает",
+            "liberal": "Экологическая катастрофа в столице"
           }
         }
       ]

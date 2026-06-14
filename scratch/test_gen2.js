@@ -837,708 +837,721 @@ const decks = {
     }
   ],
   india: [
+    // Chain 1: Tech & Scams
     {
-      id: "in_ayodhya_temple",
-      speaker: "Лидер Правящей Партии",
-      situation: "Мы готовы открыть грандиозный индуистский храм на месте исторической мечети. Это сплотит нацию.",
+      id: "in_call_centers",
+      speaker: "Министр IT",
+      situation: "Наши колл-центры приносят миллиарды, но в мире мы ассоциируемся с телефонными мошенниками.",
       weight: 1,
       choices: [
-        { label: "Открыть храм с размахом! Национальная гордость!", addStatuses: ["in_hindu_nationalism"], effects: { sectors: { smi: 2 }, dovolstvo: 20 }, newsLines: { state: "Историческая справедливость восстановлена", liberal: "Светский характер государства под угрозой" } },
-        { label: "Отложить церемонию, чтобы не злить меньшинства", effects: { resources: { influence: -100 }, dovolstvo: -15 }, newsLines: { state: "Осторожность важнее амбиций", liberal: "Правительство проявило благоразумие" } }
+        { label: "Жестко зачистить скамеров силами полиции", addStatuses: ["in_tech_clean"], effects: { resources: { influence: 100, money: -500 }, sectors: { economy: -1 } } },
+        { label: "Не трогать их, это рабочие места", addStatuses: ["in_scam_hub"], effects: { resources: { money: 500, influence: -150 } } }
       ]
     },
     {
-      id: "in_minority_protests",
-      speaker: "Министр Внутренних Дел",
-      situation: "Новый закон о гражданстве вызвал массовые протесты мусульманского меньшинства.",
-      requires: { statuses: ["in_hindu_nationalism"] },
+      id: "in_ai_replacement",
+      speaker: "CEO IT-корпорации",
+      situation: "ИИ начинает заменять операторов колл-центров. Миллионы могут потерять работу.",
+      requires: { statuses: ["in_scam_hub"] },
       weight: 1,
       choices: [
-        { label: "Подавить протесты железной рукой", effects: { sectors: { intel: 2, army: 1 }, dovolstvo: -10 }, newsLines: { state: "Порядок на улицах восстановлен", liberal: "Жестокость полиции не знает границ" } },
-        { label: "Пойти на уступки и смягчить закон", removeStatuses: ["in_hindu_nationalism"], effects: { sectors: { intel: -1 }, dovolstvo: 15 }, newsLines: { state: "Демократия и диалог победили", liberal: "Власть испугалась собственного народа" } }
+        { label: "Ввести налог на ИИ и субсидировать зарплаты", effects: { resources: { money: -1000 }, dovolstvo: 20 } },
+        { label: "Пусть переучиваются на программистов", addStatuses: ["in_ai_hub"], effects: { sectors: { science: 1 }, dovolstvo: -20 } }
       ]
     },
     {
-      id: "in_dalit_quota",
-      speaker: "Министр Образования",
-      situation: "Низшие касты (далиты) требуют увеличить для них квоты в университетах и на госслужбе.",
+      id: "in_global_tech",
+      speaker: "Глава диаспоры в США",
+      situation: "Наши очищенные IT-компании готовы покупать стартапы в Кремниевой Долине.",
+      requires: { statuses: ["in_tech_clean"] },
       weight: 1,
       choices: [
-        { label: "Увеличить квоты. Это социальная справедливость", addStatuses: ["in_caste_conflict"], effects: { sectors: { economy: -1 }, dovolstvo: 10 }, newsLines: { state: "Шаг к равенству для всех каст", liberal: "Умные студенты не могут поступить из-за квот" } },
-        { label: "Отменить квоты! Только меритократия", effects: { sectors: { science: 1 }, dovolstvo: -30 }, newsLines: { state: "Талант важнее происхождения", liberal: "Миллионы людей лишены социального лифта" } }
+        { label: "Выделить гос. кредиты на экспансию", effects: { resources: { money: -1500 }, sectors: { economy: 2, science: 1 }, dovolstvo: 10 } },
+        { label: "Деньги нужны внутри страны", effects: { resources: { money: 500 } } }
+      ]
+    },
+
+    // Chain 2: Bollywood vs Censorship
+    {
+      id: "in_bollywood_blockbuster",
+      speaker: "Продюсер Болливуда",
+      situation: "Новый фильм бьет все рекорды, но радикалы считают, что он оскорбляет религию.",
+      weight: 1,
+      choices: [
+        { label: "Запретить показ ради спокойствия", addStatuses: ["in_censorship"], effects: { sectors: { economy: -1 }, dovolstvo: -10, resources: { influence: 100 } } },
+        { label: "Защитить кинотеатры полицией", addStatuses: ["in_free_cinema"], effects: { sectors: { smi: 1 }, dovolstvo: 10, resources: { influence: -150 } } }
       ]
     },
     {
-      id: "in_caste_riots",
-      speaker: "Глава Полиции",
-      situation: "Из-за споров о квотах начались столкновения между студентами разных каст. Жгут автобусы.",
-      requires: { statuses: ["in_caste_conflict"] },
+      id: "in_radical_riots",
+      speaker: "Начальник Полиции",
+      situation: "Радикалы вышли на улицы из-за фильма. Горят автобусы.",
+      requires: { statuses: ["in_free_cinema"] },
       weight: 1,
       choices: [
-        { label: "Ввести комендантский час и отключить интернет", effects: { sectors: { intel: 1, economy: -1 }, dovolstvo: -20 }, newsLines: { state: "Цифровая блокада ради безопасности", liberal: "Нарушение базовых прав человека" } },
-        { label: "Заплатить компенсации всем пострадавшим", removeStatuses: ["in_caste_conflict"], effects: { resources: { money: -1500 }, dovolstvo: 20 }, newsLines: { state: "Щедрость правительства успокоила толпу", liberal: "Деньги налогоплательщиков потрачены на усмирение бунтовщиков" } }
+        { label: "Подавить протесты силой", effects: { sectors: { army: 1 }, dovolstvo: -20, resources: { influence: -100 } } },
+        { label: "Снять фильм с проката", removeStatuses: ["in_free_cinema"], addStatuses: ["in_censorship"], effects: { sectors: { economy: -1, smi: -1 }, dovolstvo: 15 } }
       ]
     },
     {
-      id: "in_ai_outsourcing",
-      speaker: "Глава IT-Корпорации",
-      situation: "Западные компании всё чаще используют ИИ вместо наших дешевых программистов. Мы теряем контракты.",
-      requires: { statuses: ["it_kasty"] },
+      id: "in_hollywood_deal",
+      speaker: "Продюсер Болливуда",
+      situation: "Голливуд хочет снимать копродукцию, но требует снять цензуру.",
+      requires: { statuses: ["in_censorship"] },
       weight: 1,
       choices: [
-        { label: "Влить миллиарды в обучение своих ИИ-моделей", effects: { resources: { money: -2500 }, sectors: { science: 2, economy: 1 }, dovolstvo: 10 }, newsLines: { state: "Индия становится супердержавой искусственного интеллекта", liberal: "Огромные траты без гарантии успеха" } },
-        { label: "Демпинговать цены! Пусть наши кодеры работают за еду", effects: { sectors: { economy: 1 }, dovolstvo: -25 }, newsLines: { state: "Наши услуги остаются самыми конкурентоспособными", liberal: "Цифровое рабство и потогонки" } }
+        { label: "Снять цензурные ограничения", removeStatuses: ["in_censorship"], addStatuses: ["in_global_cinema"], effects: { resources: { money: 1000 }, sectors: { smi: 2 }, dovolstvo: 15 } },
+        { label: "Наши традиции важнее долларов", effects: { resources: { influence: 200 }, dovolstvo: 5 } }
       ]
     },
+
+    // Chain 3: Space Program
     {
-      id: "in_chandrayaan_moon",
-      speaker: "Глава Космического Агентства",
-      situation: "Мы готовы посадить луноход на южный полюс Луны. Бюджет миссии меньше, чем у фильма в Голливуде.",
+      id: "in_moon_landing",
+      speaker: "Директор ISRO",
+      situation: "Мы можем посадить ровер на Южный полюс Луны первыми в мире! Нужны средства.",
       weight: 1,
       choices: [
-        { label: "Запуск! Это докажет величие Индии", addStatuses: ["in_space_power"], effects: { resources: { money: -500, influence: 300 }, sectors: { science: 2 }, dovolstvo: 25 }, newsLines: { state: "Исторический триумф индийской науки!", liberal: "В стране нет туалетов, зато мы на Луне" } },
-        { label: "Отменить запуск, раздать деньги бедным", effects: { resources: { money: -500 }, dovolstvo: 15, sectors: { science: -1 } }, newsLines: { state: "Забота о гражданах важнее космоса", liberal: "Мы навсегда отстали в технологической гонке" } }
+        { label: "Выделить бюджет! Это престиж нации", addStatuses: ["in_space_power"], effects: { resources: { money: -1000, influence: 300 }, sectors: { science: 1 } } },
+        { label: "У нас люди недоедают, какой космос?", effects: { resources: { money: 500 }, dovolstvo: 10, sectors: { science: -1 } } }
       ]
     },
     {
       id: "in_mars_mission",
-      speaker: "Главный Конструктор",
-      situation: "После успеха на Луне, Китай планирует миссию на Марс. Мы должны обогнать их!",
+      speaker: "Директор ISRO",
+      situation: "После Луны мы готовы лететь на Марс. Это обойдется еще дороже.",
       requires: { statuses: ["in_space_power"] },
       weight: 1,
       choices: [
-        { label: "Выделить огромный бюджет на полет к Марсу", effects: { resources: { money: -3000, influence: 400 }, sectors: { science: 3 }, dovolstvo: 10 }, newsLines: { state: "Индия устремляется к звездам", liberal: "Космическая гонка истощает экономику" } },
-        { label: "Сотрудничать с США для удешевления миссии", effects: { resources: { influence: -100 }, sectors: { science: 1 } }, newsLines: { state: "Прагматичное партнерство с NASA", liberal: "Мы отдаем наши секреты американцам" } }
+        { label: "Летим на Марс!", addStatuses: ["in_mars_power"], effects: { resources: { money: -2000, influence: 400 }, sectors: { science: 2 } } },
+        { label: "Приостановить программу, денег нет", removeStatuses: ["in_space_power"], effects: { dovolstvo: -15 } }
       ]
     },
     {
-      id: "in_kashmir_skirmish",
-      speaker: "Командир Погранвойск",
-      situation: "Артиллерийская дуэль в Кашмире. Соседняя страна обвиняет нас в агрессии.",
+      id: "in_space_commercial",
+      speaker: "Глава ISRO",
+      situation: "Мы можем зарабатывать миллиарды, запуская спутники для других стран.",
+      requires: { statuses: ["in_mars_power"] },
       weight: 1,
       choices: [
-        { label: "Ответить массированным ударом! Ни шагу назад", addStatuses: ["in_pakistan_tension"], effects: { resources: { influence: -100 }, sectors: { army: 2 }, dovolstvo: 15 }, newsLines: { state: "Врагу дан жесткий отпор", liberal: "Риск ядерной войны в регионе" } },
-        { label: "Пригласить ООН для деэскалации", effects: { resources: { influence: -200 }, sectors: { army: -1 }, dovolstvo: -10 }, newsLines: { state: "Мирное решение конфликта", liberal: "Слабость перед лицом врага" } }
+        { label: "Открыть космодромы для коммерции", effects: { resources: { money: 3000 }, sectors: { economy: 2 }, dovolstvo: 10 } },
+        { label: "Космос только для государственных нужд", effects: { resources: { influence: 200 } } }
       ]
     },
+
+    // Chain 4: Agriculture
     {
-      id: "in_nuclear_threat",
-      speaker: "Министр Обороны",
-      situation: "Напряженность достигла пика. Соседи привели в готовность тактическое ядерное оружие.",
-      requires: { statuses: ["in_pakistan_tension"] },
+      id: "in_farmer_subsidies",
+      speaker: "Министр Сельского Хозяйства",
+      situation: "Фермеры требуют повысить закупочные цены. Бюджет трещит по швам.",
       weight: 1,
       choices: [
-        { label: "Привести в готовность наши ракеты (Взаимное гарантированное уничтожение)", effects: { sectors: { army: 3, intel: 1 }, dovolstvo: -30, resources: { influence: -300 } }, newsLines: { state: "Мы готовы защитить себя любой ценой", liberal: "Мир в пяти минутах от Армагеддона" } },
-        { label: "Инициировать прямые переговоры лидеров", removeStatuses: ["in_pakistan_tension"], effects: { resources: { influence: 200 }, dovolstvo: 20 }, newsLines: { state: "Историческое рукопожатие отвело угрозу", liberal: "Разум восторжествовал над гордыней" } }
-      ]
-    },
-    {
-      id: "in_russian_oil",
-      speaker: "Министр Энергетики",
-      situation: "Запад ввел санкции против нефти, но мы можем скупать её с огромной скидкой.",
-      weight: 1,
-      choices: [
-        { label: "Покупать всё! Нам нужна энергия", effects: { resources: { money: 2500, influence: -150 }, sectors: { economy: 2 }, dovolstvo: 15 }, newsLines: { state: "Блестящая экономическая дипломатия", liberal: "Индия спонсирует чужие войны" } },
-        { label: "Поддержать санкции Запада", effects: { resources: { influence: 200 }, sectors: { economy: -2 }, dovolstvo: -20 }, newsLines: { state: "Мы на правильной стороне истории", liberal: "Цены на бензин взлетели в небеса" } }
+        { label: "Повысить цены и выдать субсидии", addStatuses: ["in_farmers_happy"], effects: { resources: { money: -1500, food: 500 }, dovolstvo: 25 } },
+        { label: "Отказать и разрешить корпорациям скупать земли", addStatuses: ["in_corp_farming"], effects: { resources: { money: 1000 }, sectors: { economy: 1 }, dovolstvo: -20 } }
       ]
     },
     {
       id: "in_farmer_protests",
-      speaker: "Глава Профсоюза Фермеров",
-      situation: "Миллионы фермеров на тракторах перекрыли дороги в Дели из-за новых аграрных законов.",
-      requires: { statuses: ["overpopulation"] },
+      speaker: "Лидер Профсоюза",
+      situation: "Миллионы фермеров идут маршем на столицу на тракторах! Они против корпораций.",
+      requires: { statuses: ["in_corp_farming"] },
       weight: 1,
       choices: [
-        { label: "Отменить реформы, субсидировать сельское хозяйство", effects: { resources: { money: -2000 }, sectors: { economy: -1 }, dovolstvo: 25 }, newsLines: { state: "Фермеры — кормильцы нации", liberal: "Необходимые реформы отложены на десятилетия" } },
-        { label: "Не уступать! Пусть бастуют", effects: { sectors: { economy: 1 }, dovolstvo: -40 }, newsLines: { state: "Закон един для всех", liberal: "Столица парализована, продукты гниют" } }
+        { label: "Отменить реформы и сдаться", removeStatuses: ["in_corp_farming"], addStatuses: ["in_farmers_happy"], effects: { resources: { money: -2000 }, sectors: { economy: -1 }, dovolstvo: 30 } },
+        { label: "Перекрыть дороги и подавить бунт", effects: { resources: { food: -500 }, sectors: { army: 1 }, dovolstvo: -40 } }
       ]
     },
     {
-      id: "in_make_in_india",
-      speaker: "Министр Торговли",
-      situation: "Apple хочет перенести сборку iPhone из Китая к нам. Нужно дать им льготы.",
+      id: "in_green_revolution",
+      speaker: "Ученый-Агроном",
+      situation: "Довольные фермеры готовы внедрять новые технологии ГМО, но нужны гранты.",
+      requires: { statuses: ["in_farmers_happy"] },
       weight: 1,
       choices: [
-        { label: "Обеспечить им бесплатную землю и отсутствие налогов!", effects: { resources: { money: -1000 }, sectors: { economy: 2, science: 1 }, dovolstvo: 15 }, newsLines: { state: "Программа 'Make in India' работает!", liberal: "Транснациональные корпорации грабят страну" } },
-        { label: "Пусть платят налоги как все местные компании", effects: { resources: { money: 500 }, sectors: { economy: -1 }, dovolstvo: -5 }, newsLines: { state: "Равные условия для бизнеса", liberal: "Apple переносит заводы во Вьетнам" } }
+        { label: "Профинансировать ГМО-революцию", effects: { resources: { money: -1000, food: 2000 }, sectors: { science: 2 }, dovolstvo: 15 } },
+        { label: "Оставить традиционное земледелие", effects: { resources: { food: 200 } } }
+      ]
+    },
+
+    // Chain 5: Kashmir
+    {
+      id: "in_kashmir_skirmish",
+      speaker: "Министр Обороны",
+      situation: "Очередная перестрелка на границе. Соседи обвиняют нас.",
+      weight: 1,
+      choices: [
+        { label: "Ответить массированным авиаударом!", addStatuses: ["in_border_war"], effects: { resources: { money: -500 }, sectors: { army: 2 }, dovolstvo: 15 } },
+        { label: "Начать мирные переговоры", addStatuses: ["in_peace_talks"], effects: { resources: { influence: 150 }, sectors: { army: -1 }, dovolstvo: -10 } }
       ]
     },
     {
-      id: "in_rrr_oscars",
-      speaker: "Режиссер Болливуда",
-      situation: "Наш эпический блокбастер с танцами и тиграми выиграл Оскар! Мягкая сила на подъеме.",
-      requires: { statuses: ["bollywood"] },
+      id: "in_arms_race",
+      speaker: "Генерал",
+      situation: "Из-за конфликта на границе нам нужно срочно закупить системы ПВО.",
+      requires: { statuses: ["in_border_war"] },
       weight: 1,
       choices: [
-        { label: "Вложить миллиард в продвижение индийского кино по миру", effects: { resources: { money: -1000, influence: 300 }, sectors: { smi: 2 }, dovolstvo: 20 }, newsLines: { state: "Индийская культура покоряет планету", liberal: "Кино важнее, чем чистая вода?" } },
-        { label: "Запретить западным критикам обсуждать наши фильмы", effects: { sectors: { smi: -1 }, dovolstvo: -10 } }
+        { label: "Закупить ПВО у России", effects: { resources: { money: -1500, influence: -100 }, sectors: { army: 1 } } },
+        { label: "Закупить ПВО у США", effects: { resources: { money: -2000, influence: 100 }, sectors: { army: 1 } } }
       ]
     },
     {
-      id: "in_delhi_smog",
-      speaker: "Министр Экологии",
-      situation: "Смог в Дели такой густой, что не видно солнца. Люди задыхаются.",
+      id: "in_kashmir_resolution",
+      speaker: "Дипломат",
+      situation: "Благодаря переговорам мы можем подписать исторический пакт о демилитаризации.",
+      requires: { statuses: ["in_peace_talks"] },
       weight: 1,
       choices: [
-        { label: "Запретить сжигание стерни на полях и старые авто", effects: { sectors: { economy: -1 }, dovolstvo: -25 }, newsLines: { state: "Радикальные меры для чистого неба", liberal: "Фермеры и таксисты остались без средств к существованию" } },
-        { label: "Раздать всем маски, это скоро пройдет само", effects: { resources: { money: -200 }, dovolstvo: 5 }, newsLines: { state: "Сезонное явление, причин для паники нет", liberal: "Экологическая катастрофа в столице" } }
-      ]
-    },
-    {
-      id: "in_cow_vigilantes",
-      speaker: "Лидер Радикалов",
-      situation: "Священные коровы! Наши отряды проверяют грузовики на трассах и линчуют тех, кто везет говядину.",
-      weight: 1,
-      choices: [
-        { label: "Священную корову нужно защищать! Закрыть глаза на самосуд", effects: { sectors: { intel: -2 }, dovolstvo: -15, resources: { influence: -150 } }, newsLines: { state: "Традиции предков неприкосновенны", liberal: "Страна скатывается в религиозное средневековье" } },
-        { label: "Арестовать вигилантов! Закон выше религии", effects: { sectors: { intel: 2 }, dovolstvo: -10 }, newsLines: { state: "Монополия на насилие принадлежит государству", liberal: "Орды фанатиков наконец-то за решеткой" } }
+        { label: "Подписать пакт", removeStatuses: ["in_peace_talks"], effects: { resources: { money: 1000, influence: 400 }, sectors: { economy: 1 }, dovolstvo: 20 } },
+        { label: "Нас обманут! Отменить переговоры", removeStatuses: ["in_peace_talks"], addStatuses: ["in_border_war"], effects: { dovolstvo: -15 } }
       ]
     }
   ],
   japan: [
+    // Chain 1: Demographics
+    {
+      id: "jp_aging_pop",
+      speaker: "Министр Здравоохранения",
+      situation: "Нация стареет. Скоро некому будет работать и платить налоги.",
+      weight: 1,
+      choices: [
+        { label: "Заменить сиделок роботами", addStatuses: ["jp_robot_care"], effects: { resources: { money: -1000 }, sectors: { science: 2 }, dovolstvo: 10 } },
+        { label: "Открыть границы для мигрантов", addStatuses: ["jp_migrants"], effects: { resources: { money: 500 }, sectors: { economy: 1 }, dovolstvo: -30 } }
+      ]
+    },
+    {
+      id: "jp_robot_revolt",
+      speaker: "Министр Внутренних Дел",
+      situation: "Произошел сбой в ПО роботов-сиделок, несколько пенсионеров получили травмы.",
+      requires: { statuses: ["jp_robot_care"] },
+      weight: 1,
+      choices: [
+        { label: "Отозвать роботов и выплатить компенсации", removeStatuses: ["jp_robot_care"], effects: { resources: { money: -1500 }, dovolstvo: -20 } },
+        { label: "Замять инцидент и выпустить патч", addStatuses: ["jp_ai_society"], effects: { resources: { influence: -100 }, sectors: { science: 1 } } }
+      ]
+    },
+    {
+      id: "jp_immortal_society",
+      speaker: "Футуролог",
+      situation: "Наши ИИ-системы достигли уровня, когда могут управлять экономикой без участия людей.",
+      requires: { statuses: ["jp_ai_society"] },
+      weight: 1,
+      choices: [
+        { label: "Передать управление ИИ", effects: { resources: { money: 3000 }, sectors: { economy: 2, science: 3 }, dovolstvo: 40 } },
+        { label: "Люди должны оставаться главными", effects: { dovolstvo: 10 } }
+      ]
+    },
+
+    // Chain 2: Work Culture
     {
       id: "jp_karoshi",
-      speaker: "Министр Труда",
-      situation: "Люди умирают от переутомления прямо на рабочих местах. Нам нужно ограничить рабочие часы.",
-      requires: { statuses: ["workaholics"] },
+      speaker: "Профсоюзный Лидер",
+      situation: "Смерти от переутомления (кароси) бьют рекорды. Люди спят на работе.",
       weight: 1,
       choices: [
-        { label: "Ввести строгий запрет на переработки (Уход домой в 18:00)", addStatuses: ["jp_deflation"], effects: { sectors: { economy: -2 }, dovolstvo: 20 }, newsLines: { state: "Здоровье нации превыше всего", liberal: "Корпоративная культура разрушена" } },
-        { label: "Поставить больше кроватей и автоматов с кофе в офисах", effects: { sectors: { economy: 1 }, dovolstvo: -20 }, newsLines: { state: "Преданность компании — долг каждого", liberal: "Современное рабство продолжается" } }
+        { label: "Ввести обязательную 4-дневную рабочую неделю", addStatuses: ["jp_4day_week"], effects: { resources: { money: -500 }, sectors: { economy: -1 }, dovolstvo: 30 } },
+        { label: "Это японский дух! Работа превыше всего", addStatuses: ["jp_overwork"], effects: { sectors: { economy: 1 }, dovolstvo: -20 } }
       ]
     },
     {
-      id: "jp_negative_rates",
-      speaker: "Глава Центробанка",
-      situation: "Экономика в стагнации, люди копят деньги и ничего не покупают. Ставка уже отрицательная.",
-      requires: { statuses: ["jp_deflation"] },
+      id: "jp_productivity_drop",
+      speaker: "Глава Корпорации",
+      situation: "Из-за 4-дневной недели наши заводы отстают от корейских и китайских конкурентов.",
+      requires: { statuses: ["jp_4day_week"] },
       weight: 1,
       choices: [
-        { label: "Напечатать еще триллион йен (Количественное смягчение)!", effects: { resources: { money: -1000 }, sectors: { economy: 1 }, dovolstvo: 10 }, newsLines: { state: "Банк Японии стимулирует рост", liberal: "Цены на импорт взлетят в небеса" } },
-        { label: "Поднять ставку! Хватит бесплатных денег", removeStatuses: ["jp_deflation"], effects: { sectors: { economy: -2 }, dovolstvo: -15 }, newsLines: { state: "Конец эпохи нулевых ставок", liberal: "Малый бизнес массово банкротится" } }
+        { label: "Субсидировать автоматизацию производств", effects: { resources: { money: -1500 }, sectors: { science: 1, economy: 1 } } },
+        { label: "Отменить 4-дневку", removeStatuses: ["jp_4day_week"], addStatuses: ["jp_overwork"], effects: { dovolstvo: -40, sectors: { economy: 1 } } }
       ]
     },
     {
-      id: "jp_yen_crash",
-      speaker: "Министр Финансов",
-      situation: "Йена пробила историческое дно. Импорт энергоносителей становится слишком дорогим.",
+      id: "jp_suicide_crisis",
+      speaker: "Министр Здравоохранения",
+      situation: "Переработки убивают молодежь. Уровень самоубийств катастрофический.",
+      requires: { statuses: ["jp_overwork"] },
       weight: 1,
       choices: [
-        { label: "Провести валютные интервенции", effects: { resources: { money: -2500 }, sectors: { economy: 1 } }, newsLines: { state: "Правительство защищает национальную валюту", liberal: "Сжигание резервов без долгосрочного плана" } },
-        { label: "Отличный шанс для экспорта! Завалим мир нашими товарами", effects: { resources: { money: 1500 }, sectors: { economy: 2 }, dovolstvo: -10 }, newsLines: { state: "Toyota бьет рекорды продаж", liberal: "Простые японцы беднеют с каждым днем" } }
+        { label: "Создать 'Министерство Одиночества'", effects: { resources: { money: -500 }, dovolstvo: 15 } },
+        { label: "Скрывать статистику", effects: { resources: { influence: -100 }, sectors: { smi: -1 }, dovolstvo: -10 } }
+      ]
+    },
+
+    // Chain 3: Yakuza
+    {
+      id: "jp_casino_bill",
+      speaker: "Мэр Осаки",
+      situation: "Давайте легализуем казино! Это привлечет туристов и налоги.",
+      weight: 1,
+      choices: [
+        { label: "Разрешить казино", addStatuses: ["jp_casinos"], effects: { resources: { money: 1000 }, sectors: { economy: 1 }, dovolstvo: -10 } },
+        { label: "Запретить, это аморально", effects: { resources: { influence: 100 }, dovolstvo: 5 } }
       ]
     },
     {
-      id: "jp_ghost_villages",
-      speaker: "Министр Демографии",
-      situation: "В провинции тысячи заброшенных домов (акия). Молодежь уехала в Токио, старики вымерли.",
-      requires: { statuses: ["aging_population"] },
+      id: "jp_yakuza_takeover",
+      speaker: "Шеф Полиции",
+      situation: "Якудза полностью взяла под контроль новые казино. Наркотики и проституция процветают.",
+      requires: { statuses: ["jp_casinos"] },
       weight: 1,
       choices: [
-        { label: "Раздавать дома бесплатно семьям с детьми!", effects: { resources: { money: -500 }, dovolstvo: 15 }, newsLines: { state: "Возрождение регионов", liberal: "Никто не хочет жить в глуши даже бесплатно" } },
-        { label: "Снести их и построить автоматизированные фермы", addStatuses: ["jp_robot_revolution"], effects: { sectors: { economy: 1, science: 1 } }, newsLines: { state: "Агро-инновации спасают деревни", liberal: "Уничтожение традиционного ландшафта" } }
+        { label: "Начать масштабную облаву и чистку", addStatuses: ["jp_yakuza_war"], effects: { resources: { money: -500 }, sectors: { army: 1 }, dovolstvo: 15 } },
+        { label: "Брать с них свою долю", addStatuses: ["jp_corrupt_casinos"], effects: { resources: { money: 1500, influence: -200 }, dovolstvo: -20 } }
       ]
     },
     {
-      id: "jp_ai_mayor",
-      speaker: "Житель Киото",
-      situation: "В одном из городов на выборах победил ИИ. Люди говорят, что он честнее политиков.",
-      requires: { statuses: ["jp_robot_revolution"] },
+      id: "jp_yakuza_war_end",
+      speaker: "Шеф Полиции",
+      situation: "Боссы кланов Якудзы арестованы. Улицы безопасны.",
+      requires: { statuses: ["jp_yakuza_war"] },
       weight: 1,
       choices: [
-        { label: "Утвердить ИИ-мэра! Это прорыв в управлении", effects: { sectors: { science: 3, intel: 1 }, dovolstvo: 20 }, newsLines: { state: "Абсолютно неподкупная власть", liberal: "Мы отдаем свою судьбу алгоритмам" } },
-        { label: "Отменить результаты. Машина не может править людьми", effects: { sectors: { science: -1 }, dovolstvo: -10 }, newsLines: { state: "Защита человеческого достоинства", liberal: "Власть боится конкуренции с ИИ" } }
+        { label: "Национализировать легальный бизнес Якудзы", removeStatuses: ["jp_yakuza_war"], effects: { resources: { money: 2000 }, sectors: { economy: 1 }, dovolstvo: 20 } },
+        { label: "Сжечь их активы", removeStatuses: ["jp_yakuza_war"], effects: { dovolstvo: 10 } }
       ]
     },
-    {
-      id: "jp_immigration_taboo",
-      speaker: "Глава Ассоциации Больниц",
-      situation: "У нас не хватает сиделок для стариков. Может, всё-таки пустим мигрантов?",
-      weight: 1,
-      choices: [
-        { label: "Создать спецвизы для иностранных рабочих", effects: { sectors: { economy: 1 }, dovolstvo: -20, resources: { influence: 100 } }, newsLines: { state: "Прагматичное решение кадрового голода", liberal: "Конец гомогенного общества" } },
-        { label: "Нет! Мы справимся своими силами (и роботами)", effects: { sectors: { science: 1 }, dovolstvo: 10 }, newsLines: { state: "Сохранение уникальной японской культуры", liberal: "Старикам некому принести стакан воды" } }
-      ]
-    },
-    {
-      id: "jp_senkaku_boats",
-      speaker: "Командир Береговой Охраны",
-      situation: "Сотни 'рыбацких' лодок соседа вошли в наши территориальные воды возле спорных островов.",
-      weight: 1,
-      choices: [
-        { label: "Выслать эсминцы и оттеснить их водометами!", addStatuses: ["jp_island_dispute"], effects: { sectors: { army: 1 }, dovolstvo: 15, resources: { influence: -100 } }, newsLines: { state: "Решительная защита наших границ", liberal: "Опасная эскалация в Восточно-Китайском море" } },
-        { label: "Подать ноту протеста и не провоцировать", effects: { resources: { influence: -150 }, dovolstvo: -15 }, newsLines: { state: "Дипломатия прежде всего", liberal: "Нас вытесняют с наших же территорий" } }
-      ]
-    },
-    {
-      id: "jp_article_9",
-      speaker: "Премьер-Министр",
-      situation: "Из-за угроз соседей пора пересмотреть 9-ю статью Конституции и создать полноценную армию.",
-      requires: { statuses: ["jp_island_dispute"] },
-      weight: 1,
-      choices: [
-        { label: "Переписать Конституцию! Воссоздать Императорский Флот", removeStatuses: ["jp_island_dispute"], effects: { sectors: { army: 3 }, resources: { money: -2000, influence: -200 }, dovolstvo: -20 }, newsLines: { state: "Япония снова нормальная военная держава", liberal: "Призрак милитаризма возвращается" } },
-        { label: "Остаться пацифистской страной", effects: { resources: { influence: 100 }, dovolstvo: 10 }, newsLines: { state: "Верность идеалам мира", liberal: "Мы беззащитны перед агрессорами" } }
-      ]
-    },
-    {
-      id: "jp_us_bases",
-      speaker: "Губернатор Окинавы",
-      situation: "Снова скандал с американскими морпехами. Местные жители требуют убрать базы США с острова.",
-      weight: 1,
-      choices: [
-        { label: "Попросить США перенести базу (Обидеть союзника)", effects: { resources: { influence: -250 }, sectors: { army: -1 }, dovolstvo: 25 }, newsLines: { state: "Правительство слышит голос народа", liberal: "Трещина в альянсе безопасности" } },
-        { label: "Подавить протесты. Базы нужны для защиты", effects: { sectors: { intel: 1 }, dovolstvo: -20, resources: { influence: 100 } }, newsLines: { state: "Безопасность требует жертв", liberal: "Окинава — колония Токио и Вашингтона" } }
-      ]
-    },
-    {
-      id: "jp_vtuber_scandal",
-      speaker: "Глава Агентства Идолов",
-      situation: "Наша главная виртуальная ютуберша (VTuber) случайно показала в эфире, что у неё есть парень. Акции рухнули.",
-      requires: { statuses: ["anime_softpower"] },
-      weight: 1,
-      choices: [
-        { label: "Заставить её публично извиняться в слезах", effects: { sectors: { smi: 1 }, dovolstvo: -10 }, newsLines: { state: "Идол принадлежит только фанатам", liberal: "Токсичная культура отаку переходит границы" } },
-        { label: "Защитить её. Виртуальный аватар — это просто работа", effects: { sectors: { smi: -1 }, dovolstvo: 15 }, newsLines: { state: "Новая эра: идолы тоже люди", liberal: "Индустрия развлечений меняет правила" } }
-      ]
-    },
-    {
-      id: "jp_cool_japan",
-      speaker: "Министр Культуры",
-      situation: "Программа 'Cool Japan' провалилась. Чиновники не умеют продвигать аниме и игры.",
-      requires: { statuses: ["anime_softpower"] },
-      weight: 1,
-      choices: [
-        { label: "Отдать бюджет самим студиям и творцам", effects: { resources: { money: -1000, influence: 300 }, sectors: { smi: 2 }, dovolstvo: 20 }, newsLines: { state: "Японский контент захватывает мир", liberal: "Государство больше не вмешивается в искусство" } },
-        { label: "Продолжать выделять гранты друзьям министра", effects: { resources: { money: -500 }, sectors: { smi: -1 }, dovolstvo: -15 }, newsLines: { state: "Поддержка традиционных медиа", liberal: "Бюджетные деньги сливаются в трубу" } }
-      ]
-    },
-    {
-      id: "jp_fax_obsession",
-      speaker: "Министр Цифровизации",
-      situation: "Наши чиновники требуют приносить документы на дискетах и отправлять по факсу. В 2026 году!",
-      weight: 1,
-      choices: [
-        { label: "Уничтожить все факсы и перейти в облако!", effects: { resources: { money: -1500 }, sectors: { science: 2, economy: 1 }, dovolstvo: 15 }, newsLines: { state: "Болезненный прыжок в XXI век", liberal: "Тысячи старых чиновников ушли в отставку" } },
-        { label: "Дискета — это безопасность. Хакеры не взломают факс", effects: { sectors: { science: -1, intel: 1 }, dovolstvo: -5 }, newsLines: { state: "Аналоговая защита данных", liberal: "Галапагосский синдром в IT" } }
-      ]
-    },
+
+    // Chain 4: Fukushima
     {
       id: "jp_fukushima_water",
-      speaker: "Директор TEPCO",
-      situation: "Резервуары переполнены. Нам нужно слить очищенную воду с Фукусимы в океан. Соседи в ярости.",
+      speaker: "Министр Экологии",
+      situation: "Хранилища радиоактивной воды на Фукусиме переполнены. Надо сбрасывать в океан.",
       weight: 1,
       choices: [
-        { label: "Слить воду! МАГАТЭ разрешило", effects: { resources: { influence: -200 }, sectors: { economy: 1 }, dovolstvo: -10 }, newsLines: { state: "Научный подход победил страхи", liberal: "Китай полностью запретил импорт наших морепродуктов" } },
-        { label: "Строить новые резервуары (очень дорого)", effects: { resources: { money: -1500 }, dovolstvo: 10 }, newsLines: { state: "Экология океана в безопасности", liberal: "Пустая трата миллиардов из-за паники" } }
+        { label: "Сбросить воду в океан! Она очищена", addStatuses: ["jp_water_dump"], effects: { resources: { money: 500, influence: -150 }, dovolstvo: -15 } },
+        { label: "Строить новые хранилища", effects: { resources: { money: -1000 }, dovolstvo: 10 } }
+      ]
+    },
+    {
+      id: "jp_fish_ban",
+      speaker: "Ассоциация Рыбаков",
+      situation: "Соседи (Китай и Корея) запретили импорт наших морепродуктов из-за сброса воды!",
+      requires: { statuses: ["jp_water_dump"] },
+      weight: 1,
+      choices: [
+        { label: "Выплатить компенсации рыбакам", effects: { resources: { money: -1000 }, dovolstvo: 15 } },
+        { label: "Подать жалобу в ВТО", addStatuses: ["jp_trade_war"], effects: { resources: { influence: 100 }, sectors: { economy: -1 } } }
       ]
     },
     {
       id: "jp_nuclear_restart",
-      speaker: "Министр Энергетики",
-      situation: "Чтобы не покупать дорогой СПГ, нам нужно перезапустить остановленные АЭС. Но люди боятся.",
+      speaker: "Глава Энергетической Компании",
+      situation: "У нас дефицит энергии. Пора перезапускать остановленные после Фукусимы реакторы.",
+      requires: { statuses: ["jp_trade_war"] },
       weight: 1,
       choices: [
-        { label: "Перезапустить реакторы! Нам нужна дешевая энергия", effects: { sectors: { economy: 2 }, dovolstvo: -25 }, newsLines: { state: "Энергетическая независимость восстановлена", liberal: "Правительство забыло уроки Фукусимы" } },
-        { label: "Продолжать импортировать газ", effects: { resources: { money: -2000 }, sectors: { economy: -1 }, dovolstvo: 10 }, newsLines: { state: "Безопасность населения важнее экономики", liberal: "Счета за свет разоряют предприятия" } }
+        { label: "Запустить реакторы", effects: { resources: { money: 2000 }, sectors: { economy: 2 }, dovolstvo: -20 } },
+        { label: "Мы обожглись однажды. Только зеленый курс", effects: { resources: { money: -1500 }, sectors: { science: 1 }, dovolstvo: 15 } }
+      ]
+    },
+
+    // Chain 5: Defense
+    {
+      id: "jp_article_9",
+      speaker: "Премьер-Министр",
+      situation: "9-я статья Конституции запрещает нам иметь армию. Но угроза от соседей растет.",
+      weight: 1,
+      choices: [
+        { label: "Инициировать отмену 9-й статьи!", addStatuses: ["jp_remilitarization"], effects: { resources: { influence: 200 }, sectors: { army: 2 }, dovolstvo: -20 } },
+        { label: "Мы страна пацифистов. Оставить как есть", effects: { resources: { influence: -100 }, dovolstvo: 15 } }
       ]
     },
     {
-      id: "jp_whale_hunting",
-      speaker: "Глава Союза Рыбаков",
-      situation: "Международное сообщество требует запретить коммерческий забой китов. Но это наша традиция!",
+      id: "jp_carrier_build",
+      speaker: "Адмирал",
+      situation: "Чтобы противостоять флоту соседей, нам нужны полноценные авианосцы, а не 'эсминцы-вертолетоносцы'.",
+      requires: { statuses: ["jp_remilitarization"] },
       weight: 1,
       choices: [
-        { label: "Продолжать гарпунить китов! Мы выходим из комиссии", effects: { resources: { influence: -150 }, dovolstvo: 15 }, newsLines: { state: "Защита национальных традиций", liberal: "Япония стала страной-изгоем для экологов" } },
-        { label: "Запретить китобойный промысел навсегда", effects: { resources: { influence: 150 }, dovolstvo: -20 }, newsLines: { state: "Победа защитников животных", liberal: "Целые прибрежные города лишились работы" } }
-      ]
-    }
-  ],
-  armenia: [
-    {
-      id: "am_diaspora",
-      speaker: "Представитель Диаспоры",
-      situation: "Ахпер джан, мы собрали фонды в Калифорнии и Париже. Куда перевести деньги?",
-      requires: { statuses: ["diaspora"] },
-      weight: 1,
-      choices: [
-        {
-          label: "Отправить на строительство дорог! [СМИ: Инфраструктура обновляется]",
-          effects: { resources: { money: 1500 }, sectors: { economy: 1 } }
-        },
-        {
-          label: "Потратить на праздник! Шашлык всем! [СМИ: Народ гуляет до утра]",
-          effects: { dovolstvo: 30 }
-        }
+        { label: "Заложить два суперавианосца", addStatuses: ["jp_naval_power"], effects: { resources: { money: -3000 }, sectors: { army: 2 }, dovolstvo: 10 } },
+        { label: "Оборонного бюджета не хватит", effects: { dovolstvo: -10 } }
       ]
     },
     {
-      id: "am_nardy",
-      speaker: "Чемпион по Нардам",
-      situation: "Назревает дипломатический конфликт с соседями. Я предлагаю решить его броском зар.",
-      requires: { statuses: ["nardy"] },
+      id: "jp_island_dispute",
+      speaker: "Генерал",
+      situation: "Наши новые авианосцы готовы патрулировать спорные острова. Соседи грозят ракетами.",
+      requires: { statuses: ["jp_naval_power"] },
       weight: 1,
       choices: [
-        {
-          label: "Выпускайте мастера! Шеш-Беш! [СМИ: Спор разрешен за игровой доской]",
-          effects: { resources: { influence: 150 }, dovolstvo: 10 }
-        },
-        {
-          label: "Мы проиграли партию... Придется уступить. [СМИ: Дипломатическое фиаско]",
-          effects: { resources: { influence: -100 }, dovolstvo: -10 }
-        }
-      ]
-    },
-    {
-      id: "am_radio",
-      speaker: "Ведущий Армянского Радио",
-      situation: "Нас спрашивают: 'Правда ли, что экономика падает?'",
-      requires: { statuses: ["radio_erevan"] },
-      weight: 1,
-      choices: [
-        {
-          label: "Ответить шуткой! [СМИ: Армянское радио снова жжет глаголом]",
-          effects: { sectors: { smi: 1 }, dovolstvo: 15 }
-        },
-        {
-          label: "Ответить честно [СМИ: Унылые новости огорчают граждан]",
-          effects: { dovolstvo: -10 }
-        }
+        { label: "Провести жесткую демонстрацию силы", effects: { resources: { influence: 400 }, sectors: { army: 1 }, dovolstvo: 20 } },
+        { label: "Отступить ради дипломатии", effects: { resources: { influence: -300 }, dovolstvo: -15 } }
       ]
     }
   ],
   israel: [
+    // Chain 1: Settlements
     {
-      id: "il_new_election",
-      speaker: "Спикер Кнессета",
-      situation: "Правительство снова развалилось. Это уже пятые выборы за 3 года.",
-      weight: 1,
-      choices: [
-        { label: "Собрать коалицию из 11 мелких партий", addStatuses: ["il_coalition_chaos"], effects: { sectors: { intel: -1 }, dovolstvo: -10 }, newsLines: { state: "Широкое представительство народа!", liberal: "Франкенштейн вместо правительства" } },
-        { label: "Провести новые выборы", effects: { resources: { money: -500 }, dovolstvo: -15 }, newsLines: { state: "Демократия в действии", liberal: "Бесконечный политический кризис" } }
-      ]
-    },
-    {
-      id: "il_supreme_court",
-      speaker: "Министр Юстиции",
-      situation: "Коалиционные партнеры требуют провести судебную реформу и ограничить власть Верховного Суда.",
-      requires: { statuses: ["il_coalition_chaos"] },
-      weight: 1,
-      choices: [
-        { label: "Провести реформу! Судьи не избирались народом", addStatuses: ["il_judicial_reform"], effects: { sectors: { intel: 1 }, dovolstvo: -20 }, newsLines: { state: "Возврат власти парламенту", liberal: "Конец израильской демократии" } },
-        { label: "Заморозить проект из-за протестов", effects: { resources: { influence: -100 }, dovolstvo: 15 }, newsLines: { state: "Власть прислушалась к народу", liberal: "Победа гражданского общества" } }
-      ]
-    },
-    {
-      id: "il_reservist_strike",
-      speaker: "Начальник Генштаба",
-      situation: "В знак протеста против реформы тысячи пилотов-резервистов отказываются являться на сборы.",
-      requires: { statuses: ["il_judicial_reform"] },
-      weight: 1,
-      choices: [
-        { label: "Отменить реформу. Армия важнее", removeStatuses: ["il_judicial_reform"], effects: { sectors: { army: 2 }, dovolstvo: 25 }, newsLines: { state: "Единство нации сохранено", liberal: "Армия спасла страну от диктатуры" } },
-        { label: "Уволить их всех! Никакого шантажа", effects: { sectors: { army: -3 }, dovolstvo: -30 }, newsLines: { state: "Дисциплина в рядах ЦАХАЛ", liberal: "Обороноспособность страны уничтожена" } }
-      ]
-    },
-    {
-      id: "il_rocket_barrage",
-      speaker: "Генерал ПВО",
-      situation: "Соседи запустили 1000 ракет за один час. Купол перегревается.",
-      requires: { statuses: ["iron_dome"] },
-      weight: 1,
-      choices: [
-        { label: "Сбивать всё! Тратим миллионы на перехватчики", effects: { resources: { money: -2000 }, sectors: { army: 1 }, dovolstvo: 15 }, newsLines: { state: "Железный Купол снова доказал эффективность", liberal: "Золотые ракеты против водопроводных труб" } },
-        { label: "Немедленно начать наземную операцию в ответ!", addStatuses: ["il_intifada"], effects: { resources: { influence: -150 }, sectors: { army: 2 }, dovolstvo: -10 }, newsLines: { state: "ЦАХАЛ начал зачистку инфраструктуры террора", liberal: "Очередной виток бесконечного насилия" } }
-      ]
-    },
-    {
-      id: "il_settlement_expansion",
+      id: "il_settlements_expand",
       speaker: "Лидер Поселенцев",
-      situation: "Мы хотим построить еще 5000 домов на спорных территориях. Это наша земля.",
+      situation: "Мы требуем разрешения на постройку новых кварталов на спорных территориях.",
       weight: 1,
       choices: [
-        { label: "Одобрить строительство", addStatuses: ["il_intifada"], effects: { resources: { influence: -200 }, sectors: { economy: 1 }, dovolstvo: -15 }, newsLines: { state: "Укрепление наших позиций", liberal: "Мирный процесс окончательно похоронен" } },
-        { label: "Заморозить стройки ради отношений с США", effects: { resources: { influence: 150 }, dovolstvo: -10 }, newsLines: { state: "Прагматичная дипломатия", liberal: "США диктуют нам условия" } }
+        { label: "Разрешить строительство", addStatuses: ["il_settlements_growing"], effects: { resources: { influence: -150 }, sectors: { economy: 1 }, dovolstvo: 10 } },
+        { label: "Заморозить ради мира с соседями", addStatuses: ["il_peace_process"], effects: { resources: { influence: 150 }, dovolstvo: -20 } }
       ]
     },
     {
-      id: "il_border_wall",
-      speaker: "Министр Обороны",
-      situation: "Волна терактов в городах захлестнула страну. Нужно срочно реагировать.",
-      requires: { statuses: ["il_intifada"] },
+      id: "il_intifada",
+      speaker: "Шеф Шабак",
+      situation: "Из-за строительства поселений вспыхнуло масштабное восстание. Ракеты летят каждый день.",
+      requires: { statuses: ["il_settlements_growing"] },
       weight: 1,
       choices: [
-        { label: "Построить стену еще выше и закрыть КПП", removeStatuses: ["il_intifada"], effects: { resources: { money: -1500 }, sectors: { army: 1 }, dovolstvo: 20 }, newsLines: { state: "Безопасность граждан восстановлена", liberal: "Страна превращается в крепость" } },
-        { label: "Провести тайные переговоры с лидерами протестов", effects: { sectors: { intel: 2 }, resources: { money: 500 } }, newsLines: { state: "Дипломатия лучше войны", liberal: "Тайные сделки с террористами" } }
+        { label: "Начать полномасштабную военную операцию", addStatuses: ["il_war_state"], effects: { resources: { money: -1000, influence: -200 }, sectors: { army: 2 }, dovolstvo: -15 } },
+        { label: "Эвакуировать новые поселения", removeStatuses: ["il_settlements_growing"], effects: { dovolstvo: -40, sectors: { economy: -1 } } }
       ]
     },
     {
-      id: "il_iran_nuke",
-      speaker: "Директор Моссада",
-      situation: "Главный враг на Востоке обогатил уран до 90%. Они близки к созданию бомбы.",
-      requires: { statuses: ["mossad"] },
+      id: "il_two_state",
+      speaker: "Президент США",
+      situation: "Вы заморозили поселения. Теперь мы требуем подписать договор о создании двух государств.",
+      requires: { statuses: ["il_peace_process"] },
       weight: 1,
       choices: [
-        { label: "Отправить эскадрилью F-35 разбомбить реакторы!", effects: { resources: { money: -2500, influence: -300 }, sectors: { army: 3 }, dovolstvo: 30 }, newsLines: { state: "Экзистенциальная угроза устранена", liberal: "Риск полномасштабной региональной войны" } },
-        { label: "Внедрить вирус Stuxnet 2.0 в их центрифуги", effects: { sectors: { intel: 2, science: 1 }, resources: { influence: 100 } }, newsLines: { state: "Невидимая война продолжается", liberal: "Кибератаки могут привести к ответным мерам" } }
+        { label: "Подписать исторический мирный договор", removeStatuses: ["il_peace_process"], effects: { resources: { money: 2000, influence: 500 }, sectors: { economy: 2 }, dovolstvo: 30 } },
+        { label: "Разорвать переговоры, это угроза безопасности", removeStatuses: ["il_peace_process"], effects: { resources: { influence: -300 }, dovolstvo: 15 } }
+      ]
+    },
+
+    // Chain 2: Tech Exodus
+    {
+      id: "il_tech_taxes",
+      speaker: "Министр Финансов",
+      situation: "У нас огромный дефицит. Давайте повысим налоги для IT-компаний (Силиконовой Вади).",
+      weight: 1,
+      choices: [
+        { label: "Повысить налоги", addStatuses: ["il_tech_exodus"], effects: { resources: { money: 1000 }, sectors: { economy: -1 }, dovolstvo: -10 } },
+        { label: "Ввести налоговые льготы", addStatuses: ["il_tech_hub"], effects: { resources: { money: -800 }, sectors: { science: 2 }, dovolstvo: 15 } }
       ]
     },
     {
-      id: "il_pager_explodes",
-      speaker: "Глава Операций Моссада",
-      situation: "Мы внедрили взрывчатку в партию пейджеров, закупленных террористической организацией.",
-      requires: { statuses: ["mossad"] },
-      weight: 1,
-      choices: [
-        { label: "Подорвать их всех одновременно!", effects: { sectors: { intel: 3, army: 1 }, resources: { influence: -150 }, dovolstvo: 25 }, newsLines: { state: "Гениальная операция наших спецслужб", liberal: "Вопросы этичности массового подрыва электроники" } },
-        { label: "Использовать их только для прослушки", effects: { sectors: { intel: 2 }, dovolstvo: 5 }, newsLines: { state: "Ценная развединформация получена", liberal: "Тихая победа разведки" } }
-      ]
-    },
-    {
-      id: "il_pegasus_leak",
-      speaker: "Министр Связи",
-      situation: "СМИ узнали, что наша программа 'Пегас' использовалась диктаторами для слежки за журналистами.",
-      weight: 1,
-      choices: [
-        { label: "Запретить экспорт кибероружия", effects: { resources: { influence: 150, money: -1000 }, sectors: { intel: -1 } }, newsLines: { state: "Защита прав человека и свободы слова", liberal: "Удар по нашей IT-индустрии" } },
-        { label: "Всё отрицать. Бизнес есть бизнес", effects: { resources: { money: 1500, influence: -200 }, sectors: { intel: 1 } }, newsLines: { state: "Израильский хайтек востребован во всем мире", liberal: "Соучастие в международных преступлениях" } }
-      ]
-    },
-    {
-      id: "il_silicon_wadi",
+      id: "il_brain_drain",
       speaker: "CEO Стартапа",
-      situation: "Из-за нестабильности инвесторы уходят. Тех-компании (Силиконовая Вади) грозятся переехать в США.",
-      requires: { statuses: ["shekeli"] },
+      situation: "Из-за высоких налогов мы переводим штаб-квартиру в Лондон. Прощайте.",
+      requires: { statuses: ["il_tech_exodus"] },
       weight: 1,
       choices: [
-        { label: "Дать им нулевой налог на 5 лет", effects: { resources: { money: -2000 }, sectors: { science: 2, economy: 1 } }, newsLines: { state: "Спасение сектора высоких технологий", liberal: "Бюджет недосчитается миллиардов" } },
-        { label: "Пусть едут. Свято место пусто не бывает", effects: { sectors: { economy: -2, science: -2 }, dovolstvo: -15 }, newsLines: { state: "Мы не поддаемся на шантаж", liberal: "Утечка мозгов набирает обороты" } }
+        { label: "Запретить вывод капитала!", effects: { resources: { influence: -150 }, sectors: { economy: -2, science: -2 }, dovolstvo: -30 } },
+        { label: "Предложить им эксклюзивные гранты на возвращение", removeStatuses: ["il_tech_exodus"], effects: { resources: { money: -2000 }, sectors: { science: 1 }, dovolstvo: 10 } }
       ]
     },
     {
-      id: "il_water_tech",
-      speaker: "Главный Инженер",
-      situation: "У нас передовые технологии опреснения воды, а соседи страдают от засухи.",
-      requires: { statuses: ["shekeli"] },
+      id: "il_cyber_empire",
+      speaker: "Директор Моссад",
+      situation: "Наши технологии позволяют взламывать телефоны кого угодно. Диктаторы готовы платить миллиарды.",
+      requires: { statuses: ["il_tech_hub"] },
       weight: 1,
       choices: [
-        { label: "Продавать им воду в обмен на мирные договоры", effects: { resources: { influence: 300, money: 500 }, sectors: { science: 1 } }, newsLines: { state: "Водная дипломатия приносит плоды", liberal: "Прагматизм побеждает вражду" } },
-        { label: "Оставить всю воду себе", effects: { resources: { influence: -100 }, dovolstvo: 10 }, newsLines: { state: "Запасы воды на рекордном уровне", liberal: "Эгоизм ведет к напряженности в регионе" } }
+        { label: "Продавать кибероружие всем желающим", effects: { resources: { money: 3000, influence: -300 }, sectors: { intel: 2 }, dovolstvo: 10 } },
+        { label: "Только для нужд нашей разведки", effects: { resources: { influence: 150 }, sectors: { intel: 1 } } }
+      ]
+    },
+
+    // Chain 3: Haredim (Ultra-Orthodox)
+    {
+      id: "il_haredim_draft",
+      speaker: "Верховный Суд",
+      situation: "Освобождение ультраортодоксов от службы в армии незаконно. Они должны служить как все.",
+      weight: 1,
+      choices: [
+        { label: "Начать призыв в армию", addStatuses: ["il_haredim_riots"], effects: { sectors: { army: 1 }, dovolstvo: 20, resources: { influence: 100 } } },
+        { label: "Принять закон об обходе решения суда", addStatuses: ["il_secular_anger"], effects: { dovolstvo: -20, resources: { influence: -100 } } }
       ]
     },
     {
-      id: "il_kibbutz_revival",
-      speaker: "Председатель Киббуца",
-      situation: "Сельское хозяйство в пустыне умирает. Молодёжь уезжает в Тель-Авив писать код.",
+      id: "il_haredim_protests",
+      speaker: "Главный Раввин",
+      situation: "Студенты иешив перекрыли шоссе в знак протеста против призыва! Они скорее сядут в тюрьму.",
+      requires: { statuses: ["il_haredim_riots"] },
       weight: 1,
       choices: [
-        { label: "Субсидировать агро-стартапы в киббуцах", effects: { resources: { money: -1000 }, sectors: { science: 1, economy: 1 }, dovolstvo: 15 }, newsLines: { state: "Возрождение сионистской мечты с помощью ИИ", liberal: "Томаты по цене золота" } },
-        { label: "Пусть рынок решает. Импортируем овощи", effects: { resources: { money: 500 }, sectors: { economy: -1 }, dovolstvo: -10 }, newsLines: { state: "Свободная экономика", liberal: "Уничтожение продовольственной безопасности" } }
+        { label: "Бросить их в военные тюрьмы", effects: { resources: { money: -500 }, dovolstvo: -30, sectors: { smi: -1 } } },
+        { label: "Уступить и отменить призыв", removeStatuses: ["il_haredim_riots"], addStatuses: ["il_secular_anger"], effects: { dovolstvo: -20 } }
       ]
     },
     {
-      id: "il_abraham_accords",
-      speaker: "Премьер-Министр",
-      situation: "При посредничестве США мы можем подписать мирный договор с богатыми монархиями Залива.",
+      id: "il_secular_strike",
+      speaker: "Глава Профсоюзов",
+      situation: "Светские граждане платят налоги и служат, пока другие молятся. Мы объявляем всеобщую забастовку!",
+      requires: { statuses: ["il_secular_anger"] },
       weight: 1,
       choices: [
-        { label: "Подписать Соглашения Авраама! Открыть прямые рейсы", effects: { resources: { influence: 400, money: 2000 }, sectors: { economy: 2 }, dovolstvo: 30 }, newsLines: { state: "Исторический прорыв на Ближнем Востоке", liberal: "Новая эра туризма и торговли" } },
-        { label: "Отклонить условия, они требуют уступок", effects: { resources: { influence: -200 }, dovolstvo: -15 } }
+        { label: "Урезать субсидии религиозным школам", removeStatuses: ["il_secular_anger"], effects: { resources: { money: 1000 }, dovolstvo: 30 } },
+        { label: "Разогнать забастовку водометами", effects: { sectors: { economy: -2 }, dovolstvo: -40 } }
+      ]
+    },
+
+    // Chain 4: Iron Dome
+    {
+      id: "il_laser_defense",
+      speaker: "Генерал ПВО",
+      situation: "Ракеты для Железного Купола слишком дорогие. У нас есть прототип боевого лазера 'Железный Луч'.",
+      weight: 1,
+      choices: [
+        { label: "Влить миллиарды в лазеры", addStatuses: ["il_laser_shield"], effects: { resources: { money: -1500 }, sectors: { science: 2, army: 1 } } },
+        { label: "Просить США профинансировать ракеты", effects: { resources: { influence: -100 }, sectors: { army: 1 } } }
       ]
     },
     {
-      id: "il_shabbat_trains",
-      speaker: "Раввин из Коалиции",
-      situation: "Поезда работают в Шаббат! Это нарушение коалиционных соглашений. Требуем остановить!",
+      id: "il_laser_export",
+      speaker: "Министр Обороны",
+      situation: "Наш боевой лазер сбивает ракеты за копейки. Европа хочет купить систему для защиты от соседей.",
+      requires: { statuses: ["il_laser_shield"] },
       weight: 1,
       choices: [
-        { label: "Остановить поезда с вечера пятницы", effects: { sectors: { economy: -1 }, dovolstvo: -20, resources: { influence: 50 } }, newsLines: { state: "Уважение к традициям предков", liberal: "Светский транспорт заложник религии" } },
-        { label: "Проигнорировать. Транспорт должен работать всегда", effects: { sectors: { economy: 1 }, dovolstvo: 15, resources: { influence: -150 } }, newsLines: { state: "Город живет 24/7", liberal: "Правительство рискует распасться" } }
+        { label: "Продать системы в Европу", effects: { resources: { money: 4000, influence: 200 }, sectors: { economy: 1 }, dovolstvo: 20 } },
+        { label: "Сохранить технологию в тайне", effects: { sectors: { intel: 1 } } }
       ]
     },
     {
-      id: "il_un_resolution",
-      speaker: "Посол в ООН",
-      situation: "Ассамблея ООН приняла 15-ю за год резолюцию, осуждающую наши действия.",
+      id: "il_laser_hack",
+      speaker: "Директор Моссад",
+      situation: "Хакеры пытаются украсть чертежи 'Железного Луча'.",
+      requires: { statuses: ["il_laser_shield"] },
       weight: 1,
       choices: [
-        { label: "Порвать текст резолюции прямо на трибуне!", effects: { resources: { influence: -200 }, sectors: { smi: 1 }, dovolstvo: 20 }, newsLines: { state: "Мы не потерпим лицемерия ООН!", liberal: "Дипломатическая изоляция усиливается" } },
-        { label: "Промолчать и не обращать внимания", effects: { dovolstvo: -10 }, newsLines: { state: "Собаки лают, караван идет", liberal: "Очередное унижение на международной арене" } }
+        { label: "Запустить ответную кибератаку", effects: { resources: { influence: 150 }, sectors: { intel: 2 } } },
+        { label: "Усилить внутреннюю защиту", effects: { resources: { money: -300 } } }
+      ]
+    },
+
+    // Chain 5: Judicial Reform
+    {
+      id: "il_judicial_reform_start",
+      speaker: "Министр Юстиции",
+      situation: "Судьи слишком левые и блокируют законы. Давайте дадим парламенту право отменять их решения.",
+      weight: 1,
+      choices: [
+        { label: "Запустить реформу!", addStatuses: ["il_reform_protests"], effects: { resources: { influence: -100 }, dovolstvo: -20 } },
+        { label: "Не раскалывать общество", effects: { dovolstvo: 15 } }
+      ]
+    },
+    {
+      id: "il_pilots_strike",
+      speaker: "Командующий ВВС",
+      situation: "Пилоты-резервисты отказываются летать на тренировки из-за судебной реформы. Обороноспособность под угрозой!",
+      requires: { statuses: ["il_reform_protests"] },
+      weight: 1,
+      choices: [
+        { label: "Уволить мятежников!", addStatuses: ["il_army_crisis"], effects: { sectors: { army: -2 }, dovolstvo: -30 } },
+        { label: "Приостановить реформу ради переговоров", removeStatuses: ["il_reform_protests"], addStatuses: ["il_reform_paused"], effects: { dovolstvo: 20 } }
+      ]
+    },
+    {
+      id: "il_constitution",
+      speaker: "Президент",
+      situation: "Реформа на паузе. Может, пора наконец написать настоящую Конституцию, чтобы избежать этого в будущем?",
+      requires: { statuses: ["il_reform_paused"] },
+      weight: 1,
+      choices: [
+        { label: "Собрать Учредительное Собрание", removeStatuses: ["il_reform_paused"], effects: { resources: { influence: 300 }, dovolstvo: 40 } },
+        { label: "Слишком сложно. Отменить реформу и забыть", removeStatuses: ["il_reform_paused"], effects: { dovolstvo: 10 } }
       ]
     }
   ],
-  uk: [
-    // Chain 1: NHS
+  armenia: [
+    // Chain 1: IT Relocants
     {
-      id: "uk_nhs_crisis",
-      speaker: "Министр Здравоохранения",
-      situation: "Очереди в NHS достигают 18 месяцев. Врачи и медсестры объявляют бессрочную забастовку.",
+      id: "am_it_arrival",
+      speaker: "Мэр Еревана",
+      situation: "В страну хлынули десятки тысяч айтишников-релокантов. Цены на аренду жилья улетели в космос.",
       weight: 1,
       choices: [
-        { label: "Поднять зарплаты на 20% (Огромный долг)", addStatuses: ["uk_nhs_saved"], effects: { resources: { money: -2000 }, dovolstvo: 30 } },
-        { label: "Ввести элементы платной медицины", addStatuses: ["uk_private_health"], effects: { resources: { money: 1000 }, sectors: { economy: 1 }, dovolstvo: -10 } }
+        { label: "Ввести налоговые льготы для IT-компаний", addStatuses: ["am_it_hub"], effects: { resources: { money: 1500 }, sectors: { science: 1 }, dovolstvo: 0 }, newsLines: { state: "Армения становится Силиконовой Долиной Кавказа", liberal: "Местные жители не могут снять квартиру" } },
+        { label: "Ограничить въезд и повысить налоги нерезидентам", addStatuses: ["am_it_left"], effects: { resources: { money: 0 }, sectors: { economy: 1 }, dovolstvo: 15 }, newsLines: { state: "Защита рынка жилья для граждан", liberal: "Мы упустили исторический шанс" } }
       ]
     },
     {
-      id: "uk_health_tax",
-      speaker: "Канцлер Казначейства",
-      situation: "Чтобы оплатить повышение зарплат в NHS, нам придется поднять налоги до рекордного уровня.",
-      requires: { statuses: ["uk_nhs_saved"] },
+      id: "am_it_hub_crisis",
+      speaker: "Глава Центробанка",
+      situation: "Из-за притока валюты от айтишников драм сильно укрепился. Наши экспортеры разоряются!",
+      requires: { statuses: ["am_it_hub"] },
       weight: 1,
       choices: [
-        { label: "Повысить налоги", addStatuses: ["uk_tax_revolt"], effects: { resources: { money: 2000 }, sectors: { economy: 1 }, dovolstvo: -10 } },
-        { label: "Взять в долг, пусть платят дети", effects: { resources: { money: -500, influence: 50 }, dovolstvo: 10 } }
+        { label: "Искусственно ослабить драм (интервенции)", addStatuses: ["am_export_saved"], effects: { resources: { money: -500 }, sectors: { economy: 1 }, modifiers: { inflationDelta: 0.05 } }, newsLines: { state: "ЦБ поддерживает отечественного производителя", liberal: "Опасные игры с валютным курсом" } },
+        { label: "Ничего не делать, рынок сам разберется", addStatuses: ["am_export_crisis"], effects: { resources: { money: 1000 }, sectors: { economy: -1 }, dovolstvo: -10 }, newsLines: { state: "Крепкая валюта - признак стабильности", liberal: "Экспорт встал, фабрики закрываются" } }
       ]
     },
     {
-      id: "uk_tax_protests",
-      speaker: "Лидер Профсоюзов",
-      situation: "Из-за рекордных налогов на спасение NHS начались массовые протесты среднего класса.",
-      requires: { statuses: ["uk_tax_revolt"] },
+      id: "am_it_citizenship",
+      speaker: "Министр Юстиции",
+      situation: "Релоканты просят упростить получение гражданства. Националисты против.",
+      requires: { statuses: ["am_it_hub"] },
       weight: 1,
       choices: [
-        { label: "Ввести налог на богатство вместо этого", effects: { resources: { influence: 50 }, sectors: { economy: 1 }, dovolstvo: 15 } },
-        { label: "Подавить протесты полицией", effects: { sectors: { siloviki: 2 }, dovolstvo: -20 } }
-      ]
-    },
-
-    // Chain 2: Scotland
-    {
-      id: "uk_scotland_ref",
-      speaker: "Первый министр Шотландии",
-      situation: "Мы требуем второй референдум о независимости! Брексит изменил всё.",
-      weight: 1,
-      choices: [
-        { label: "Разрешить референдум", addStatuses: ["uk_scot_ref_active"], effects: { resources: { influence: 50 }, dovolstvo: 10 } },
-        { label: "Отказать жестко (Это незаконно!)", addStatuses: ["uk_scot_anger"], effects: { resources: { influence: 200 }, dovolstvo: -20 } }
-      ]
-    },
-    {
-      id: "uk_scotland_leaves",
-      speaker: "BBC News",
-      situation: "Шотландия проголосовала ЗА выход! Нам придется делить армию и ядерные подлодки.",
-      requires: { statuses: ["uk_scot_ref_active"] },
-      weight: 1,
-      choices: [
-        { label: "Мирное расставание", addStatuses: ["uk_border_crisis"], effects: { resources: { money: -1000, influence: 50 }, sectors: { economy: 1 }, dovolstvo: 0 } },
-        { label: "Ввести войска в Эдинбург (Отменить итоги)", effects: { resources: { influence: 100 }, sectors: { siloviki: 2 }, dovolstvo: -30 } }
-      ]
-    },
-    {
-      id: "uk_scot_border",
-      speaker: "Пограничная Служба",
-      situation: "Между Англией и независимой Шотландией теперь жесткая граница. Торговля встала.",
-      requires: { statuses: ["uk_border_crisis"] },
-      weight: 1,
-      choices: [
-        { label: "Подписать договор о свободной торговле", effects: { resources: { money: 500 }, sectors: { economy: 1 }, dovolstvo: 10 } },
-        { label: "Ввести пошлины, пусть платят", effects: { resources: { influence: 100 }, sectors: { economy: 1 }, dovolstvo: 0 } }
+        { label: "Выдавать паспорта за инвестиции", effects: { resources: { money: 2000, influence: -50 }, dovolstvo: 0 }, newsLines: { state: "Новые граждане укрепляют экономику", liberal: "Паспорта продаются как горячие пирожки" } },
+        { label: "Отказать. Гражданство нужно заслужить", effects: { resources: { influence: 150 }, sectors: { science: 1 }, dovolstvo: 10 }, newsLines: { state: "Национальные интересы превыше всего", liberal: "Релоканты начинают уезжать" } }
       ]
     },
 
-    // Chain 3: Economy/Brexit
+    // Chain 2: Diaspora
     {
-      id: "uk_trade_deal",
-      speaker: "Министр Торговли",
-      situation: "Нам нужно торговое соглашение с США. Но они требуют открыть рынок для хлорированной курицы и приватизировать NHS.",
+      id: "am_diaspora_fund",
+      speaker: "Представитель Диаспоры",
+      situation: "Диаспора в США и Франции собрала огромный фонд. Они хотят инвестировать, но требуют мест в правительстве.",
       weight: 1,
       choices: [
-        { label: "Согласиться. Нам нужны деньги", addStatuses: ["uk_us_vassal"], effects: { resources: { money: 2000, influence: 50 }, sectors: { economy: 1 }, dovolstvo: 0 } },
-        { label: "Отказать. Британия не продается", addStatuses: ["uk_trade_iso"], effects: { resources: { money: -1000, influence: 100 }, dovolstvo: 10 } }
+        { label: "Дать им министерские кресла", addStatuses: ["am_diaspora_in_power"], effects: { resources: { money: 2500, influence: 50 }, sectors: { economy: 1 }, dovolstvo: 5 }, newsLines: { state: "Единство нации по всему миру", liberal: "Страной управляют люди с чужими паспортами" } },
+        { label: "Взять только деньги, власть не отдадим", addStatuses: ["am_diaspora_angry"], effects: { resources: { money: 500, influence: 150 }, dovolstvo: 5 }, newsLines: { state: "Суверенитет не продается", liberal: "Мы отвернулись от своих же братьев" } }
       ]
     },
     {
-      id: "uk_us_buyout",
-      speaker: "Аналитик",
-      situation: "Американские корпорации скупили половину британских брендов. Мы теряем экономический суверенитет.",
-      requires: { statuses: ["uk_us_vassal"] },
+      id: "am_diaspora_scandal",
+      speaker: "Журналист-расследователь",
+      situation: "Министры из диаспоры замешаны в отмывании денег через благотворительные фонды!",
+      requires: { statuses: ["am_diaspora_in_power"] },
       weight: 1,
       choices: [
-        { label: "Ввести закон о защите нац. интересов", addStatuses: ["uk_us_trade_war"], effects: { resources: { money: -1500, influence: 100 }, dovolstvo: 10 } },
-        { label: "Продолжать продавать активы", effects: { resources: { money: 2000 }, sectors: { economy: 1 }, dovolstvo: 0 } }
+        { label: "Замять скандал, они нам нужны", addStatuses: ["am_corruption_high"], effects: { resources: { influence: -50 }, dovolstvo: -10, sectors: { smi: 1 } }, newsLines: { state: "Атака на правительство отражена", liberal: "Коррупция процветает открыто" } },
+        { label: "Громко уволить и посадить", addStatuses: ["am_diaspora_angry"], effects: { resources: { influence: 200, money: 0 }, dovolstvo: 10, sectors: { smi: 1 } }, newsLines: { state: "Закон един для всех", liberal: "Политическая чистка или борьба за справедливость?" } }
       ]
     },
     {
-      id: "uk_us_sanctions",
-      speaker: "Посол США",
-      situation: "Закон о защите национальных интересов нарушает нашу сделку. Мы вводим тарифы на британские товары.",
-      requires: { statuses: ["uk_us_trade_war"] },
+      id: "am_diaspora_boycott",
+      speaker: "Министр Финансов",
+      situation: "Диаспора обиделась и призывает бойкотировать наши товары за рубежом.",
+      requires: { statuses: ["am_diaspora_angry"] },
       weight: 1,
       choices: [
-        { label: "Подать жалобу в ВТО", effects: { resources: { influence: 100 }, sectors: { economy: 1 } } },
-        { label: "Отменить закон", removeStatuses: ["uk_us_trade_war"], effects: { resources: { influence: 50 }, dovolstvo: 0 } }
-      ]
-    },
-
-    // Chain 4: Monarchy
-    {
-      id: "uk_royal_scandal",
-      speaker: "Главред Таблоида",
-      situation: "Очередной член королевской семьи оказался в центре грязного скандала. Рейтинги монархии на дне.",
-      weight: 1,
-      choices: [
-        { label: "Лишить его титулов и содержания", addStatuses: ["uk_modern_monarchy"], effects: { resources: { influence: 50 }, dovolstvo: 15 } },
-        { label: "Замять скандал, надавив на прессу", addStatuses: ["uk_republican_rise"], effects: { resources: { influence: 50 }, sectors: { smi: 1 }, dovolstvo: 0 } }
-      ]
-    },
-    {
-      id: "uk_abolish_monarchy",
-      speaker: "Лидер Оппозиции",
-      situation: "Скандалы переполнили чашу. Половина страны требует провозгласить Республику!",
-      requires: { statuses: ["uk_republican_rise"] },
-      weight: 1,
-      choices: [
-        { label: "Провести референдум о Монархии", addStatuses: ["uk_republic_vote"], effects: { resources: { influence: 50 }, dovolstvo: 20 } },
-        { label: "Корона священна! Подавить протесты", effects: { resources: { influence: 200 }, sectors: { siloviki: 1 }, dovolstvo: -10 } }
-      ]
-    },
-    {
-      id: "uk_new_republic",
-      speaker: "Премьер-Министр",
-      situation: "Народ проголосовал за Республику! Королевские дворцы теперь музеи. Нужно выбрать Президента.",
-      requires: { statuses: ["uk_republic_vote"] },
-      weight: 1,
-      choices: [
-        { label: "Перейти к президентской республике", effects: { resources: { influence: 50 }, sectors: { economy: 1 }, dovolstvo: 10 } },
-        { label: "Оставить парламентскую систему", effects: { resources: { influence: 100 }, dovolstvo: 10 } }
+        { label: "Извиниться на высшем уровне", removeStatuses: ["am_diaspora_angry"], effects: { resources: { influence: 0 }, dovolstvo: 0 }, newsLines: { state: "Примирение ради будущего", liberal: "Унизительное покаяние" } },
+        { label: "Справимся без них! Искать новые рынки", addStatuses: ["am_self_reliant"], effects: { sectors: { economy: 1 }, dovolstvo: 10 }, newsLines: { state: "Курс на опору на собственные силы", liberal: "Спад экспорта из-за ссоры со своими" } }
       ]
     },
 
-    // Chain 5: Channel Boats
+    // Chain 3: Geopolitics
     {
-      id: "uk_channel_crisis",
-      speaker: "Министр Внутренних Дел",
-      situation: "Рекордное число лодок с нелегалами пересекает Ла-Манш. Отели переполнены беженцами.",
+      id: "am_border_tensions",
+      speaker: "Министр Обороны",
+      situation: "На границе участились перестрелки. Соседи стягивают войска. Нам нужны союзники.",
       weight: 1,
       choices: [
-        { label: "Отправлять их всех в Руанду!", addStatuses: ["uk_rwanda_plan"], effects: { resources: { money: -1000, influence: 50 }, dovolstvo: 20 } },
-        { label: "Упростить выдачу убежища", addStatuses: ["uk_open_doors"], effects: { resources: { money: 1000 }, sectors: { economy: 1 }, dovolstvo: -10 } }
+        { label: "Просить помощи у традиционного северного союзника", addStatuses: ["am_north_ally"], effects: { resources: { influence: -50 }, sectors: { army: 2 }, dovolstvo: 5 }, newsLines: { state: "Старые друзья пришли на помощь", liberal: "Мы теряем суверенитет" } },
+        { label: "Искать поддержки на Западе (Франция, США)", addStatuses: ["am_west_ally"], effects: { resources: { money: 500 }, sectors: { intel: 1 }, dovolstvo: 15 }, newsLines: { state: "Новый вектор внешней политики", liberal: "Опасная геополитическая игра" } }
       ]
     },
     {
-      id: "uk_echr_exit",
-      speaker: "Европейский Суд по ПЧ",
-      situation: "Ваш план с Руандой незаконен! Мы запрещаем депортационные рейсы.",
-      requires: { statuses: ["uk_rwanda_plan"] },
+      id: "am_north_betrayal",
+      speaker: "Посол",
+      situation: "Северный союзник занят своими делами и не реагирует на наши просьбы о поставках оружия.",
+      requires: { statuses: ["am_north_ally"] },
       weight: 1,
       choices: [
-        { label: "Выйти из ЕСПЧ и депортировать!", addStatuses: ["uk_pariah_state"], effects: { resources: { influence: 100 }, sectors: { siloviki: 1 }, dovolstvo: 20 } },
-        { label: "Подчиниться суду (Отменить план)", removeStatuses: ["uk_rwanda_plan"], effects: { resources: { influence: 200 }, dovolstvo: 0 } }
+        { label: "Сделать резкое заявление и выйти из союза!", removeStatuses: ["am_north_ally"], addStatuses: ["am_isolated"], effects: { resources: { influence: 150 }, sectors: { army: -1 }, dovolstvo: 0 }, newsLines: { state: "Исторический разворот", liberal: "Мы остались один на один с врагом" } },
+        { label: "Продолжать унизительно просить", effects: { resources: { influence: -50 }, dovolstvo: -10 }, newsLines: { state: "Сложные дипломатические маневры", liberal: "Предательство интересов нации" } }
       ]
     },
     {
-      id: "uk_global_sanctions",
-      speaker: "ООН",
-      situation: "Выход из ЕСПЧ и жесткие депортации привели к санкциям со стороны правозащитных организаций.",
-      requires: { statuses: ["uk_pariah_state"] },
+      id: "am_west_weapons",
+      speaker: "Министр Обороны",
+      situation: "Франция предлагает продать нам современные радары и броневики, но это разозлит Север.",
+      requires: { statuses: ["am_west_ally"] },
       weight: 1,
       choices: [
-        { label: "Мы гордая независимая нация!", effects: { resources: { influence: 50 }, sectors: { economy: -1 }, dovolstvo: 10 } },
-        { label: "Вернуться в юрисдикцию ЕСПЧ", removeStatuses: ["uk_pariah_state"], effects: { resources: { influence: 200 }, dovolstvo: 0 } }
+        { label: "Купить французское оружие", addStatuses: ["am_modern_army"], effects: { resources: { money: -1000 }, sectors: { army: 2 }, dovolstvo: 15 }, newsLines: { state: "Армия переходит на стандарты НАТО", liberal: "Риск ответных санкций с Севера" } },
+        { label: "Отказаться, чтобы не дразнить соседей", effects: { resources: { influence: -50 }, sectors: { army: 1 }, dovolstvo: -5 }, newsLines: { state: "Осторожность — залог выживания", liberal: "Мы упустили шанс усилить оборону" } }
+      ]
+    },
+
+    // Chain 4: Cognac & Trade
+    {
+      id: "am_cognac_export",
+      speaker: "Глава Союза Виноделов",
+      situation: "Основной рынок сбыта нашего коньяка грозит ввести новые пошлины. Что делать с продукцией?",
+      weight: 1,
+      choices: [
+        { label: "Снизить цены, чтобы сохранить долю рынка", addStatuses: ["am_cheap_cognac"], effects: { resources: { money: 0 }, sectors: { economy: 1 }, dovolstvo: 0 }, newsLines: { state: "Заводы продолжают работать", liberal: "Мы продаем нашу гордость за бесценок" } },
+        { label: "Переориентироваться на новые премиальные рынки", addStatuses: ["am_premium_cognac"], effects: { resources: { money: -500 }, sectors: { economy: 1 }, dovolstvo: 15 }, newsLines: { state: "Выход на европейские рынки", liberal: "Сложный переходный период для фермеров" } }
+      ]
+    },
+    {
+      id: "am_cheap_cognac_scandal",
+      speaker: "Роспотреб... Иностранный Регулятор",
+      situation: "Наш коньяк признали подделкой в стране назначения! Это удар по репутации всей отрасли.",
+      requires: { statuses: ["am_cheap_cognac"] },
+      weight: 1,
+      choices: [
+        { label: "Жестко наказать бракоделов", addStatuses: ["am_cognac_regulated"], effects: { resources: { influence: 0 }, sectors: { economy: -1 }, dovolstvo: 15 }, newsLines: { state: "Очищение рынка от контрафакта", liberal: "Многие заводы обанкротятся" } },
+        { label: "Списать на политическое давление", effects: { resources: { influence: 150 }, dovolstvo: 0 }, newsLines: { state: "Недобросовестная конкуренция из-за рубежа", liberal: "Отрицание очевидных проблем качества" } }
+      ]
+    },
+    {
+      id: "am_premium_cognac_success",
+      speaker: "Глава Союза Виноделов",
+      situation: "Наш премиальный бренд взял золото в Париже! Мы можем расширить производство.",
+      requires: { statuses: ["am_premium_cognac"] },
+      weight: 1,
+      choices: [
+        { label: "Дать госгарантии под новые виноградники", effects: { resources: { money: 0 }, sectors: { economy: 2 }, dovolstvo: 20 }, newsLines: { state: "Золотая эра армянского коньяка", liberal: "Инвестиции в перспективную отрасль" } },
+        { label: "Пусть развиваются за свой счет", effects: { resources: { money: 500, influence: 50 }, dovolstvo: 5 } }
+      ]
+    },
+
+    // Chain 5: Traffic & Infrastructure
+    {
+      id: "am_yerevan_traffic",
+      speaker: "Мэр Еревана",
+      situation: "Город стоит в мертвых пробках. Дышать нечем, люди опаздывают на работу.",
+      weight: 1,
+      choices: [
+        { label: "Закупить сотни новых автобусов", addStatuses: ["am_new_buses"], effects: { resources: { money: -1000 }, sectors: { economy: 1 }, dovolstvo: 20 }, newsLines: { state: "Масштабная реформа общественного транспорта", liberal: "Многомиллионные контракты без конкурса" } },
+        { label: "Убрать выделенные полосы, пусть все едут", addStatuses: ["am_car_chaos"], effects: { sectors: { economy: -1 }, dovolstvo: 5 }, newsLines: { state: "Власти пошли навстречу автомобилистам", liberal: "Город окончательно превратился в парковку" } }
+      ]
+    },
+    {
+      id: "am_bus_strike",
+      speaker: "Водители Маршруток",
+      situation: "Из-за новых автобусов частные маршрутчики теряют работу. Они перекрыли главные улицы!",
+      requires: { statuses: ["am_new_buses"] },
+      weight: 1,
+      choices: [
+        { label: "Разогнать силой и лишить лицензий", addStatuses: ["am_transport_monopoly"], effects: { resources: { influence: -50 }, sectors: { economy: 1 }, dovolstvo: 0 }, newsLines: { state: "Конец мафии маршрутчиков", liberal: "Тысячи людей остались без работы" } },
+        { label: "Трудоустроить их в госкомпанию с двойной зарплатой", effects: { resources: { money: -500 }, dovolstvo: 20 }, newsLines: { state: "Социальный компромисс найден", liberal: "Огромная нагрузка на городской бюджет" } }
+      ]
+    },
+    {
+      id: "am_smog_crisis",
+      speaker: "Министр Экологии",
+      situation: "Из-за огромного количества машин над городом повис токсичный смог. Больницы переполнены.",
+      requires: { statuses: ["am_car_chaos"] },
+      weight: 1,
+      choices: [
+        { label: "Ввести платный въезд в центр", addStatuses: ["am_paid_parking"], effects: { resources: { money: 1000, influence: -100 }, dovolstvo: -20 }, newsLines: { state: "Непопулярные, но необходимые меры", liberal: "Очередной налог на бедных" } },
+        { label: "Посоветовать всем носить маски", effects: { sectors: { science: 1 }, dovolstvo: -10 }, newsLines: { state: "Минздрав предупреждает", liberal: "Экологическая катастрофа в столице" } }
       ]
     }
   ],
 };
+
+
+// REBALANCE
+const buffAmounts = { china: 13, usa: 3, armenia: 2 };
+for (const country of ['china', 'usa', 'armenia']) {
+    if (decks[country]) {
+        for (const card of decks[country]) {
+            for (const choice of card.choices) {
+                if (!choice.effects) choice.effects = {};
+                choice.effects.dovolstvo = (choice.effects.dovolstvo || 0) + buffAmounts[country];
+            }
+        }
+    }
+}
+
+
+let patchData = {};
+try {
+  patchData = JSON.parse(fs.readFileSync(path.join(__dirname, '../content/news_lines_patch.json'), 'utf8'));
+} catch(e) {}
+console.log('KEYS:', Object.keys(decks)); for (const countryId in decks) {
+  for (const card of decks[countryId]) {
+    if (patchData[card.id]) {
+      card.choices.forEach((c, idx) => {
+        if (patchData[card.id][idx]) {
+          c.newsLines = patchData[card.id][idx];
+        }
+      });
+    }
+  }
+}
 
 for (const [countryId, cards] of Object.entries(decks)) {
   const deck = {

@@ -1,0 +1,60 @@
+undefined undefined: Разрешить строительство
+undefined undefined: Заморозить ради мира с соседями
+undefined undefined: Начать полномасштабную военную операцию
+undefined undefined: Эвакуировать новые поселения
+undefined undefined: Подписать исторический мирный договор
+undefined undefined: Разорвать переговоры, это угроза безопасности
+undefined undefined: Повысить налоги
+undefined undefined: Ввести налоговые льготы
+undefined undefined: Запретить вывод капитала!
+undefined undefined: Предложить им эксклюзивные гранты на возвращение
+undefined undefined: Продавать кибероружие всем желающим
+undefined undefined: Только для нужд нашей разведки
+undefined undefined: Начать призыв в армию
+undefined undefined: Принять закон об обходе решения суда
+undefined undefined: Бросить их в военные тюрьмы
+undefined undefined: Уступить и отменить призыв
+undefined undefined: Урезать субсидии религиозным школам
+undefined undefined: Разогнать забастовку водометами
+undefined undefined: Влить миллиарды в лазеры
+undefined undefined: Просить США профинансировать ракеты
+undefined undefined: Продать системы в Европу
+undefined undefined: Сохранить технологию в тайне
+undefined undefined: Запустить ответную кибератаку
+undefined undefined: Усилить внутреннюю защиту
+undefined undefined: Запустить реформу!
+undefined undefined: Не раскалывать общество
+undefined undefined: Уволить мятежников!
+undefined undefined: Приостановить реформу ради переговоров
+undefined undefined: Собрать Учредительное Собрание
+undefined undefined: Слишком сложно. Отменить реформу и забыть
+undefined undefined: Заменить сиделок роботами
+undefined undefined: Открыть границы для мигрантов
+undefined undefined: Отозвать роботов и выплатить компенсации
+undefined undefined: Замять инцидент и выпустить патч
+undefined undefined: Передать управление ИИ
+undefined undefined: Люди должны оставаться главными
+undefined undefined: Ввести обязательную 4-дневную рабочую неделю
+undefined undefined: Это японский дух! Работа превыше всего
+undefined undefined: Субсидировать автоматизацию производств
+undefined undefined: Отменить 4-дневку
+undefined undefined: Создать 'Министерство Одиночества'
+undefined undefined: Скрывать статистику
+undefined undefined: Разрешить казино
+undefined undefined: Запретить, это аморально
+undefined undefined: Начать масштабную облаву и чистку
+undefined undefined: Брать с них свою долю
+undefined undefined: Национализировать легальный бизнес Якудзы
+undefined undefined: Сжечь их активы
+undefined undefined: Сбросить воду в океан! Она очищена
+undefined undefined: Строить новые хранилища
+undefined undefined: Выплатить компенсации рыбакам
+undefined undefined: Подать жалобу в ВТО
+undefined undefined: Запустить реакторы
+undefined undefined: Мы обожглись однажды. Только зеленый курс
+undefined undefined: Инициировать отмену 9-й статьи!
+undefined undefined: Мы страна пацифистов. Оставить как есть
+undefined undefined: Заложить два суперавианосца
+undefined undefined: Оборонного бюджета не хватит
+undefined undefined: Провести жесткую демонстрацию силы
+undefined undefined: Отступить ради дипломатии
