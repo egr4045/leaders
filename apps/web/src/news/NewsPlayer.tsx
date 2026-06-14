@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RoomSnapshot } from '@leaders/shared';
 import { Anchor } from './Anchor';
+import { getAudioCtx, unlockAudio } from '../lib/audioUnlock';
 
 type NewsItem = NonNullable<RoomSnapshot['news']>[number];
 
 const MS_PER_CHAR = 55;
 const FALLBACK_MS = 2800;
 const INTRO_MS = 4500; // news opening duration before playback starts (matches jingle)
+// Tiny silent mp3 — played (muted) inside a user gesture to unlock the <audio> element.
+const SILENT_MP3 =
+  'data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
 
 function playIntroJingle() {
   try {
-    const ctx = new AudioContext();
+    // Shared context so a global user gesture (installAudioUnlock) can resume it.
+    const ctx = getAudioCtx();
+    if (!ctx) return;
     void ctx.resume();
     const master = ctx.createGain();
     master.gain.value = 0.9;
@@ -40,8 +46,7 @@ function playIntroJingle() {
     [523, 659, 784].forEach((f) => note(f, t0 + 1.05, 1.9, 0.06));
     // Resolved bright sting
     [523, 659, 784, 1047, 1319].forEach((f) => note(f, t0 + 2.5, 1.8, 0.07));
-
-    setTimeout(() => ctx.close(), 4700);
+    // NB: shared context is intentionally not closed.
   } catch {
     // AudioContext not available
   }
@@ -55,29 +60,48 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
   const [introElapsed, setIntroElapsed] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
+  const [audioBlocked, setAudioBlocked] = useState(false);
   const jinglePlayed = useRef(false);
 
-  // Fixed 5-second intro, then start news
+  // Fixed intro, then start news
   useEffect(() => {
-    // Unlock audio autoplay policies immediately on mount
+    // Best-effort: resume shared context + prime the <audio> element so autoplay
+    // works. If the browser still blocks playback, the tap overlay below recovers it.
+    unlockAudio();
     const el = audioRef.current;
     if (el) {
       el.muted = true;
-      el.src = 'data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
+      el.src = SILENT_MP3;
       el.play().then(() => {
         el.pause();
         el.muted = false;
       }).catch(() => {});
     }
 
-    if (started) return;
-    if (!jinglePlayed.current) { jinglePlayed.current = true; playIntroJingle(); }
+    // If audio is still locked (no prior user gesture this session), prompt a tap
+    // up front so the jingle + anchor play from the start. Cleared once unlocked.
+    const c = getAudioCtx();
+    let onState: (() => void) | null = null;
+    if (c) {
+      if (c.state !== 'running') setAudioBlocked(true);
+      onState = () => { if (c.state === 'running') setAudioBlocked(false); };
+      c.addEventListener('statechange', onState);
+    }
+
+    if (started) return () => { if (c && onState) c.removeEventListener('statechange', onState); };
+    // Only play the jingle if audio is actually unlocked, so its scheduled notes
+    // can't fire over the news after a late tap.
+    if (!jinglePlayed.current && c && c.state === 'running') { jinglePlayed.current = true; playIntroJingle(); }
     const tick = setInterval(() => setIntroElapsed((p) => p + 100), 100);
     const id = setTimeout(() => {
       clearInterval(tick);
       setStarted(true);
     }, INTRO_MS);
-    return () => { clearInterval(tick); clearTimeout(id); };
+    return () => {
+      clearInterval(tick);
+      clearTimeout(id);
+      if (c && onState) c.removeEventListener('statechange', onState);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -122,7 +146,7 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
           setLineIdx((l) => l + 1);
         }
       };
-      void el.play().catch(() => {});
+      el.play().then(() => setAudioBlocked(false)).catch(() => setAudioBlocked(true));
       return () => {
         cancelAnimationFrame(rAF);
         el.pause();
@@ -167,9 +191,40 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
     }
   };
 
+  // Recover from a blocked autoplay — runs inside the user's tap (a real gesture).
+  const unlockFromTap = () => {
+    unlockAudio();
+    setAudioBlocked(false);
+    const el = audioRef.current;
+    if (!el) return;
+    el.muted = false;
+    const cur = el.src;
+    if (started && cur && !cur.startsWith('data:')) {
+      // A news line is loaded — play it audibly now.
+      el.play().catch(() => {});
+    } else {
+      // Still in the intro — prime the element so the TTS at INTRO_MS is allowed.
+      el.muted = true;
+      el.src = SILENT_MP3;
+      el.play().then(() => { el.pause(); el.muted = false; }).catch(() => {});
+    }
+  };
+
   return (
-    <div className="flex w-full flex-col gap-0 overflow-hidden rounded-2xl bg-slate-900">
+    <div className="relative flex w-full flex-col gap-0 overflow-hidden rounded-2xl bg-slate-900">
       <audio ref={audioRef} crossOrigin="anonymous" />
+
+      {/* Tap-to-enable-sound overlay (autoplay was blocked) */}
+      {audioBlocked && (
+        <button
+          onClick={unlockFromTap}
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-slate-950/70 backdrop-blur-sm"
+        >
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-3xl shadow-lg shadow-red-900">🔊</span>
+          <span className="text-base font-bold text-white">Нажмите для звука</span>
+          <span className="text-xs text-white/60">Браузер заблокировал автозапуск</span>
+        </button>
+      )}
 
       {/* ── Intro screen (5 seconds) ──────────────────────────────────────────────── */}
       {!started ? (
