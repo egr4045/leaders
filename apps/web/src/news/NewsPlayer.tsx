@@ -4,10 +4,9 @@ import { Anchor } from './Anchor';
 import { getAudioCtx, unlockAudio } from '../lib/audioUnlock';
 
 type NewsItem = NonNullable<RoomSnapshot['news']>[number];
+type NewsCursor = RoomSnapshot['newsCursor'];
 
-const MS_PER_CHAR = 55;
-const FALLBACK_MS = 2800;
-const INTRO_MS = 4500; // news opening duration before playback starts (matches jingle)
+const INTRO_MS = 4500; // intro splash duration (matches server NEWS_INTRO_MS + jingle)
 // Tiny silent mp3 — played (muted) inside a user gesture to unlock the <audio> element.
 const SILENT_MP3 =
   'data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
@@ -37,7 +36,6 @@ function playIntroJingle() {
     };
 
     const t0 = ctx.currentTime + 0.05;
-
     // Low bed for gravitas
     note(131, t0, 3.4, 0.05, 'triangle');
     // Ascending fanfare arpeggio
@@ -52,10 +50,25 @@ function playIntroJingle() {
   }
 }
 
-export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?: boolean }) {
-  const [started, setStarted] = useState(false);
-  const [countryIdx, setCountryIdx] = useState(0);
-  const [lineIdx, setLineIdx] = useState(0);
+/**
+ * Выпуск новостей. Прогресс (какая страна/строка) задаёт СЕРВЕР через `cursor`
+ * (snapshot.newsCursor) — у всех клиентов одинаково, не застревает. Локально
+ * клиент только проигрывает озвучку текущей строки и рисует субтитры/диктора.
+ *   cursor === null            → интро-заставка (играет джингл)
+ *   cursor.countryIdx < len    → читается страна[countryIdx], строка[lineIdx]
+ *   cursor.countryIdx >= len   → выпуск окончен
+ */
+export function NewsPlayer({
+  news,
+  isHost = false,
+  cursor,
+  onSkip,
+}: {
+  news: NewsItem[];
+  isHost?: boolean;
+  cursor: NewsCursor;
+  onSkip?: () => void;
+}) {
   const [subtitleText, setSubtitleText] = useState('');
   const [introElapsed, setIntroElapsed] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -63,23 +76,22 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
   const [audioBlocked, setAudioBlocked] = useState(false);
   const jinglePlayed = useRef(false);
 
-  // Fixed intro, then start news
+  const started = cursor !== null;
+  const countryIdx = cursor?.countryIdx ?? 0;
+  const lineIdx = cursor?.lineIdx ?? 0;
+  const item = started && countryIdx < news.length ? news[countryIdx]! : null;
+  const finished = started && countryIdx >= news.length;
+
+  // Mount: unlock audio + (during intro only) play the jingle and run the countdown.
   useEffect(() => {
-    // Best-effort: resume shared context + prime the <audio> element so autoplay
-    // works. If the browser still blocks playback, the tap overlay below recovers it.
     unlockAudio();
     const el = audioRef.current;
     if (el) {
       el.muted = true;
       el.src = SILENT_MP3;
-      el.play().then(() => {
-        el.pause();
-        el.muted = false;
-      }).catch(() => {});
+      el.play().then(() => { el.pause(); el.muted = false; }).catch(() => {});
     }
 
-    // If audio is still locked (no prior user gesture this session), prompt a tap
-    // up front so the jingle + anchor play from the start. Cleared once unlocked.
     const c = getAudioCtx();
     let onState: (() => void) | null = null;
     if (c) {
@@ -88,30 +100,28 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       c.addEventListener('statechange', onState);
     }
 
-    if (started) return () => { if (c && onState) c.removeEventListener('statechange', onState); };
-    // Only play the jingle if audio is actually unlocked, so its scheduled notes
-    // can't fire over the news after a late tap.
-    if (!jinglePlayed.current && c && c.state === 'running') { jinglePlayed.current = true; playIntroJingle(); }
-    const tick = setInterval(() => setIntroElapsed((p) => p + 100), 100);
-    const id = setTimeout(() => {
-      clearInterval(tick);
-      setStarted(true);
-    }, INTRO_MS);
+    let tick: ReturnType<typeof setInterval> | null = null;
+    // Only when we mount during the intro (cursor still null) do we play the jingle
+    // + show the countdown. Late joiners (cursor already set) skip straight to news.
+    if (cursor === null) {
+      if (!jinglePlayed.current && c && c.state === 'running') {
+        jinglePlayed.current = true;
+        playIntroJingle();
+      }
+      tick = setInterval(() => setIntroElapsed((p) => Math.min(INTRO_MS, p + 100)), 100);
+    }
     return () => {
-      clearInterval(tick);
-      clearTimeout(id);
+      if (tick) clearInterval(tick);
       if (c && onState) c.removeEventListener('statechange', onState);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const item = started && countryIdx < news.length ? news[countryIdx]! : null;
-
-  // Per-line playback: audio → onended sync; else → char-count timer
+  // Play the current line's TTS (server drives WHICH line; we only play it).
   useEffect(() => {
-    if (!item) return;
+    if (!item) { setAudioEl(null); return; }
     const line = item.lines[lineIdx] ?? null;
-    if (!line) return;
+    if (!line) { setSubtitleText(''); return; }
 
     setSubtitleText('');
     const el = audioRef.current;
@@ -121,7 +131,7 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
       setAudioEl(el);
       el.muted = false;
       el.src = audioUrl;
-      
+
       let rAF = 0;
       let lastCharI = -1;
       const updateSubtitle = () => {
@@ -134,18 +144,8 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
         }
         rAF = requestAnimationFrame(updateSubtitle);
       };
-      
-      el.onplay = () => {
-        updateSubtitle();
-      };
-      
-      el.onended = () => {
-        cancelAnimationFrame(rAF);
-        setSubtitleText(line);
-        if (lineIdx + 1 < item.lines.length) {
-          setLineIdx((l) => l + 1);
-        }
-      };
+      el.onplay = () => updateSubtitle();
+      el.onended = () => { cancelAnimationFrame(rAF); setSubtitleText(line); };
       el.play().then(() => setAudioBlocked(false)).catch(() => setAudioBlocked(true));
       return () => {
         cancelAnimationFrame(rAF);
@@ -154,42 +154,19 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
         el.onplay = null;
       };
     } else {
+      // No audio for this line — type the subtitle locally so the anchor isn't static.
       setAudioEl(null);
       if (el) { el.pause(); el.onended = null; }
-      
       let charI = 0;
       const iv = setInterval(() => {
         charI++;
         setSubtitleText(line.slice(0, charI));
         if (charI >= line.length) clearInterval(iv);
-      }, MS_PER_CHAR);
-
-      const ms = Math.max(line.length * MS_PER_CHAR + 600, FALLBACK_MS);
-      const timer = setTimeout(() => {
-        if (lineIdx + 1 < item.lines.length) {
-          setLineIdx((l) => l + 1);
-        }
-      }, ms);
-      return () => {
-        clearInterval(iv);
-        clearTimeout(timer);
-      };
+      }, 55);
+      return () => clearInterval(iv);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [started, lineIdx, countryIdx]);
-
-  const goNext = () => {
-    const el = audioRef.current;
-    if (el) { el.pause(); el.onended = null; }
-    setAudioEl(null);
-    setSubtitleText('');
-    if (countryIdx + 1 < news.length) {
-      setCountryIdx((i) => i + 1);
-      setLineIdx(0);
-    } else {
-      setCountryIdx(news.length);
-    }
-  };
+  }, [started, countryIdx, lineIdx]);
 
   // Recover from a blocked autoplay — runs inside the user's tap (a real gesture).
   const unlockFromTap = () => {
@@ -200,15 +177,15 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
     el.muted = false;
     const cur = el.src;
     if (started && cur && !cur.startsWith('data:')) {
-      // A news line is loaded — play it audibly now.
       el.play().catch(() => {});
     } else {
-      // Still in the intro — prime the element so the TTS at INTRO_MS is allowed.
       el.muted = true;
       el.src = SILENT_MP3;
       el.play().then(() => { el.pause(); el.muted = false; }).catch(() => {});
     }
   };
+
+  const introPct = Math.min(1, introElapsed / INTRO_MS);
 
   return (
     <div className="relative flex w-full flex-col gap-0 overflow-hidden rounded-2xl bg-slate-900">
@@ -226,11 +203,10 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
         </button>
       )}
 
-      {/* ── Intro screen (5 seconds) ──────────────────────────────────────────────── */}
       {!started ? (
+        /* ── Intro splash (server starts the cursor after the jingle) ── */
         <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-2xl bg-slate-950"
              style={{ minHeight: 'min(55vw, 42vh)', maxHeight: '48vh' }}>
-          {/* Animated globe */}
           <svg className="absolute inset-0 h-full w-full opacity-[0.08]" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice"
                style={{ animation: 'spin 8s linear infinite', transformOrigin: '50% 50%' }}>
             <circle cx="200" cy="130" r="160" fill="none" stroke="#60a5fa" strokeWidth="1.5" />
@@ -244,30 +220,23 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
           </svg>
           <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
-          {/* Channel logo */}
           <div className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-xl font-bold text-white shadow-lg shadow-red-900">①</div>
-
-          {/* Live indicator */}
           <div className="absolute left-4 top-4 flex items-center gap-2">
             <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
             <span className="text-xs font-semibold tracking-widest text-white/70">ПРЯМОЙ ЭФИР</span>
           </div>
 
-          {/* Main title */}
           <div className="relative z-10 flex flex-col items-center gap-4 px-6 text-center"
-               style={{ opacity: Math.min(1, Math.min(1, introElapsed / INTRO_MS) * 4), transform: `scale(${0.85 + Math.min(1, introElapsed / INTRO_MS) * 0.15})`, transition: 'none' }}>
+               style={{ opacity: Math.min(1, introPct * 4), transform: `scale(${0.85 + introPct * 0.15})`, transition: 'none' }}>
             <div className="text-6xl font-black tracking-[0.2em] text-white drop-shadow-lg">НОВОСТИ</div>
             <div className="text-xs tracking-[0.4em] text-white/40 uppercase">Лидеры нации</div>
-            {/* Countdown */}
-            <div className="mt-1 text-3xl font-mono font-bold text-red-500/80">{Math.max(0, Math.ceil((INTRO_MS - introElapsed) / 1000)) > 0 ? Math.max(0, Math.ceil((INTRO_MS - introElapsed) / 1000)) : ''}</div>
+            <div className="mt-1 text-3xl font-mono font-bold text-red-500/80">{Math.ceil((INTRO_MS - introElapsed) / 1000) > 0 ? Math.ceil((INTRO_MS - introElapsed) / 1000) : ''}</div>
           </div>
 
-          {/* Progress sweep */}
           <div className="absolute bottom-10 left-8 right-8 h-0.5 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full rounded-full bg-red-500 transition-none" style={{ width: `${Math.min(1, introElapsed / INTRO_MS) * 100}%` }} />
+            <div className="h-full rounded-full bg-red-500 transition-none" style={{ width: `${introPct * 100}%` }} />
           </div>
 
-          {/* Red bottom stripe */}
           <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 bg-red-600 px-4 py-2">
             <span className="text-base font-bold tracking-wider text-white">ВЕСТИ</span>
             <span className="text-white/60">•</span>
@@ -276,15 +245,14 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
             </span>
           </div>
         </div>
-      ) : !item ? (
+      ) : finished || !item ? (
         <div className="w-full rounded-2xl bg-slate-900 p-6 text-center text-slate-400">
           На этом выпуск новостей окончен. Оставайтесь с нами.
         </div>
       ) : (
         (() => {
           const currentLine = item.lines[lineIdx] ?? '';
-          const allLinesShown = lineIdx >= item.lines.length - 1 && subtitleText.length >= currentLine.length;
-          
+          const lastCountry = countryIdx + 1 >= news.length;
           return (
             <>
               {/* Anchor area */}
@@ -299,25 +267,16 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
                     className="absolute inset-0 h-full w-full object-cover opacity-25 pointer-events-none"
                   />
                 )}
-                {/* Country label */}
                 <div className="absolute left-3 top-3 rounded bg-slate-950/70 px-2 py-1 text-xs uppercase tracking-widest text-amber-400">
                   {item.countryName} — выпуск {countryIdx + 1}/{news.length}
                 </div>
-                {/* Host controls */}
-                {isHost && allLinesShown && (
+                {/* Host: skip current country (server-synced for everyone) */}
+                {isHost && onSkip && (
                   <button
-                    onClick={goNext}
+                    onClick={onSkip}
                     className="absolute bottom-3 right-3 rounded-lg bg-amber-500 px-4 py-1.5 text-sm font-bold text-slate-950 hover:bg-amber-400"
                   >
-                    {countryIdx + 1 < news.length ? 'Следующая страна →' : 'Завершить выпуск ✓'}
-                  </button>
-                )}
-                {isHost && !allLinesShown && (
-                  <button
-                    onClick={goNext}
-                    className="absolute bottom-3 right-3 rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-500 hover:text-slate-300"
-                  >
-                    пропустить →
+                    {lastCountry ? 'Завершить выпуск ✓' : 'Следующая страна →'}
                   </button>
                 )}
               </div>
@@ -326,7 +285,7 @@ export function NewsPlayer({ news, isHost = false }: { news: NewsItem[]; isHost?
               <div className="h-1 w-full bg-slate-800">
                 <div
                   className="h-full bg-amber-400 transition-all duration-100"
-                  style={{ width: `${currentLine.length > 0 ? subtitleText.length / currentLine.length * 100 : 100}%` }}
+                  style={{ width: `${currentLine.length > 0 ? (subtitleText.length / currentLine.length) * 100 : 100}%` }}
                 />
               </div>
             </>

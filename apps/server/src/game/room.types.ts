@@ -79,6 +79,11 @@ export interface RoomState {
   news: Record<string, string[]> | null;
   /** сгенерированные ассеты сводки: countryId → URLs (per-line TTS) */
   newsAssets: Record<string, { lineAudioUrls?: (string | null)[]; imageUrl?: string }>;
+  /**
+   * Серверный курсор выпуска новостей (фаза un_summary) — синхронизирует всех клиентов.
+   * `null` — идёт интро/заставка либо выпуск окончен. `countryIdx` — индекс в Object.keys(news).
+   */
+  newsCursor: { countryIdx: number; lineIdx: number } | null;
   /** приватные звонки 1-на-1 (фаза Кабинета) */
   calls: { id: string; fromCountryId: string; toCountryId: string; status: 'ringing' | 'active' | 'ended' }[];
   /** журнал состоявшихся звонков (для шпионской прослушки, фича 10) */
@@ -117,6 +122,8 @@ export interface RoomState {
 export interface RoomTimers {
   phaseTimer?: NodeJS.Timeout;
   pauseTimer?: NodeJS.Timeout;
+  /** таймер продвижения курсора выпуска новостей (un_summary) */
+  newsTimer?: NodeJS.Timeout;
   /** таймеры действий ботов; чистятся при каждой смене фазы */
   botTimers: NodeJS.Timeout[];
 }

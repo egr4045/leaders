@@ -211,6 +211,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return this.withSession(socket, (s) => this.rooms.hostSkipSpeaker(s.roomCode, s.playerId));
   }
 
+  @SubscribeMessage(SocketEvents.RoomHostNewsSkip)
+  hostNewsSkip(@ConnectedSocket() socket: Socket) {
+    return this.withSession(socket, (s) => this.rooms.hostNewsSkip(s.roomCode, s.playerId));
+  }
+
   @SubscribeMessage(SocketEvents.RoomHostLayout)
   hostLayout(@ConnectedSocket() socket: Socket, @MessageBody() body: { layout: string }) {
     return this.withSession(socket, (s) =>

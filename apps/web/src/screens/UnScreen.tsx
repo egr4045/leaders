@@ -473,7 +473,16 @@ export function UnScreen() {
       >
         {phase === 'un_summary' && (
           <>
-            {snapshot.news ? <NewsPlayer news={snapshot.news} isHost={isHost} /> : <NewsFeed />}
+            {snapshot.news ? (
+              <NewsPlayer
+                news={snapshot.news}
+                isHost={isHost}
+                cursor={snapshot.newsCursor}
+                onSkip={() => void emitRaw(SocketEvents.RoomHostNewsSkip)}
+              />
+            ) : (
+              <NewsFeed />
+            )}
           </>
         )}
 

@@ -339,6 +339,7 @@ export function buildSnapshot(
             imageUrl: room.newsAssets[countryId]?.imageUrl ?? null,
           }))
         : null,
+    newsCursor: room.phase === 'un_summary' ? room.newsCursor : null,
     voteTally: (() => {
       const tally: Record<string, { sanction: number; support: number }> = {};
       for (const v of room.votes) {

@@ -46,6 +46,23 @@ export class MlService {
     return null;
   }
 
+  /**
+   * Длительность аудио-ассета (мс) по его /media/-URL — для синхронного курсора новостей.
+   * Поддерживает mp3 (CBR-оценка) и wav. Возвращает null, если файла нет/не распознан.
+   */
+  audioDurationMs(assetUrl: string): number | null {
+    if (!assetUrl || !assetUrl.startsWith('/media/')) return null;
+    const rel = assetUrl.slice('/media/'.length).replace(/\\/g, '/').replace(/\.\.+/g, '');
+    const file = path.join(this.assetDir, rel);
+    try {
+      if (!fs.existsSync(file)) return null;
+      if (file.toLowerCase().endsWith('.wav')) return wavDurationMs(file);
+      return mp3DurationMs(file);
+    } catch {
+      return null;
+    }
+  }
+
   /** Считает, сколько из переданных ключей уже имеют готовые пре-рендеры. */
   getPrerenderCount(keys: string[]): { ready: number; total: number } {
     const ready = keys.filter((k) => this.getPrerenderUrl(k) !== null).length;
@@ -193,6 +210,62 @@ function makeMockSpeechWav(seconds: number): Buffer {
   header.write('data', 36);
   header.writeUInt32LE(data.length, 40);
   return Buffer.concat([header, data]);
+}
+
+/** Длительность WAV (мс) из заголовка RIFF (byteRate + размер data). */
+function wavDurationMs(filePath: string): number | null {
+  const fd = fs.openSync(filePath, 'r');
+  try {
+    const h = Buffer.alloc(44);
+    fs.readSync(fd, h, 0, 44, 0);
+    if (h.subarray(0, 4).toString('latin1') !== 'RIFF') return null;
+    const byteRate = h.readUInt32LE(28);
+    if (!byteRate) return null;
+    const dataSize = fs.fstatSync(fd).size - 44;
+    return Math.round((dataSize / byteRate) * 1000);
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+/**
+ * Оценка длительности mp3 (мс) по битрейту первого кадра (предполагаем CBR).
+ * Этого достаточно для пейсинга субтитров; точный тайминг даст Этап 2 (бот-диктор).
+ */
+function mp3DurationMs(filePath: string): number | null {
+  const fd = fs.openSync(filePath, 'r');
+  try {
+    const size = fs.fstatSync(fd).size;
+    const head = Buffer.alloc(Math.min(size, 65536));
+    fs.readSync(fd, head, 0, head.length, 0);
+    let off = 0;
+    // пропускаем ID3v2-тег
+    if (head.subarray(0, 3).toString('latin1') === 'ID3') {
+      const tagSize =
+        ((head[6]! & 0x7f) << 21) | ((head[7]! & 0x7f) << 14) | ((head[8]! & 0x7f) << 7) | (head[9]! & 0x7f);
+      off = 10 + tagSize;
+    }
+    const brV1L3 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0];
+    const brV2L3 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0];
+    for (let i = off; i < head.length - 4; i++) {
+      if (head[i] !== 0xff || (head[i + 1]! & 0xe0) !== 0xe0) continue;
+      const b1 = head[i + 1]!;
+      const b2 = head[i + 2]!;
+      const versionBits = (b1 >> 3) & 3; // 3 = MPEG1
+      const layerBits = (b1 >> 1) & 3; // 1 = Layer III
+      if (layerBits === 0) continue; // reserved
+      const bitrateIdx = (b2 >> 4) & 0xf;
+      const sampleIdx = (b2 >> 2) & 3;
+      if (bitrateIdx === 0 || bitrateIdx === 15 || sampleIdx === 3) continue;
+      const bitrate = (versionBits === 3 ? brV1L3 : brV2L3)[bitrateIdx]! * 1000;
+      if (!bitrate) continue;
+      const audioBytes = size - off;
+      return Math.round(((audioBytes * 8) / bitrate) * 1000);
+    }
+    return null;
+  } finally {
+    fs.closeSync(fd);
+  }
 }
 
 function makeMockImageSvg(prompt: string): string {

@@ -37,6 +37,8 @@ import { buildYearReports, captureBefore } from './year-report.js';
 import type { RoomState, RoomTimers, RoomPlayer } from './room.types.js';
 
 const ROOM_TTL_SECONDS = 60 * 60 * 24;
+/** Длительность интро-заставки новостей до начала чтения (синхронно с джинглом клиента). */
+const NEWS_INTRO_MS = 4500;
 
 @Injectable()
 export class RoomsService {
@@ -99,6 +101,7 @@ export class RoomsService {
       votes: [],
       news: null,
       newsAssets: {},
+      newsCursor: null,
       calls: [],
       callLog: [],
       promises: [],
@@ -255,6 +258,9 @@ export class RoomsService {
   enterPhase(room: RoomState, phase: GamePhase) {
     room.phase = phase;
     room.waitingContinue = false;
+    // выпуск новостей живёт только в un_summary — сбрасываем курсор/таймер при любой смене фазы
+    this.clearNewsTimer(room);
+    room.newsCursor = null;
     this.logger.log(`[${room.code}] фаза → ${phase} (год ${room.world?.year ?? '-'})`);
 
     if (phase === 'cabinet') {
@@ -297,6 +303,117 @@ export class RoomsService {
     // тест-режим: боты реагируют на новую фазу
     this.clearBotTimers(room);
     this.kickBots(room);
+
+    // выпуск новостей: после интро-заставки запускаем синхронный курсор для всех
+    if (phase === 'un_summary' && room.news && Object.keys(room.news).length > 0) {
+      const timers = this.timers.get(room.code);
+      if (timers) {
+        timers.newsTimer = setTimeout(() => this.startNewsBroadcast(room.code), NEWS_INTRO_MS);
+      }
+    }
+  }
+
+  // ---------- синхронный выпуск новостей (un_summary) ----------
+
+  /** Грубая оценка длительности чтения строки (синхронно с клиентскими субтитрами). */
+  private newsLineDurationMs(line: string): number {
+    return Math.min(14000, Math.max(2800, line.length * 60 + 900));
+  }
+
+  private clearNewsTimer(room: RoomState) {
+    const timers = this.timers.get(room.code);
+    if (timers?.newsTimer) {
+      clearTimeout(timers.newsTimer);
+      timers.newsTimer = undefined;
+    }
+  }
+
+  private armNewsTimer(room: RoomState) {
+    const timers = this.timers.get(room.code);
+    if (!timers) return;
+    if (timers.newsTimer) clearTimeout(timers.newsTimer);
+    const cursor = room.newsCursor;
+    if (!room.news || !cursor) return;
+    const countryIds = Object.keys(room.news);
+    const countryId = countryIds[cursor.countryIdx];
+    if (!countryId) return;
+    const lines = room.news[countryId] ?? [];
+    const line = lines[cursor.lineIdx] ?? '';
+    // реальная длительность озвучки (если есть) + небольшая пауза; иначе оценка по тексту
+    const audioUrl = room.newsAssets[countryId]?.lineAudioUrls?.[cursor.lineIdx] ?? null;
+    const audioMs = audioUrl ? this.ml.audioDurationMs(audioUrl) : null;
+    let ms = audioMs && audioMs > 0 ? audioMs + 700 : this.newsLineDurationMs(line);
+    ms = Math.min(30000, Math.max(1500, ms));
+    timers.newsTimer = setTimeout(() => this.advanceNewsCursor(room.code), ms);
+  }
+
+  /** Старт выпуска: курсор на первую страну/строку, запуск авто-продвижения. */
+  private startNewsBroadcast(code: string) {
+    const room = this.rooms.get(code);
+    if (!room || room.phase !== 'un_summary' || !room.news) return;
+    if (Object.keys(room.news).length === 0) return;
+    room.newsCursor = { countryIdx: 0, lineIdx: 0 };
+    this.persist(room);
+    this.broadcast(room);
+    this.armNewsTimer(room);
+  }
+
+  /** Авто-продвижение курсора: следующая строка → следующая страна → конец выпуска. */
+  private advanceNewsCursor(code: string) {
+    const room = this.rooms.get(code);
+    if (!room || room.phase !== 'un_summary' || !room.news || !room.newsCursor) return;
+    // уважаем ручную паузу председателя: не двигаемся, перепроверим позже
+    if (room.paused) {
+      const timers = this.timers.get(room.code);
+      if (timers) timers.newsTimer = setTimeout(() => this.advanceNewsCursor(code), 500);
+      return;
+    }
+    const countryIds = Object.keys(room.news);
+    const cur = room.newsCursor;
+    const lines = room.news[countryIds[cur.countryIdx] ?? ''] ?? [];
+    let countryIdx = cur.countryIdx;
+    let lineIdx = cur.lineIdx + 1;
+    if (lineIdx >= lines.length) {
+      countryIdx += 1;
+      lineIdx = 0;
+    }
+    if (countryIdx >= countryIds.length) {
+      // выпуск окончен (countryIdx === length — клиент покажет «выпуск окончен»)
+      room.newsCursor = { countryIdx: countryIds.length, lineIdx: 0 };
+      this.clearNewsTimer(room);
+      this.persist(room);
+      this.broadcast(room);
+      return;
+    }
+    room.newsCursor = { countryIdx, lineIdx };
+    this.persist(room);
+    this.broadcast(room);
+    this.armNewsTimer(room);
+  }
+
+  /** Хост: пропустить текущую страну в выпуске (или стартовать сразу, если ещё интро). */
+  hostNewsSkip(code: string, playerId: string) {
+    const room = this.mustRoom(code);
+    const player = this.mustPlayer(room, playerId);
+    if (!player.isHost) throw new Error('Только хост');
+    if (room.phase !== 'un_summary' || !room.news) throw new Error('Сейчас не выпуск новостей');
+    const countryIds = Object.keys(room.news);
+    if (!room.newsCursor) {
+      // ещё идёт интро — стартуем выпуск немедленно
+      this.clearNewsTimer(room);
+      this.startNewsBroadcast(code);
+      return;
+    }
+    const nextCountry = room.newsCursor.countryIdx + 1;
+    if (nextCountry >= countryIds.length) {
+      room.newsCursor = { countryIdx: countryIds.length, lineIdx: 0 };
+      this.clearNewsTimer(room);
+    } else {
+      room.newsCursor = { countryIdx: nextCountry, lineIdx: 0 };
+      this.armNewsTimer(room);
+    }
+    this.persist(room);
+    this.broadcast(room);
   }
 
   private armPhaseTimer(room: RoomState, overrideMs?: number) {
@@ -668,7 +785,7 @@ export class RoomsService {
     const investPerLevel = this.content.tunables.budget?.investPerLevel ?? 1000;
     for (const [countryId, budget] of Object.entries(room.sectorBudget)) {
       const s = room.world.countries.get(countryId);
-      if (!s) continue;
+      if (!s || s.resources.money < 0) continue;
       // считаем доход (без мутаций) для распределения
       const eff = aggregateModifiers(s, this.content);
       const t = this.content.tunables;
@@ -1216,6 +1333,13 @@ export class RoomsService {
     } else {
       const from = room.world.countries.get(offer.fromCountryId)!;
       const to = room.world.countries.get(offer.toCountryId)!;
+      if (!offer.peaceWarId && (from.resources.money < 0 || to.resources.money < 0)) {
+        offer.status = 'failed';
+        offer.failReason = 'Торговля заблокирована: один из участников в долгу (отрицательный баланс)';
+        this.persist(room);
+        this.broadcast(room);
+        return;
+      }
       try {
         // сервер валидирует и применяет атомарно; обещания не enforced
         applyTrade(from, to, { from: from.id, to: to.id, give: offer.give, take: offer.take }, this.content);
@@ -1493,7 +1617,7 @@ export class RoomsService {
       }
       const accept = Math.random() < acceptChance;
       const res = this.tradeRespond(room.code, bot.playerId, pending.id, accept);
-      this.botLog(room, `${bot.name} ${accept ? 'принял' : 'отклонил'} ${pending.peaceWarId ? 'мирное предложение' : 'сделку'} от ${pending.fromName}${res.status === 'failed' ? ` (сорвалась: ${res.failReason})` : ''}`);
+      this.botLog(room, `${bot.name} ${accept ? 'принял' : 'отклонил'} ${pending.peaceWarId ? 'мирное предложение' : 'сделку'} от ${pending.fromName}${res?.status === 'failed' ? ` (сорвалась: ${res.failReason})` : ''}`);
       return;
     }
 
@@ -1815,6 +1939,7 @@ export class RoomsService {
           votes: data.votes ?? [],
           news: data.news ?? null,
           newsAssets: data.newsAssets ?? {},
+          newsCursor: data.newsCursor ?? null,
           calls: data.calls ?? [],
           callLog: data.callLog ?? [],
           promises: data.promises ?? [],

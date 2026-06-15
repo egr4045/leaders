@@ -31,6 +31,8 @@ export const SocketEvents = {
   RoomHostLayout: 'room:host_layout',
   /** председатель: попросить игрока замьютиться (c2s, { playerId }) */
   RoomHostMute: 'room:host_mute',
+  /** хост: пропустить текущую страну в выпуске новостей (c2s) */
+  RoomHostNewsSkip: 'room:host_news_skip',
   /** хост: возобновить авто-паузу (реконнект) досрочно (c2s) */
   RoomHostResume: 'room:host_resume',
   /** хост: исключить игрока из комнаты (c2s, { targetPlayerId }) */

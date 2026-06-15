@@ -220,6 +220,12 @@ export interface RoomSnapshot {
         imageUrl: string | null;
       }[]
     | null;
+  /**
+   * Серверный курсор выпуска новостей (фаза un_summary) — синхронизирует всех:
+   * какая страна (`countryIdx` в массиве `news`) и строка (`lineIdx`) сейчас читается.
+   * `null` — идёт интро/заставка либо выпуск ещё не начался/уже закончился.
+   */
+  newsCursor: { countryIdx: number; lineIdx: number } | null;
   /** публичный счёт голосов ООН в этом году */
   voteTally: Record<string, { sanction: number; support: number }>;
   /** войны мира (публичные факты + личные поля участника) */
