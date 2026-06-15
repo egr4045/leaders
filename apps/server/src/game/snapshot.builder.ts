@@ -350,7 +350,7 @@ export function buildSnapshot(
     wars,
     warVoteTally,
     yearReport:
-      room.phase === 'year_summary' && myCountryId
+      (room.phase === 'year_summary' || room.phase === 'cabinet') && myCountryId
         ? (room.yearReports?.[myCountryId] ?? null)
         : null,
     lastResults:

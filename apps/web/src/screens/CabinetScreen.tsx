@@ -11,13 +11,14 @@ import { ResourcePanel } from './cabinet/ResourcePanel';
 import { SpyPanel } from './cabinet/SpyPanel';
 import { TradePanel } from './cabinet/TradePanel';
 import { WarPanel } from './cabinet/WarPanel';
+import { ReportBody } from './YearSummaryScreen';
 import { CallPanel } from '../video/CallPanel';
 import { WiretapListener } from '../video/WiretapListener';
 import { BudgetPanel } from './cabinet/BudgetPanel';
 import { LawsPanel } from './cabinet/LawsPanel';
 import type { AdvisorCard } from '@leaders/shared';
 
-type Tab = 'advisor' | 'country' | 'laws' | 'intel' | 'diplomacy';
+type Tab = 'advisor' | 'country' | 'laws' | 'intel' | 'diplomacy' | 'report';
 
 interface PendingResult {
   card: AdvisorCard;
@@ -356,6 +357,7 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'laws', icon: '⚖️', label: 'Законы' },
   { id: 'intel', icon: '🕵️', label: 'Разведка' },
   { id: 'diplomacy', icon: '🤝', label: 'Дипломатия' },
+  { id: 'report', icon: '📊', label: 'Итоги' },
 ];
 
 function TabBar({
@@ -565,6 +567,18 @@ export function CabinetScreen() {
               onOpenDrawer={openDrawer}
               onCloseDrawer={closeDrawer}
             />
+          </div>
+        )}
+
+        {tab === 'report' && (
+          <div className="flex h-full flex-col overflow-y-auto p-3">
+            {snapshot.yearReport ? (
+              <ReportBody report={snapshot.yearReport} />
+            ) : (
+              <div className="py-10 text-center text-sm text-slate-500">
+                Итоги появятся после первого пересчёта года (прибыль/убытки, война, события).
+              </div>
+            )}
           </div>
         )}
       </motion.div>

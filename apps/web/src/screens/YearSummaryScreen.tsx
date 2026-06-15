@@ -81,7 +81,7 @@ function LineSection({ title, lines, accent }: { title: string; lines: string[];
   );
 }
 
-function ReportBody({ report }: { report: YearReport }) {
+export function ReportBody({ report }: { report: YearReport }) {
   return (
     <div className="flex flex-col gap-3">
       {/* Ключевые показатели */}
