@@ -14,25 +14,27 @@ export function WiretapListener() {
   const roomRef = useRef<Room | null>(null);
   const vid1Ref = useRef<HTMLVideoElement>(null);
   const vid2Ref = useRef<HTMLVideoElement>(null);
-  const audioEls = useRef<HTMLAudioElement[]>([]);
+  const aud1Ref = useRef<HTMLAudioElement>(null);
+  const aud2Ref = useRef<HTMLAudioElement>(null);
   const videoSlot = useRef(0);
+  const audioSlot = useRef(0);
 
   useEffect(() => {
     if (!callId) return;
     let cancelled = false;
     const room = new Room();
     roomRef.current = room;
-    audioEls.current = [];
     videoSlot.current = 0;
+    audioSlot.current = 0;
 
     const onSub = (track: RemoteTrack) => {
       if (track.kind === Track.Kind.Audio) {
-        const el = track.attach() as HTMLAudioElement;
-        el.autoplay = true;
-        el.style.display = 'none';
-        document.body.appendChild(el);
-        audioEls.current.push(el);
-        void el.play?.();
+        const slot = audioSlot.current === 0 ? aud1Ref.current : aud2Ref.current;
+        if (slot && audioSlot.current < 2) {
+          audioSlot.current += 1;
+          track.attach(slot);
+          void slot.play?.().catch(() => {});
+        }
       } else if (track.kind === Track.Kind.Video) {
         const slot = videoSlot.current === 0 ? vid1Ref.current : vid2Ref.current;
         if (slot && videoSlot.current < 2) {
@@ -57,13 +59,12 @@ export function WiretapListener() {
     return () => {
       cancelled = true;
       room.off(RoomEvent.TrackSubscribed, onSub);
-      for (const el of audioEls.current) {
-        try { el.remove(); } catch { /* noop */ }
-      }
-      audioEls.current = [];
       videoSlot.current = 0;
+      audioSlot.current = 0;
       if (vid1Ref.current) vid1Ref.current.srcObject = null;
       if (vid2Ref.current) vid2Ref.current.srcObject = null;
+      if (aud1Ref.current) aud1Ref.current.srcObject = null;
+      if (aud2Ref.current) aud2Ref.current.srcObject = null;
       void room.disconnect();
       roomRef.current = null;
     };
@@ -72,6 +73,8 @@ export function WiretapListener() {
   if (!wiretap) return null;
   return (
     <div className="fixed bottom-3 left-3 z-50 flex flex-col gap-1.5">
+      <audio ref={aud1Ref} autoPlay />
+      <audio ref={aud2Ref} autoPlay />
       {/* Мини-видео двух участников звонка */}
       <div className="flex gap-1.5">
         <div className="relative overflow-hidden rounded-lg bg-slate-900" style={{ width: 112, height: 80 }}>
