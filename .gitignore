@@ -14,5 +14,11 @@ ml-box/.deps_xtts_ok
 ml-box/reference.wav
 ml-box/reference.webm
 ml-box/test_output.*
+ml-box/.deps_ok_v2
+ml-box/__pycache__/
+ml-box/*.pt
+ml-box/inputs/
+ml-box/breaths/
+ml-box/voice_samples/
 
 ml-box/output/
