@@ -41,13 +41,11 @@ def get_breaths(voice: str) -> list[AudioSegment]:
         
     return _cached_breaths[gender]
 
-def mix_audio(wav_buffers: list[bytes], voice: str, breath_probability=0.35) -> bytes:
+def mix_audio(wav_buffers: list[bytes], voice: str, breath_probability=0.0) -> bytes:
     """
-    Собирает список сырых WAV фрагментов в один итоговый аудиофайл (в памяти),
-    добавляя вздохи диктора перед некоторыми предложениями.
+    Собирает список сырых WAV фрагментов в один итоговый аудиофайл (в памяти).
     Возвращает байты MP3 файла.
     """
-    breaths = get_breaths(voice)
     final_audio = AudioSegment.empty()
     
     # Небольшая пауза между предложениями
@@ -61,12 +59,6 @@ def mix_audio(wav_buffers: list[bytes], voice: str, breath_probability=0.35) -> 
         if volume_drop > 0:
             chunk = chunk - volume_drop
             
-        # С шансом добавляем случайный вздох, если есть файлы вздохов
-        if breaths and random.random() < breath_probability:
-            breath = random.choice(breaths)
-            final_audio += breath
-            final_audio += AudioSegment.silent(duration=100)
-            
         final_audio += chunk
         final_audio += sentence_pause
         volume_drop += 0.5
@@ -75,11 +67,10 @@ def mix_audio(wav_buffers: list[bytes], voice: str, breath_probability=0.35) -> 
     final_audio.export(out_buffer, format="mp3", bitrate="192k")
     return out_buffer.getvalue()
 
-def mix_audio_to_wav(wav_buffers: list[bytes], voice: str, breath_probability=0.35) -> bytes:
+def mix_audio_to_wav(wav_buffers: list[bytes], voice: str, breath_probability=0.0) -> bytes:
     """
     То же самое, но возвращает WAV для тех случаев, когда MP3 не требуется.
     """
-    breaths = get_breaths(voice)
     final_audio = AudioSegment.empty()
     sentence_pause = AudioSegment.silent(duration=300)
     
@@ -89,11 +80,6 @@ def mix_audio_to_wav(wav_buffers: list[bytes], voice: str, breath_probability=0.
         
         if volume_drop > 0:
             chunk = chunk - volume_drop
-            
-        if breaths and random.random() < breath_probability:
-            breath = random.choice(breaths)
-            final_audio += breath
-            final_audio += AudioSegment.silent(duration=100)
             
         final_audio += chunk
         final_audio += sentence_pause

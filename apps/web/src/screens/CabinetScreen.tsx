@@ -223,6 +223,10 @@ function DiplomacyTab({
   return (
     <>
       <div className="flex h-full flex-col gap-4 overflow-y-auto p-4 pb-6">
+        <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+          <div className="mb-2 text-xs font-semibold uppercase text-slate-500">⚔️ Войны и мир</div>
+          <WarPanel others={others} />
+        </div>
         {others.length === 0 ? (
           <div className="py-8 text-center text-slate-500">Нет других стран</div>
         ) : (
