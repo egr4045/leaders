@@ -812,6 +812,15 @@ export class RoomsService {
     const newsPrerenderKeys: Record<string, (string | undefined)[]> = {};
     const year = room.world.year;
 
+    // диктор озвучивает не больше 2 случайных карточных сюжетов на страну —
+    // иначе выпуск новостей слишком длинный (TTS по каждой строке)
+    const pickTwoCards = <T>(arr: T[]): T[] => {
+      if (arr.length <= 2) return arr;
+      const idx = new Set<number>();
+      while (idx.size < 2) idx.add(Math.floor(Math.random() * arr.length));
+      return [...idx].sort((a, b) => a - b).map((i) => arr[i]!);
+    };
+
     for (const [countryId] of room.world.countries) {
       const s = room.world.countries.get(countryId)!;
       const liberal = this.isSmiLiberal(s);
@@ -821,7 +830,7 @@ export class RoomsService {
         lines.push(ev);
         keys.push(undefined);
       }
-      for (const ch of room.choicesThisYear[countryId] ?? []) {
+      for (const ch of pickTwoCards(room.choicesThisYear[countryId] ?? [])) {
         if (ch.newsLines) {
           lines.push(liberal ? ch.newsLines.liberal : ch.newsLines.state);
           if (ch.cardId !== undefined && ch.choiceIdx !== undefined) {

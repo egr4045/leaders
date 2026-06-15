@@ -17,7 +17,9 @@ export function applyEffectsOnce(s: CountryState, effects: Effects): void {
   if (effects.resources) {
     for (const k of RESOURCE_KEYS) {
       if (effects.resources[k] !== undefined) {
-        s.resources[k] = Math.max(0, s.resources[k] + effects.resources[k]!);
+        const next = s.resources[k] + effects.resources[k]!;
+        // деньги могут уйти в минус (госдолг); остальные ресурсы — не ниже нуля
+        s.resources[k] = k === 'money' ? next : Math.max(0, next);
       }
     }
   }
