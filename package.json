@@ -12,5 +12,8 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "content:validate": "pnpm -F @leaders/shared build && pnpm -F @leaders/engine content:validate"
+  },
+  "devDependencies": {
+    "@livekit/rtc-node": "^0.13.29"
   }
 }

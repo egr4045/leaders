@@ -46,6 +46,16 @@ export function SessionsPanel() {
     }
   };
 
+  const makeHost = async (code: string, playerName: string) => {
+    if (!confirm(`Сделать игрока ${playerName} хостом в комнате ${code}?`)) return;
+    try {
+      await adminApi.makeHost(code, playerName);
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
@@ -89,15 +99,25 @@ export function SessionsPanel() {
               {r.players.map((p, i) => (
                 <span
                   key={i}
-                  className={`rounded px-1.5 py-0.5 text-xs ${
+                  className={`rounded px-1.5 py-0.5 text-xs flex items-center gap-1 ${
                     p.isBot ? 'bg-slate-800 text-slate-500' : 'bg-slate-800 text-slate-200'
                   }`}
                   title={p.country ?? 'без страны'}
                 >
-                  <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${p.connected ? 'bg-emerald-500' : 'bg-slate-600'}`} />
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${p.connected ? 'bg-emerald-500' : 'bg-slate-600'}`} />
                   {p.name}
                   {p.isHost && ' 👑'}
                   {p.country ? ` · ${p.country}` : ''}
+                  {!p.isHost && !p.isBot && (
+                    <button
+                      onClick={() => void makeHost(r.code, p.name)}
+                      disabled={killing === r.code}
+                      className="ml-1 text-slate-400 hover:text-amber-400"
+                      title="Назначить хостом"
+                    >
+                      👑
+                    </button>
+                  )}
                 </span>
               ))}
             </div>

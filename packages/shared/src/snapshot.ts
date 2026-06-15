@@ -93,6 +93,8 @@ export interface PrivateCountryView {
   incomingCalls?: { callId: string; fromCountryId: string; fromCountryName: string; queuePosition: number }[];
   /** Текущий исходящий звонок */
   outgoingCall?: { callId: string; toCountryId: string; toCountryName: string; isBusy: boolean; queuePosition: number } | null;
+  /** Текущий активный звонок (чтобы восстанавливать UI при рефреше) */
+  activeCall?: { callId: string; withCountryId: string; withCountryName: string } | null;
 }
 
 export interface YearProjection {

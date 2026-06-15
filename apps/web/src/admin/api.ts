@@ -47,6 +47,7 @@ export const adminApi = {
   // сессии
   getRooms: () => apiFetch<RoomSummary[]>('/api/admin/rooms'),
   killRoom: (code: string) => apiFetch<{ ok: boolean }>(`/api/admin/rooms/${code}/kill`, { method: 'POST' }),
+  makeHost: (code: string, playerName: string) => apiFetch<{ ok: boolean }>(`/api/admin/rooms/${code}/host/${encodeURIComponent(playerName)}`, { method: 'POST' }),
   // страны
   getCountries: () => apiFetch<CountryEntry[]>('/api/admin/countries'),
   updateCountry: (id: string, raw: Record<string, unknown>) =>

@@ -135,6 +135,12 @@ export class RoomsService {
       if (existing) return { room, player: existing };
     }
 
+    // Авто-реконнект по имени (если токен потерялся, но имя то же и игрок оффлайн)
+    const disconnectedMatch = room.players.find(p => p.name.toLowerCase() === name.toLowerCase() && !p.connected);
+    if (disconnectedMatch) {
+      return { room, player: disconnectedMatch };
+    }
+
     if (room.phase !== 'lobby') {
       const hasFree = room.players.some(p => p.countryId && (!p.connected || p.isBot));
       if (!hasFree) throw new Error('Партия уже идёт и нет свободных мест (никто не отключился)');
@@ -915,7 +921,25 @@ export class RoomsService {
     }
   }
 
-  // ---------- голосование ООН ----------
+  makeHostForAdmin(code: string, playerName: string): boolean {
+    const room = this.rooms.get(code);
+    if (!room) return false;
+    const p = room.players.find(p => p.name === playerName);
+    if (!p) return false;
+    
+    // remove host from others
+    for (const player of room.players) {
+      player.isHost = false;
+    }
+    // set to this player
+    p.isHost = true;
+    
+    this.persist(room);
+    this.broadcast(room);
+    return true;
+  }
+
+  // ---------- страны --------------
 
   unVote(code: string, playerId: string, targetCountryId: string, kind: 'sanction' | 'support') {
     const room = this.mustRoom(code);

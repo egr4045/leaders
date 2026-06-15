@@ -256,6 +256,18 @@ export function buildSnapshot(
         queuePosition
       };
     }
+
+    const myActiveCall = room.calls.find(c => c.status === 'active' && (c.fromCountryId === you!.countryId || c.toCountryId === you!.countryId));
+    if (myActiveCall) {
+      const withCountryId = myActiveCall.fromCountryId === you!.countryId ? myActiveCall.toCountryId : myActiveCall.fromCountryId;
+      you.activeCall = {
+        callId: myActiveCall.id,
+        withCountryId,
+        withCountryName: content.countries.get(withCountryId)?.name ?? withCountryId
+      };
+    } else {
+      you.activeCall = null;
+    }
   }
 
   return {

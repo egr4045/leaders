@@ -182,6 +182,13 @@ export class AdminController {
     return { ok: true };
   }
 
+  @Post('rooms/:code/host/:playerName')
+  makeHost(@Param('code') code: string, @Param('playerName') playerName: string) {
+    const ok = this.rooms.makeHostForAdmin(code, playerName);
+    if (!ok) throw new HttpException('Комната или игрок не найдены', HttpStatus.NOT_FOUND);
+    return { ok: true };
+  }
+
   // ---------- страны ----------
 
   @Get('countries')

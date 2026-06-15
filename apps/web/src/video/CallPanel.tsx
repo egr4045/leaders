@@ -34,6 +34,16 @@ export function CallPanel({
   const outgoingCall = you.outgoingCall;
 
   useEffect(() => {
+    if (you.activeCall) {
+      setActiveCallId(you.activeCall.callId);
+      setActiveCallWithCountryId(you.activeCall.withCountryId);
+    } else {
+      setActiveCallId(null);
+      setActiveCallWithCountryId(null);
+    }
+  }, [you.activeCall]);
+
+  useEffect(() => {
     let osc: any;
     let ctx: any;
     let interval: any;
@@ -140,6 +150,27 @@ export function CallPanel({
               Также звонят: {incomingCalls.slice(1).map(c => c.fromCountryName).join(', ')}
             </div>
           )}
+        </div>
+      )}
+
+      {/* исходящий звонок (в режиме hideList Caller ничего не видит, дадим ему оверлей) */}
+      {outgoingCall && !activeCallId && !firstCall && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-slate-950/90 p-6 backdrop-blur">
+          <div className="animate-pulse text-5xl">📞</div>
+          <div className="text-center">
+            <b>{outgoingCall.toCountryName}</b><br />
+            {outgoingCall.isBusy ? (
+              <span className="text-amber-400 font-bold">⚠️ Абонент занят. Вы {outgoingCall.queuePosition}-й в очереди...</span>
+            ) : (
+              <span className="text-emerald-400 font-bold">Звоним...</span>
+            )}
+          </div>
+          <button
+            onClick={() => void emitRaw(SocketEvents.CallEnd, { callId: outgoingCall.callId })}
+            className="mt-4 rounded-xl bg-slate-700 px-6 py-3 font-bold hover:bg-slate-600"
+          >
+            Отменить вызов
+          </button>
         </div>
       )}
 
