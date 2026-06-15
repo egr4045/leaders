@@ -121,7 +121,7 @@
           "label": "Брать с них дань в твердой валюте",
           "effects": {
             "resources": {
-              "money": 1000
+              "money": 700
             },
             "sectors": {
               "economy": 1
@@ -152,7 +152,7 @@
           ],
           "effects": {
             "resources": {
-              "money": -1500
+              "money": -500
             },
             "sectors": {
               "smi": 2
@@ -323,7 +323,7 @@
           ],
           "effects": {
             "resources": {
-              "money": -2000
+              "money": -800
             },
             "sectors": {
               "army": 2
@@ -380,7 +380,7 @@
           "effects": {
             "resources": {
               "influence": -150,
-              "money": 1000
+              "money": 700
             },
             "sectors": {
               "economy": 1
@@ -496,7 +496,7 @@
           ],
           "effects": {
             "resources": {
-              "money": -1000
+              "money": -700
             },
             "sectors": {
               "intel": 2,
@@ -538,7 +538,7 @@
           "label": "Взламывайте! Деньги пойдут на ракетную программу",
           "effects": {
             "resources": {
-              "money": 5000
+              "money": 850
             },
             "sectors": {
               "army": 1,
@@ -663,7 +663,7 @@
         {
           "label": "Занять у Китая на уголь",
           "effects": {
-            "resources": { "money": 1000, "influence": -100 },
+            "resources": { "money": 700, "influence": -100 },
             "sectors": { "economy": 1 }
           },
           "newsLines": {
@@ -682,7 +682,7 @@
         {
           "label": "Деноминация 100:1. Лимит обмена — один прожиточный минимум",
           "effects": {
-            "resources": { "money": 2000 },
+            "resources": { "money": 800 },
             "sectors": { "economy": -1 },
             "dovolstvo": -40
           },
@@ -743,7 +743,7 @@
         {
           "label": "Отправить 50 000 рабочих в Россию и на Ближний Восток",
           "effects": {
-            "resources": { "money": 3000 },
+            "resources": { "money": 800 },
             "dovolstvo": -20
           },
           "newsLines": {
@@ -865,7 +865,7 @@
         {
           "label": "Закупить BMW и французский коньяк для генералов",
           "effects": {
-            "resources": { "money": -2000 },
+            "resources": { "money": -700 },
             "sectors": { "army": 1 },
             "dovolstvo": 10
           },
@@ -957,7 +957,7 @@
         {
           "label": "Построить образцовую деревню у границы из бетона и краски",
           "effects": {
-            "resources": { "money": -1000, "influence": 150 },
+            "resources": { "money": -400, "influence": 150 },
             "sectors": { "smi": 1 }
           },
           "newsLines": {

@@ -5,7 +5,7 @@
   "description": "Высокий уровень медицины и науки, но силовиков мало.",
   "effects": {
     "modifiers": {
-      "scienceMult": 0.5,
+      "scienceMult": 0.3,
       "outputMult": {
         "siloviki": 0.5
       }

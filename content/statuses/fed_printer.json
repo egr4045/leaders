@@ -2,10 +2,12 @@
   "id": "fed_printer",
   "name": "Печатный Станок ФРС",
   "type": "state",
-  "description": "Можно печатать деньги из воздуха, но базовая инфляция выше.",
+  "description": "Доллар — мировая резервная валюта. Инфляция не задевает. Остальной мир оплачивает эмиссию.",
   "effects": {
     "modifiers": {
-      "inflationDelta": 0.1
+      "special": {
+        "inflationImmunity": true
+      }
     }
   }
 }

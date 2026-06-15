@@ -14,7 +14,7 @@
           ],
           "effects": {
             "resources": {
-              "money": -2000
+              "money": -1400
             },
             "dovolstvo": 30
           },
@@ -62,7 +62,7 @@
           ],
           "effects": {
             "resources": {
-              "money": 2000
+              "money": 1300
             },
             "sectors": {
               "economy": 1
@@ -279,7 +279,7 @@
           ],
           "effects": {
             "resources": {
-              "money": 2000,
+              "money": 1300,
               "influence": 50
             },
             "sectors": {
@@ -343,7 +343,7 @@
           "label": "Продолжать продавать активы",
           "effects": {
             "resources": {
-              "money": 2000
+              "money": 1300
             },
             "sectors": {
               "economy": 1
@@ -707,7 +707,7 @@
         {
           "label": "Продолжать строительство — слишком поздно останавливаться",
           "effects": {
-            "resources": { "money": -3000 },
+            "resources": { "money": -1800 },
             "sectors": { "economy": 2 }
           },
           "newsLines": {
@@ -738,7 +738,7 @@
         {
           "label": "Ввести энергетический потолок цен",
           "effects": {
-            "resources": { "money": -3000 },
+            "resources": { "money": -1800 },
             "dovolstvo": 30
           },
           "newsLines": {
@@ -799,7 +799,7 @@
         {
           "label": "Национализировать водные компании",
           "effects": {
-            "resources": { "money": -5000 },
+            "resources": { "money": -1800 },
             "dovolstvo": 30,
             "sectors": { "economy": 1 }
           },
@@ -830,7 +830,7 @@
         {
           "label": "Перераспределить средства в региональные дороги",
           "effects": {
-            "resources": { "money": 2000 },
+            "resources": { "money": 1300 },
             "sectors": { "economy": 1 },
             "dovolstvo": 5
           },
@@ -842,7 +842,7 @@
         {
           "label": "Достроить хотя бы до Бирмингема",
           "effects": {
-            "resources": { "money": -5000 },
+            "resources": { "money": -1800 },
             "sectors": { "economy": 2 },
             "dovolstvo": -10
           },
@@ -904,7 +904,7 @@
         {
           "label": "Перейти к бесплатному образованию — шотландская модель",
           "effects": {
-            "resources": { "money": -4000 },
+            "resources": { "money": -1800 },
             "dovolstvo": 30,
             "sectors": { "science": 1 }
           },
@@ -954,7 +954,7 @@
         {
           "label": "Государственная страховая схема для зон риска",
           "effects": {
-            "resources": { "money": -2000 },
+            "resources": { "money": -1400 },
             "dovolstvo": 25
           },
           "newsLines": {
@@ -965,7 +965,7 @@
         {
           "label": "Масштабные инвестиции в береговую защиту и дамбы",
           "effects": {
-            "resources": { "money": -3000 },
+            "resources": { "money": -1800 },
             "sectors": { "economy": 2 },
             "dovolstvo": 15
           },

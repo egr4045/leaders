@@ -2,13 +2,10 @@
   "id": "overpopulation",
   "name": "Перенаселение",
   "type": "state",
-  "description": "Огромное количество работяг, но они съедают всю еду.",
+  "description": "Демографический взрыв: огромное количество ртов требует пропорционально больше еды.",
   "effects": {
     "modifiers": {
-      "foodPerCapitaMult": 1.5,
-      "outputMult": {
-        "rabotyagi": 1.5
-      }
+      "foodPerCapitaMult": 1.5
     }
   }
 }

@@ -163,7 +163,7 @@
           "label": "Печатать еще больше! Раздадим вертолетные деньги",
           "effects": {
             "resources": {
-              "money": 3000
+              "money": 2000
             },
             "modifiers": {
               "inflationDelta": 0.1
@@ -414,7 +414,7 @@
           "label": "Продавить систему Medicare for All",
           "effects": {
             "resources": {
-              "money": -3000
+              "money": -2200
             },
             "dovolstvo": 33,
             "sectors": {
@@ -650,7 +650,7 @@
         {
           "label": "Списать студенческие долги",
           "effects": {
-            "resources": { "money": -3000 },
+            "resources": { "money": -2200 },
             "dovolstvo": 30
           },
           "newsLines": {
@@ -681,7 +681,7 @@
         {
           "label": "Судить фармкомпании и взыскать сотни миллиардов",
           "effects": {
-            "resources": { "money": 3000 },
+            "resources": { "money": 2000 },
             "dovolstvo": 20
           },
           "newsLines": {
@@ -835,8 +835,8 @@
         {
           "label": "Триллион на инфраструктуру — сейчас или никогда",
           "effects": {
-            "resources": { "money": -3000 },
-            "sectors": { "economy": 3 },
+            "resources": { "money": -2200 },
+            "sectors": { "economy": 2 },
             "dovolstvo": 20
           },
           "newsLines": {

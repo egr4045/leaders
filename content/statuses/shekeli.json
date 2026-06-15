@@ -2,12 +2,12 @@
   "id": "shekeli",
   "name": "Стартап-Нация",
   "type": "state",
-  "description": "Инновации приносят огромные деньги.",
+  "description": "Инновационная экосистема. Умники работают эффективнее и двигают науку вперёд.",
   "effects": {
     "modifiers": {
-      "scienceMult": 1.5,
+      "scienceMult": 0.6,
       "outputMult": {
-        "umniki": 1.5
+        "umniki": 1.3
       }
     }
   }

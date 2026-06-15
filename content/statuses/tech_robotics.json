@@ -7,7 +7,7 @@
   "effects": {
     "modifiers": {
       "outputMult": {
-        "rabotyagi": 1.5
+        "rabotyagi": 1.35
       },
       "dovolstvoDrift": -1
     }

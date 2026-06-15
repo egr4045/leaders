@@ -2,20 +2,20 @@
   "id": "armenia",
   "name": "Армения",
   "startResources": {
-    "money": 300,
+    "money": 400,
     "gold": 10,
     "food": 200,
     "influence": 80
   },
   "startPopulation": {
-    "rabotyagi": 400,
+    "rabotyagi": 520,
     "umniki": 120,
     "siloviki": 80,
     "mediyshchiki": 80,
     "ministry": 15
   },
   "startSectors": {
-    "economy": 3,
+    "economy": 4,
     "science": 4,
     "army": 4,
     "smi": 5,

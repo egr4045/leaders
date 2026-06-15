@@ -83,7 +83,7 @@ export function tick(world: WorldState, content: GameContent, rng?: Rng): TickRe
     const upkeepMult = typeof eff.special.ministerUpkeepMult === 'number' ? eff.special.ministerUpkeepMult : 1;
     const ministerCost = s.population.ministry * t.economy.ministerUpkeep * upkeepMult;
 
-    s.resources.money = Math.max(0, s.resources.money + moneyIncome - ministerCost);
+    s.resources.money = s.resources.money + moneyIncome - ministerCost;
     s.resources.food += foodIncome;
     s.resources.influence += influenceIncome;
     s.sciencePoints += scienceIncome;
@@ -100,6 +100,24 @@ export function tick(world: WorldState, content: GameContent, rng?: Rng): TickRe
       `Доход: +${Math.round(moneyIncome)} денег, +${Math.round(foodIncome)} еды; министры съели ${Math.round(ministerCost)}`,
       true,
     );
+
+    // --- 1b. Ежегодный доход/расход от принятых законов ---
+    // effects.resources уровня закона применяется каждый тик (рекуррентно),
+    // в отличие от modifiers (свёрнуты в aggregateModifiers). Деньги/еда могут
+    // уйти в минус (госдолг/дефицит), золото/влияние не опускаются ниже нуля.
+    for (const id of s.activeStatuses) {
+      const st = content.statuses.get(id);
+      if (!st || st.type !== 'law') continue;
+      const lvlIdx = s.lawLevels?.[id] ?? 0;
+      const lawEffects =
+        st.levels && st.levels.length > 0 ? st.levels[lvlIdx]?.effects : st.effects;
+      const res = lawEffects?.resources;
+      if (!res) continue;
+      if (res.money) s.resources.money += res.money;
+      if (res.food) s.resources.food += res.food;
+      if (res.gold) s.resources.gold = Math.max(0, s.resources.gold + res.gold);
+      if (res.influence) s.resources.influence = Math.max(0, s.resources.influence + res.influence);
+    }
 
     // --- 2. Еда ---
     const consumption = totalPopulation(s) * t.economy.foodPerCapita * eff.foodPerCapitaMult;

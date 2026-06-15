@@ -14,7 +14,7 @@
           ],
           "effects": {
             "resources": {
-              "money": 1500
+              "money": 900
             },
             "sectors": {
               "science": 1
@@ -116,7 +116,7 @@
           "label": "Выдавать паспорта за инвестиции",
           "effects": {
             "resources": {
-              "money": 2000,
+              "money": 1000,
               "influence": -50
             },
             "dovolstvo": 2
@@ -157,7 +157,7 @@
           ],
           "effects": {
             "resources": {
-              "money": 2500,
+              "money": 900,
               "influence": 50
             },
             "sectors": {
@@ -762,7 +762,7 @@
         {
           "label": "Дать концессию иностранной корпорации — быстрые деньги",
           "effects": {
-            "resources": { "money": 2000 },
+            "resources": { "money": 900 },
             "dovolstvo": -15
           },
           "newsLines": {
@@ -804,7 +804,7 @@
         {
           "label": "Закрыть и перейти на современную газовую генерацию",
           "effects": {
-            "resources": { "money": -2000, "influence": 150 },
+            "resources": { "money": -1000, "influence": 150 },
             "dovolstvo": -15
           },
           "newsLines": {
@@ -823,7 +823,7 @@
         {
           "label": "Программа «Вернись домой»: государственные гарантии зарплаты",
           "effects": {
-            "resources": { "money": -1500 },
+            "resources": { "money": -800 },
             "sectors": { "science": 2 },
             "dovolstvo": 15
           },
@@ -854,7 +854,7 @@
         {
           "label": "Масштабная программа сейсмоукрепления зданий",
           "effects": {
-            "resources": { "money": -2000 },
+            "resources": { "money": -1000 },
             "dovolstvo": 25
           },
           "newsLines": {
@@ -974,7 +974,7 @@
         {
           "label": "Налоговая амнистия: легализуй капитал, заплати разовые 5%",
           "effects": {
-            "resources": { "money": 2000 },
+            "resources": { "money": 1000 },
             "sectors": { "economy": 1 },
             "dovolstvo": 10
           },

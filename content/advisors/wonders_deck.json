@@ -38,14 +38,14 @@
       "situation": "Мы на пороге создания Квантового Сверхразума. Он решит все наши проблемы.",
       "requires": {
         "minSectors": { "science": 7, "intel": 4 },
-        "minResources": { "money": 700, "gold": 200 },
+        "minResources": { "money": 700, "gold": 100 },
         "minPopulation": { "umniki": 15 }
       },
       "choices": [
         {
           "label": "Запустить Квантовый ИИ",
           "effects": {
-            "resources": { "money": -700, "gold": -200 },
+            "resources": { "money": -700, "gold": -100 },
             "modifiers": { "special": { "buildWonder": "wonder_quantum_ai" } }
           },
           "newsLines": {
@@ -69,13 +69,13 @@
       "situation": "Пора застолбить Красную Планету за нами. Это даст нам колоссальный престиж.",
       "requires": {
         "minSectors": { "science": 8, "army": 5 },
-        "minResources": { "money": 1000, "gold": 500 }
+        "minResources": { "money": 1200, "gold": 200 }
       },
       "choices": [
         {
           "label": "Начать колонизацию Марса",
           "effects": {
-            "resources": { "money": -1000, "gold": -500 },
+            "resources": { "money": -1200, "gold": -200 },
             "modifiers": { "special": { "buildWonder": "wonder_mars_base" } }
           },
           "newsLines": {

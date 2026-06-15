@@ -37,6 +37,7 @@
     "voteCostInfluence": 40
   },
   "war": {
-    "declareCostInfluence": 30
+    "declareCostInfluence": 30,
+    "decisiveScoreGap": 2
   }
 }

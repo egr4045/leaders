@@ -2,12 +2,12 @@
   "id": "it_kasty",
   "name": "IT-касты",
   "type": "state",
-  "description": "Миллионы программистов на аутсорсе. Наука взлетает в небеса.",
+  "description": "Миллионы программистов на аутсорсе. Умники работают продуктивнее.",
   "effects": {
     "modifiers": {
-      "scienceMult": 1,
+      "scienceMult": 0.4,
       "outputMult": {
-        "umniki": 2
+        "umniki": 1.5
       }
     }
   }

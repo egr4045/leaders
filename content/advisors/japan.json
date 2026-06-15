@@ -109,11 +109,11 @@
           "label": "Передать управление ИИ",
           "effects": {
             "resources": {
-              "money": 3000
+              "money": 2500
             },
             "sectors": {
               "economy": 2,
-              "science": 3
+              "science": 2
             },
             "dovolstvo": 40
           },
@@ -625,7 +625,7 @@
           "label": "Провести жесткую демонстрацию силы",
           "effects": {
             "resources": {
-              "influence": 400
+              "influence": 300
             },
             "sectors": {
               "army": 1

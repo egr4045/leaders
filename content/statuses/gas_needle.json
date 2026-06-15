@@ -2,11 +2,11 @@
   "id": "gas_needle",
   "name": "Нефтяная Игла",
   "type": "state",
-  "description": "Колоссальные доходы от ресурсов. Экономика качается сама по себе.",
+  "description": "Колоссальные доходы от ресурсов. Работяги получают буст от энергоизбытка.",
   "effects": {
     "modifiers": {
       "outputMult": {
-        "rabotyagi": 1.5
+        "rabotyagi": 1.2
       }
     },
     "sectors": {

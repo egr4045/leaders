@@ -6,7 +6,7 @@
   "revocable": false,
   "effects": {
     "modifiers": {
-      "scienceMult": 0.5
+      "scienceMult": 0.4
     }
   }
 }

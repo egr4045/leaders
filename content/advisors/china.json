@@ -289,8 +289,8 @@
           "label": "Отключить зарубежный интернет вообще",
           "effects": {
             "sectors": {
-              "economy": -3,
-              "intel": 3
+              "economy": -2,
+              "intel": 2
             },
             "dovolstvo": -17
           },

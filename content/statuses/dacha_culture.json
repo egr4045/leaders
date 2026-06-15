@@ -2,10 +2,10 @@
   "id": "dacha_culture",
   "name": "Дачная Культура",
   "type": "state",
-  "description": "Работяги сами выращивают картошку по выходным. Потребление еды снижено.",
+  "description": "Работяги сами выращивают картошку по выходным. Потребление еды немного снижено.",
   "effects": {
     "modifiers": {
-      "foodPerCapitaMult": 0.5
+      "foodPerCapitaMult": 0.75
     }
   }
 }

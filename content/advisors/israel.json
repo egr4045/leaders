@@ -111,8 +111,8 @@
           ],
           "effects": {
             "resources": {
-              "money": 2000,
-              "influence": 500
+              "money": 1400,
+              "influence": 250
             },
             "sectors": {
               "economy": 2
@@ -223,7 +223,7 @@
           ],
           "effects": {
             "resources": {
-              "money": -2000
+              "money": -1400
             },
             "sectors": {
               "science": 1
@@ -252,7 +252,7 @@
           "label": "Продавать кибероружие всем желающим",
           "effects": {
             "resources": {
-              "money": 3000,
+              "money": 1600,
               "influence": -300
             },
             "sectors": {
@@ -469,7 +469,7 @@
           "label": "Продать системы в Европу",
           "effects": {
             "resources": {
-              "money": 4000,
+              "money": 1800,
               "influence": 200
             },
             "sectors": {
@@ -666,7 +666,7 @@
         {
           "label": "Масштабное строительство доступного жилья",
           "effects": {
-            "resources": { "money": -3000 },
+            "resources": { "money": -1800 },
             "sectors": { "economy": 1 },
             "dovolstvo": 30
           },
@@ -728,7 +728,7 @@
         {
           "label": "Продавать водные технологии за влияние",
           "effects": {
-            "resources": { "influence": 400 },
+            "resources": { "influence": 250 },
             "sectors": { "economy": 1 }
           },
           "newsLines": {
@@ -851,7 +851,7 @@
         {
           "label": "Дать диаспоре представительство в советах",
           "effects": {
-            "resources": { "money": 2000, "influence": 100 },
+            "resources": { "money": 1400, "influence": 100 },
             "dovolstvo": -10
           },
           "newsLines": {
@@ -893,7 +893,7 @@
         {
           "label": "Пусть продаются — деньги всё равно возвращаются",
           "effects": {
-            "resources": { "money": 3000 },
+            "resources": { "money": 1600 },
             "sectors": { "economy": 1 }
           },
           "newsLines": {
@@ -925,7 +925,7 @@
           "label": "Инвестировать в лазерные системы — один раз и навсегда",
           "addStatuses": ["il_laser_shield"],
           "effects": {
-            "resources": { "money": -2000 },
+            "resources": { "money": -1400 },
             "sectors": { "science": 2, "army": 1 }
           },
           "newsLines": {
@@ -944,7 +944,7 @@
         {
           "label": "Заморозить поселения ради нормализации",
           "effects": {
-            "resources": { "money": 1000, "influence": 400 },
+            "resources": { "money": 1000, "influence": 250 },
             "sectors": { "economy": 2 },
             "dovolstvo": -15
           },

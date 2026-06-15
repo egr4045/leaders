@@ -166,29 +166,40 @@ export function resolveWarBattles(world: WorldState, content: GameContent, rng: 
     const loserSide = attackerWon ? war.defender : war.attacker;
     winnerSide.score += 1;
 
-    // содержание войны и потери — каждому участнику
+    const leaderName = (id: string) => content.countries.get(id)?.name ?? id;
+    const sideName = (sd: WarSide) => sd.countryIds.map(leaderName).join(' + ');
+    const matchup = `${sideName(war.attacker)} ⚔ ${sideName(war.defender)}`;
+    const winnerName = leaderName(winnerSide.countryIds[0]!);
+    const battleLine = `«${matchup}» — победа в битве года за «${winnerName}» (счёт ${war.attacker.score}:${war.defender.score})`;
+
+    // содержание войны и потери — каждому участнику, с явным отчётом о цене
     for (const id of warParticipants(war)) {
       const s = world.countries.get(id);
       if (!s) continue;
       const won = winnerSide.countryIds.includes(id);
+      const moneyBefore = s.resources.money;
+      const silovikiBefore = s.population.siloviki;
       s.resources.money = Math.max(0, s.resources.money * (1 - t.upkeepMoneyPct));
       s.population.siloviki = Math.max(
         0,
         s.population.siloviki * (1 - (won ? t.attritionWinnerPct : t.attritionLoserPct)),
       );
       s.dovolstvo = Math.max(0, s.dovolstvo - t.warWearinessDovolstvo);
+      const moneyLost = Math.round(moneyBefore - s.resources.money);
+      const silovikiLost = Math.round(silovikiBefore - s.population.siloviki);
+      // счёт — публичная пропаганда; цена войны — личная (скрыта от чужих сводок)
+      events.push({ countryId: id, kind: 'war', text: battleLine });
+      events.push({
+        countryId: id,
+        kind: 'war',
+        text: `Цена войны «${matchup}»: −${moneyLost} денег, −${silovikiLost} силовиков, −${t.warWearinessDovolstvo} довольства`,
+        hidden: true,
+      });
     }
 
     // сброс годовых вложений
     war.attacker.investedThisYear = {};
     war.defender.investedThisYear = {};
-
-    const leaderName = (id: string) => content.countries.get(id)?.name ?? id;
-    const winnerName = leaderName((attackerWon ? war.attacker : war.defender).countryIds[0]!);
-    const battleLine = `Битва года: верх одержала сторона «${winnerName}» (счёт ${war.attacker.score}:${war.defender.score})`;
-    for (const id of warParticipants(war)) {
-      events.push({ countryId: id, kind: 'war', text: battleLine });
-    }
 
     // решающая победа?
     const gap = Math.abs(war.attacker.score - war.defender.score);
@@ -207,9 +218,16 @@ export function resolveWarBattles(world: WorldState, content: GameContent, rng: 
             0,
             ally.resources.influence - t.allyDefeatInfluencePenalty,
           );
+          events.push({
+            countryId: id,
+            kind: 'war',
+            text: `Поражение коалиции: −${t.allyDefeatInfluencePenalty} влияния`,
+            hidden: true,
+          });
         }
       }
-      const line = `Война окончена решающей победой (${war.attacker.score}:${war.defender.score})`;
+      const winnerLeaderName = leaderName(war[war.winnerSide].countryIds[0]!);
+      const line = `Война окончена решающей победой стороны «${winnerLeaderName}» (${war.attacker.score}:${war.defender.score})`;
       for (const id of warParticipants(war)) {
         events.push({ countryId: id, kind: 'war', text: line });
       }

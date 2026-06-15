@@ -78,7 +78,7 @@ function WarCard({ war, onGoDiplomacy }: { war: WarView; onGoDiplomacy?: () => v
       {/* Annual cost hint (active + participant) */}
       {war.status === 'active' && iAmIn && (
         <div className="mb-2 text-[11px] text-slate-600">
-          💸 Расходует деньги, силовиков и довольство ежегодно
+          💸 Каждый год войны: −5% денег, −3…6% силовиков, −3 довольства. Точные потери — в сводке года.
         </div>
       )}
 

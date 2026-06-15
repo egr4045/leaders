@@ -2,7 +2,7 @@
   "id": "law_nomenklatura",
   "name": "Номенклатурный Иммунитет",
   "type": "law",
-  "description": "Абсолютная власть и неприкосновенность для чиновников. Государство генерирует огромное Влияние, но народ ненавидит власть, а работяги опускают руки.",
+  "description": "Власть и неприкосновенность для чиновников: государство генерирует Влияние каждый год, но народ ненавидит элиту, а работяги опускают руки.",
   "revocable": true,
   "levels": [
     {
@@ -11,8 +11,7 @@
         "modifiers": {
           "dovolstvoDrift": -2,
           "outputMult": {
-            "ministry": 1.2,
-            "rabotyagi": 0.9
+            "rabotyagi": 0.95
           }
         },
         "resources": {
@@ -22,7 +21,7 @@
       "cost": {
         "money": 150
       },
-      "minMinistry": 10
+      "minMinistry": 8
     },
     {
       "name": "Неприкосновенность",
@@ -30,18 +29,17 @@
         "modifiers": {
           "dovolstvoDrift": -4,
           "outputMult": {
-            "ministry": 1.5,
-            "rabotyagi": 0.8
+            "rabotyagi": 0.88
           }
         },
         "resources": {
-          "influence": 40
+          "influence": 45
         }
       },
       "cost": {
         "money": 300
       },
-      "minMinistry": 20
+      "minMinistry": 15
     },
     {
       "name": "Новое Дворянство",
@@ -49,8 +47,7 @@
         "modifiers": {
           "dovolstvoDrift": -7,
           "outputMult": {
-            "ministry": 2,
-            "rabotyagi": 0.6
+            "rabotyagi": 0.78
           }
         },
         "resources": {
@@ -60,7 +57,7 @@
       "cost": {
         "money": 600
       },
-      "minMinistry": 35
+      "minMinistry": 22
     }
   ]
 }

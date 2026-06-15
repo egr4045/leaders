@@ -113,7 +113,7 @@
           "label": "Инвестировать в водородный экспорт",
           "effects": {
             "resources": {
-              "money": 3000,
+              "money": 2000,
               "influence": 200
             },
             "sectors": {
@@ -250,7 +250,7 @@
           "label": "Запатентовать и продавать всему миру",
           "effects": {
             "resources": {
-              "money": 4000
+              "money": 2200
             },
             "sectors": {
               "science": 2,
@@ -390,7 +390,7 @@
           "label": "Взять гигантские долги на выплаты",
           "effects": {
             "resources": {
-              "money": -3000
+              "money": -2000
             },
             "dovolstvo": 10
           },
@@ -461,8 +461,8 @@
           "label": "Создать 'Соединенные Штаты Европы'",
           "effects": {
             "resources": {
-              "influence": 500,
-              "money": 2000
+              "influence": 250,
+              "money": 1500
             },
             "sectors": {
               "economy": 2
@@ -641,11 +641,11 @@
           "label": "Возглавить Армию Европы",
           "effects": {
             "resources": {
-              "influence": 600,
+              "influence": 300,
               "money": -1000
             },
             "sectors": {
-              "army": 3
+              "army": 2
             },
             "dovolstvo": 20
           },
@@ -707,7 +707,7 @@
         {
           "label": "Национализировать крупных арендодателей — более 3000 квартир",
           "effects": {
-            "resources": { "money": -3000 },
+            "resources": { "money": -2000 },
             "dovolstvo": 30
           },
           "newsLines": {
@@ -769,7 +769,7 @@
         {
           "label": "Взять долю в компании и распределить прибыль гражданам",
           "effects": {
-            "resources": { "money": 3000 },
+            "resources": { "money": 2000 },
             "sectors": { "science": 1 },
             "dovolstvo": 20
           },
