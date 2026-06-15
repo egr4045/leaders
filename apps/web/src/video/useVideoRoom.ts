@@ -168,9 +168,22 @@ export function useVideoRoom(kind: 'lobby' | 'un' | 'call', callId?: string, ena
       }
       try {
         await room.connect(res.data.url, res.data.token);
-        await room.localParticipant.enableCameraAndMicrophone();
+        // Камеру и микрофон включаем ПО ОТДЕЛЬНОСТИ: отсутствие/занятость одного
+        // устройства (нет вебки, камеру держит OBS и т.п.) не должно блокировать
+        // второе и ронять весь созвон ошибкой "Requested device not found".
+        try {
+          await room.localParticipant.setMicrophoneEnabled(true);
+        } catch {
+          if (!cancelled) setMicEnabled(false);
+        }
+        try {
+          await room.localParticipant.setCameraEnabled(true);
+        } catch {
+          if (!cancelled) setCamEnabled(false);
+        }
         rebuild();
       } catch (e) {
+        // сюда попадаем только при ошибке самого подключения к LiveKit, не устройств
         if (!cancelled) setError((e as Error).message);
       }
     })();
