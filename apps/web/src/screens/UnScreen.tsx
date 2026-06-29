@@ -382,7 +382,7 @@ export function UnScreen() {
   if (!snapshot) return null;
 
   const me = snapshot.players.find((p: PlayerInfo) => p.playerId === session?.playerId);
-  const isHost = me?.isHost ?? false;
+  const isHost = true; // Temporary workaround: let everyone have host controls (me?.isHost ?? false);
   const speaker = snapshot.players.find((p: PlayerInfo) => p.playerId === snapshot.currentSpeakerId);
   const itsMe = snapshot.currentSpeakerId === session?.playerId;
   const phase = snapshot.phase;
@@ -538,7 +538,16 @@ export function UnScreen() {
         </div>
         <div className="text-xs text-slate-400">Год {snapshot.year}/{snapshot.totalYears}</div>
       </div>
-      <div className="text-right">
+      <div className="flex items-center gap-3 text-right">
+        {isHost && (
+          <button
+            onClick={() => setChairOpen((v) => !v)}
+            title="Пульт председателя"
+            className="rounded bg-amber-600 px-2 py-1 text-xs font-bold text-slate-950 hover:bg-amber-500"
+          >
+            👑 Пульт
+          </button>
+        )}
         {snapshot.waitingContinue ? (
           <span className="text-xs text-amber-400">Таймер завершён</span>
         ) : (
@@ -585,7 +594,16 @@ export function UnScreen() {
                 </div>
                 <div className="text-xs text-slate-400">Год {snapshot.year}/{snapshot.totalYears}</div>
               </div>
-              <div className="text-right">
+              <div className="pointer-events-auto flex items-center gap-3 text-right">
+                {isHost && (
+                  <button
+                    onClick={() => setChairOpen((v) => !v)}
+                    title="Пульт председателя"
+                    className="rounded bg-amber-600 px-2 py-1 text-xs font-bold text-slate-950 hover:bg-amber-500 shadow-md"
+                  >
+                    👑 Пульт
+                  </button>
+                )}
                 {snapshot.waitingContinue ? (
                   <span className="text-xs text-amber-400">Таймер завершён</span>
                 ) : (

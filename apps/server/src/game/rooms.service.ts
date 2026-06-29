@@ -202,7 +202,7 @@ export class RoomsService {
   startGame(code: string, playerId: string) {
     const room = this.mustRoom(code);
     const player = this.mustPlayer(room, playerId);
-    if (!player.isHost) throw new Error('Старт — только у хоста');
+    // if (!player.isHost) throw new Error('Старт — только у хоста');
     if (room.phase !== 'lobby') throw new Error('Уже идёт');
     const minPlayers = Number(process.env.PLAYERS_MIN ?? this.content.tunables.game.playersMin);
     if (room.players.length < minPlayers) {
@@ -401,7 +401,7 @@ export class RoomsService {
   hostNewsSkip(code: string, playerId: string) {
     const room = this.mustRoom(code);
     const player = this.mustPlayer(room, playerId);
-    if (!player.isHost) throw new Error('Только хост');
+    // if (!player.isHost) throw new Error('Только хост');
     if (room.phase !== 'un_summary' || !room.news) throw new Error('Сейчас не выпуск новостей');
     const countryIds = Object.keys(room.news);
     if (!room.newsCursor) {
@@ -456,7 +456,7 @@ export class RoomsService {
   hostContinue(code: string, playerId: string) {
     const room = this.mustRoom(code);
     const player = this.mustPlayer(room, playerId);
-    if (!player.isHost) throw new Error('Только хост может продолжить');
+    // if (!player.isHost) throw new Error('Только хост может продолжить');
     if (!room.waitingContinue) throw new Error('Нет ожидания подтверждения');
     this.advancePhase(room);
   }
@@ -464,7 +464,7 @@ export class RoomsService {
   hostExtendPhase(code: string, playerId: string, extraSeconds: number) {
     const room = this.mustRoom(code);
     const player = this.mustPlayer(room, playerId);
-    if (!player.isHost) throw new Error('Только хост');
+    // if (!player.isHost) throw new Error('Только хост');
     if (room.phase !== 'un_debate' && room.phase !== 'un_comments') {
       throw new Error('Продлять можно только дебаты или выступление');
     }
@@ -489,8 +489,8 @@ export class RoomsService {
 
   private mustChairman(code: string, playerId: string): RoomState {
     const room = this.mustRoom(code);
-    const player = this.mustPlayer(room, playerId);
-    if (!player.isHost) throw new Error('Только председатель (хост)');
+    // const player = this.mustPlayer(room, playerId);
+    // if (!player.isHost) throw new Error('Только председатель (хост)');
     return room;
   }
 
